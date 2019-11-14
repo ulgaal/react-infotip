@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="en"><head><title>src/Location</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../"><meta name="groc-document-path" content="src/Location"><meta name="groc-project-path" content="src/Location.js"><link rel="stylesheet" type="text/css" media="all" href="../assets/style.css"><script type="text/javascript" src="../assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/Location.js</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><p>Copyright 2019 Ulrich Gaal</p>
+<p>Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at</p>
+<pre><code>http://www.apache.org/licenses/LICENSE-2.0</code></pre>
+<p>Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</p>
+<h1 id="location">Location</h1></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> React <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>
+<span class="hljs-keyword">import</span> PropTypes <span class="hljs-keyword">from</span> <span class="hljs-string">'prop-types'</span>
+<span class="hljs-keyword">import</span> { LocationType } <span class="hljs-keyword">from</span> <span class="hljs-string">'./prop-types'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>Location</code> is an internal component used to
+position a tooltip with respect to its target. It uses
+absolute positioning and a CSS <code>translate()</code> transform.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Location = props =&gt; {
+  <span class="hljs-keyword">const</span> {
+    location: { left, top },
+    children,
+    onMouseDown,
+    onMouseOver,
+    onMouseOut
+  } = props
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">span</span>
+      <span class="hljs-attribute">onMouseDown</span>=<span class="hljs-value">{onMouseDown}</span>
+      <span class="hljs-attribute">onMouseOver</span>=<span class="hljs-value">{onMouseOver}</span>
+      <span class="hljs-attribute">onMouseOut</span>=<span class="hljs-value">{onMouseOut}</span>
+      <span class="hljs-attribute">className</span>=<span class="hljs-value">'rit-location'</span>
+      <span class="hljs-attribute">style</span>=<span class="hljs-value">{{</span>
+        <span class="hljs-attribute">position:</span> '<span class="hljs-attribute">absolute</span>',
+        <span class="hljs-attribute">display:</span> '<span class="hljs-attribute">inline-block</span>',
+        <span class="hljs-attribute">zIndex:</span> <span class="hljs-attribute">100</span>,
+        <span class="hljs-attribute">transform:</span> `<span class="hljs-attribute">translate</span>(${<span class="hljs-attribute">left</span>}<span class="hljs-attribute">px</span>, ${<span class="hljs-attribute">top</span>}<span class="hljs-attribute">px</span>)`,
+        <span class="hljs-attribute">left:</span> <span class="hljs-attribute">0</span>,
+        <span class="hljs-attribute">top:</span> <span class="hljs-attribute">0</span>
+      }}
+    &gt;</span>
+      {children}
+    <span class="hljs-tag">&lt;/<span class="hljs-title">span</span>&gt;</span>
+  )</span>
+}
+
+Location.propTypes = {
+  location: LocationType,
+  onMouseDown: PropTypes.func
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> Location</div></div></div></div></body></html>

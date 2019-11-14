@@ -1,0 +1,21 @@
+<!DOCTYPE html><html lang="en"><head><title>src/css</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../"><meta name="groc-document-path" content="src/css"><meta name="groc-project-path" content="src/css.js"><link rel="stylesheet" type="text/css" media="all" href="../assets/style.css"><script type="text/javascript" src="../assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/css.js</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><p>Copyright 2019 Ulrich Gaal</p>
+<p>Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at</p>
+<pre><code>http://www.apache.org/licenses/LICENSE-2.0</code></pre>
+<p>Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</p>
+<h1 id="cssjs">css.js</h1></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> parseBorder = border =&gt; {
+  <span class="hljs-keyword">const</span> [, , width, style, , color] =
+    <span class="hljs-regexp">/^(([1-9]\d*)px\s+)?(none|solid|dotted|dashed)(\s+(.+))?$/</span>.exec(border) ||
+    []
+  <span class="hljs-keyword">return</span> { width, style, color }
+}
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> parseBoxShadow = boxShadow =&gt; {
+  <span class="hljs-keyword">const</span> [, , dx, , dy, color] =
+    <span class="hljs-regexp">/^(([1-9]\d*)px\s+)(([1-9]\d*)px\s+)(.+)$/</span>.exec(boxShadow) || []
+  <span class="hljs-keyword">return</span> { dx, dy, color }
+}</div></div></div></div></body></html>

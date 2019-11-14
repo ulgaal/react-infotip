@@ -1,0 +1,50 @@
+<!DOCTYPE html><html lang="en"><head><title>src/Contexts</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../"><meta name="groc-document-path" content="src/Contexts"><meta name="groc-project-path" content="src/Contexts.js"><link rel="stylesheet" type="text/css" media="all" href="../assets/style.css"><script type="text/javascript" src="../assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/Contexts.js</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><p>Copyright 2019 Ulrich Gaal</p>
+<p>Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at</p>
+<pre><code>http://www.apache.org/licenses/LICENSE-2.0</code></pre>
+<p>Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</p>
+<h1 id="contexts">Contexts</h1></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> React <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>
+<span class="hljs-keyword">import</span> { mergeObjects } <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span>
+<span class="hljs-keyword">import</span> Balloon <span class="hljs-keyword">from</span> <span class="hljs-string">'./Balloon'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The default value of the <code>config</code> property used by <code>Source</code> and  <code>Storage</code></p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> defaultConfig = {
+  position: {
+    my: <span class="hljs-string">'top-left'</span>,
+    at: <span class="hljs-string">'bottom-right'</span>,
+    target: <span class="hljs-literal">false</span>,
+    adjust: {
+      mouse: <span class="hljs-literal">false</span>,
+      x: <span class="hljs-number">0</span>,
+      y: <span class="hljs-number">0</span>,
+      method: <span class="hljs-string">'none'</span>
+    },
+    container: <span class="hljs-literal">null</span>
+  },
+  show: {
+    delay: <span class="hljs-number">0</span>,
+    onShow: <span class="hljs-literal">undefined</span>
+  },
+  hide: {
+    delay: <span class="hljs-number">0</span>,
+    onHide: <span class="hljs-literal">undefined</span>
+  },
+  wrapper: Balloon,
+  wrapperProps: {}
+}</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The library uses the <code>ConfigContext</code> to define configuration
+globally for a whole range of <code>Source</code> elements.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> ConfigContext = React.createContext(defaultConfig)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>To avoid redefining the value of the <code>config</code> property, use
+this component instead of a <code>&lt;ConfigContext.Provider&gt;</code>. The
+component will merge the value of its englobing context with
+the supplied value.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> MergingConfigProvider = ({ value, children }) =&gt; (
+  <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">ConfigContext.Consumer</span>&gt;</span>
+    {contextConfig =&gt; (
+      <span class="hljs-tag">&lt;<span class="hljs-title">ConfigContext.Provider</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">{mergeObjects(contextConfig,</span> <span class="hljs-attribute">value</span>)}&gt;</span>
+        {children}
+      <span class="hljs-tag">&lt;/<span class="hljs-title">ConfigContext.Provider</span>&gt;</span>
+    )</span>}
+  &lt;<span class="hljs-regexp">/ConfigContext.Consumer&gt;
+)
+</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>This context is used internally for communication between
+<code>Storage</code> and its <code>Source</code> elements.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> StorageContext = React.createContext(<span class="hljs-literal">null</span>)</div></div></div></div></body></html>
