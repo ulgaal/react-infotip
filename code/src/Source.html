@@ -66,7 +66,7 @@ the source into consideration to compute tip placement.</p></div></div><div clas
   }
 
   componentDidMount () {
-    <span class="hljs-keyword">this</span>.updateTarget()
+    <span class="hljs-keyword">this</span>.updateTarget()</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Force the first measure as resize observer may not fire for some element</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-keyword">this</span>.measure()
     <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.props.pinned) {
       <span class="hljs-keyword">this</span>.engine.pin(<span class="hljs-literal">true</span>)
     }
