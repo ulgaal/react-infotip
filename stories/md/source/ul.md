@@ -1,0 +1,1 @@
+You can wrap any component in a `<Source>`, without fear of disrupting your CSS rules, because `<Source>` uses the CSS [display:content](https://developer.mozilla.org/en-US/docs/Web/CSS/display#display_contents) property

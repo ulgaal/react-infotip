@@ -1,0 +1,35 @@
+.bubble-table table,
+.bubble-table td {
+  border: 1px solid #333;
+}
+.bubble-table th {
+  padding: 1px 5px 1px 5px;
+}
+
+.bubble-table thead,
+.bubble-table tfoot {
+  background-color: #333;
+  color: #fff;
+}
+
+.dark-style {
+  padding: 4px 10px 4px 10px;
+  color: #f3f3f3;
+  background-color: #505050;
+  border: 1px solid #303030;
+  border-radius: 4px;
+  box-shadow: 3px 3px #777;
+}
+
+.green-style {
+  padding: 4px 10px 4px 10px;
+  color: #3f6219;
+  background-color: #caed9e;
+  border: 1px solid #90d93f;
+  border-radius: 4px;
+  box-shadow: 3px 3px #ddd;
+}
+
+.pinnable {
+  text-align: left;
+}

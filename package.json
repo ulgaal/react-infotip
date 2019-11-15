@@ -1,0 +1,97 @@
+{
+  "name": "react-infotip",
+  "version": "0.5.0",
+  "private": true,
+  "description": "A library to provide tooltips and sticky-notes to React apps",
+  "keywords": [
+    "react",
+    "infotip",
+    "tooltip",
+    "sticky-note",
+    "post-it note",
+    "speech balloons",
+    "bubbles"
+  ],
+  "homepage": "http://github.com/ulgaal/react-infotip",
+  "bugs": {
+    "url": "https://github.com/ulgaal/react-infotip/issues"
+  },
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Ulrich Gaal",
+    "email": "react-infotip@coder-tribe.ovh"
+  },
+  "files": [
+    "lib"
+  ],
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ulgaal/react-infotip.git"
+  },
+  "scripts": {
+    "build": "rm -rf lib && babel --out-dir lib --presets=@babel/preset-react,@babel/preset-env src",
+    "test": "node config/test.js",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook",
+    "doc": "scripts/doc.sh"
+  },
+  "dependencies": {
+    "lodash.isequal": "^4.5.0",
+    "lodash.pick": "^4.4.0",
+    "resize-observer-polyfill": "^1.5.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.6.4",
+    "@babel/core": "^7.6.4",
+    "@babel/plugin-syntax-dynamic-import": "^7.2.0",
+    "@babel/polyfill": "^7.6.0",
+    "@babel/preset-env": "^7.6.3",
+    "@babel/preset-react": "^7.6.3",
+    "@storybook/addon-actions": "^5.2.5",
+    "@storybook/addon-knobs": "^5.2.5",
+    "@storybook/addon-links": "^5.2.5",
+    "@storybook/addon-storysource": "^5.2.5",
+    "@storybook/addons": "^5.2.5",
+    "@storybook/react": "^5.2.5",
+    "babel-core": "7.0.0-bridge.0",
+    "babel-jest": "^24.9.0",
+    "babel-loader": "^8.0.6",
+    "cross-env": "^6.0.3",
+    "faker": "^4.1.0",
+    "jest": "^24.9.0",
+    "promisify-node": "^0.5.0",
+    "prop-types": "^15.7.2",
+    "react": "^16.11.0",
+    "react-docgen": "^4.1.1",
+    "react-dom": "^16.11.0",
+    "react-table": "^6.10.3",
+    "standard": "^14.3.1",
+    "storybook-readme": "^5.0.8",
+    "svg-react-loader": "^0.4.6"
+  },
+  "peerDependencies": {
+    "prop-types": "^15.x",
+    "react": "^16.x",
+    "react-dom": "^16.x"
+  },
+  "standard": {
+    "globals": [
+      "SVGElement",
+      "Element"
+    ]
+  },
+  "jest": {
+    "clearMocks": true,
+    "coverageDirectory": "coverage",
+    "testMatch": [
+      "<rootDir>/src/**/__tests__/**/*.{js,jsx}",
+      "<rootDir>/src/**/?(*.)(spec|test).{js,jsx}"
+    ],
+    "transform": {
+      "^.+\\.jsx?$": "<rootDir>/config/jest/transformer-babel.js"
+    }
+  }
+}

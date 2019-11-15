@@ -1,0 +1,1 @@
+`<Storage>` is used to manage sticky-notes. Sticky-notes are advanced tips which may outlive their `<Source>` because they are pinned when their `<Source>` is removed from the DOM tree. This enables advanced scenarii where one wants to be able to pin down a tip, possibly drag it around, and have it restored at this exact same place if one reloads the page.

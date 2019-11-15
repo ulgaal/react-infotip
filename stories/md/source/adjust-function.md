@@ -1,0 +1,1 @@
+The `position.adjust.mouse` key can be set to a function which receives mouse move events as a parameter. This function must return the coordinates where the tip should appear, in the coordinate system of the tip container (the document coordinate system by default)

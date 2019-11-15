@@ -1,0 +1,1 @@
+The `position.adjust` key in the configuration lets you tweak the position at which a tip appears. Use the `position.adjust.mouse` key in the configuration if you want the tip to follow mouse movement. The `position.adjust.method` determines the algorithm used to place the tip with respect to the tip position and the container.

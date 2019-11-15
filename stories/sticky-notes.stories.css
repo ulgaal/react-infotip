@@ -1,0 +1,33 @@
+.storable-tip {
+  width: 180px;
+  height: 60px;
+}
+.storable-tip span {
+  white-space: normal;
+}
+#company-table {
+  position: relative;
+  text-align: left;
+}
+
+.card-source {
+  cursor: pointer;
+  display: inline-block;
+}
+.card {
+  text-align: left;
+  font-size: 0.7em;
+}
+.card-key {
+  font-weight: bold;
+  margin-right: 10px;
+  vertical-align: top;
+}
+
+.card-image {
+  width: 80px;
+  height: 80px;
+  padding: 5px 5px;
+  border: 1px dotted gray;
+  margin-left: 10px;
+}

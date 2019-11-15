@@ -1,0 +1,62 @@
+.custom-target {
+  margin-right: 20px;
+  display: inline-block;
+  padding: 5px 20px 5px 20px;
+  background-color: salmon;
+  border: 1px solid darkred;
+  border-radius: 5px;
+}
+
+.adjust-container {
+  padding-left: 20px;
+  padding-right: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  height: 220px;
+  border: 1px dotted blue;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.adjust {
+  display: inline-block;
+  width: 300px;
+  height: 200px;
+  line-height: 200px;
+  text-align: center;
+}
+
+.adjust.none {
+  background-color: lightgreen;
+}
+.adjust.flip {
+  background-color: lightpink;
+}
+.adjust.shift {
+  background-color: lightblue;
+}
+
+.bicolor-tip {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 30px;
+  min-height: 30px;
+  font-family: 'Open Sans';
+  font-size: 0.8em;
+  box-shadow: none;
+}
+
+.bicolor-header,
+.bicolor-body {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 4px 10px 4px 10px;
+}
+
+.bicolor-body {
+  flex-grow: 1;
+}
