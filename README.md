@@ -16,18 +16,18 @@ Check our [storybook](https://ulgaal.github.io/react-infotip/storybook-static) f
 ## Installing
 
 ```sh
-npm install react-infotip
+npm install @ulgaal/react-infotip
 
 # or if you use yarn
 
-yarn add react-infotip
+yarn add @ulgaal/react-infotip
 ```
 
 ## Usage
 
 ```jsx
 // ES6
-import { Source } from "react-infotip";
+import { Source } from "@ulgaal/react-infotip";
 
 const MyComponent = () => (
   <div>
