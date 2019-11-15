@@ -44,7 +44,7 @@ const MyComponent = () => (
 
 # Demo and samples
 
-Be sure to check the [storybook](https://ulgaal.github.io/react-infotip/storybook-static) as it contains my samples, complete with source-code, documentation and interactive panels to tweak all possible aspects of tooltips and sticky-notes.
+Be sure to check the [storybook](https://ulgaal.github.io/react-infotip/storybook-static) as it contains many samples, complete with source-code, documentation and interactive panels to tweak all possible aspects of tooltips and sticky-notes.
 
 # Contributing
 
