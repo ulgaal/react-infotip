@@ -19,7 +19,7 @@ import React, { Component } from 'react'
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 import { SourceConfig } from './prop-types'
-import { autobind, mergeObjects, getElement, createWrapper } from './utils'
+import { autobind, mergeObjects, getElement } from './utils'
 import Location from './Location'
 import { Storage } from './Storage'
 import { ConfigContext, StorageContext } from './Contexts'
@@ -227,7 +227,7 @@ class Source extends Component {
 
     // The tip itself consists of a wrapper component (`Balloon` by default)
     // which provides the user-supplied tip component with a tip appearance.
-    const wrappedTip = createWrapper(wrapper, {
+    const wrappedTip = React.createElement(wrapper, {
       ...wrapperProps,
       my,
       onGeometryChange: this.handleGeometryChange,
