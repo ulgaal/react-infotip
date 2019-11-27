@@ -21,7 +21,7 @@ import Location from './Location'
 import Engine from './Engine'
 import { StorageTip, SourceConfig } from './prop-types'
 import PropTypes from 'prop-types'
-import { autobind, eqSet, diffSet, getElement, createWrapper } from './utils'
+import { autobind, eqSet, diffSet, getElement } from './utils'
 import { ConfigContext, StorageContext } from './Contexts'
 
 /**
@@ -270,7 +270,7 @@ export class Storage extends Component {
               // changes to the tip geometry, whereas `Storage` will handle
               // mousedown and push pin click events
               const engine = this.engines[id]
-              const tip = createWrapper(wrapper, {
+              const tip = React.createElement(wrapper, {
                 ...wrapperProps,
                 my,
                 pinned,

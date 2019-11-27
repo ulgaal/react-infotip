@@ -16,8 +16,6 @@ limitations under the License.
 // utils.js
 // ========
 
-import React from 'react'
-
 /**
  * Returns the corner position of a rect
  */
@@ -237,7 +235,7 @@ export const diffSet = (as, bs) => new Set([...as].filter(obj => !bs.has(obj)))
 /**
  * A sequence generator function
  */
-export function * seq (start, end) {
+export function* seq(start, end) {
   if (start < end) {
     for (let current = start; current < end; current++) {
       yield current
@@ -248,14 +246,6 @@ export function * seq (start, end) {
     }
   }
 }
-
-/**
- * Instantiate a React component
- */
-export const createWrapper = (wrapper, wrapperProps) =>
-  wrapper.prototype.isReactComponent
-    ? React.createElement(wrapper, wrapperProps)
-    : wrapper(wrapperProps)
 
 /**
  * Binds a set of methods to the specified target
