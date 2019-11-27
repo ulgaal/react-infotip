@@ -14,7 +14,7 @@ limitations under the License.</p>
 <span class="hljs-keyword">import</span> Engine <span class="hljs-keyword">from</span> <span class="hljs-string">'./Engine'</span>
 <span class="hljs-keyword">import</span> { StorageTip, SourceConfig } <span class="hljs-keyword">from</span> <span class="hljs-string">'./prop-types'</span>
 <span class="hljs-keyword">import</span> PropTypes <span class="hljs-keyword">from</span> <span class="hljs-string">'prop-types'</span>
-<span class="hljs-keyword">import</span> { autobind, eqSet, diffSet, getElement, createWrapper } <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span>
+<span class="hljs-keyword">import</span> { autobind, eqSet, diffSet, getElement } <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span>
 <span class="hljs-keyword">import</span> { ConfigContext, StorageContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'./Contexts'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The <code>Storage</code> component is in charge of persisting tips for all the
 <code>Source</code>s of the React subtree of which it is the root.
 A <code>Storage</code> invokes the handler specified in the <code>onTipChange</code> property
@@ -218,7 +218,7 @@ they have a <code>storage</code> property pointing to the <code>Storage</code>.<
 <code>Engine</code> will handle mouseover and mouseout events as well as
 changes to the tip geometry, whereas <code>Storage</code> will handle
 mousedown and push pin click events</p></div></div><div class="code"><div class="wrapper">              <span class="hljs-keyword">const</span> engine = <span class="hljs-keyword">this</span>.engines[id]
-              <span class="hljs-keyword">const</span> tip = createWrapper(wrapper, {
+              <span class="hljs-keyword">const</span> tip = React.createElement(wrapper, {
                 ...wrapperProps,
                 my,
                 pinned,
