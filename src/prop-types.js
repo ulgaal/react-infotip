@@ -37,12 +37,6 @@ export const CornerType = PropTypes.oneOf(positions)
 
 const NoneType = PropTypes.oneOf(['none'])
 
-export const StorageTip = PropTypes.shape({
-  id: PropTypes.string,
-  my: CornerType,
-  location: LocationType
-})
-
 export const SourceConfig = PropTypes.shape({
   position: PropTypes.shape({
     my: PropTypes.oneOf(positions),
@@ -70,4 +64,11 @@ export const SourceConfig = PropTypes.shape({
   }),
   wrapper: PropTypes.func,
   wrapperProps: PropTypes.object
+})
+
+export const StorageTip = PropTypes.shape({
+  id: PropTypes.string,
+  my: CornerType,
+  location: LocationType,
+  config: SourceConfig
 })

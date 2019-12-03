@@ -94,7 +94,8 @@ export default class Engine {
           this.subscribers.forEach(subscriber => {
             subscriber.onVisibilityChange({
               id: this.id,
-              visible: this.visible
+              visible: this.visible,
+              config: this.config
             })
           })
         }, delay)
@@ -130,7 +131,8 @@ export default class Engine {
           this.subscribers.forEach(subscriber => {
             subscriber.onVisibilityChange({
               id: this.id,
-              visible: this.visible
+              visible: this.visible,
+              config: this.config
             })
           })
           delete this.geometry
@@ -182,7 +184,11 @@ export default class Engine {
       if (!this.visible) {
         this.visible = true
         this.subscribers.forEach(subscriber => {
-          subscriber.onVisibilityChange({ id: this.id, visible: this.visible })
+          subscriber.onVisibilityChange({
+            id: this.id,
+            visible: this.visible,
+            config: this.config
+          })
         })
       }
     } else {
@@ -310,7 +316,8 @@ export default class Engine {
       this.subscribers.forEach(subscriber => {
         subscriber.onLayoutChange({
           id: this.id,
-          ...result
+          ...result,
+          config: this.config
         })
       })
     }
