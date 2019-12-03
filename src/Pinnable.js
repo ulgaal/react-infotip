@@ -33,7 +33,7 @@ const Pinnable = ({
   ...rest
 }) => (
   <Wrapper {...rest}>
-    <div key={1} className='pinnable' onMouseDown={onMouseDown}>
+    <div className='pinnable' onMouseDown={onMouseDown}>
       <Pin pinned={pinned} onClick={onToggle} />
       {children}
     </div>
