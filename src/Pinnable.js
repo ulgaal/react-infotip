@@ -18,7 +18,6 @@ limitations under the License.
 import React from 'react'
 import Balloon from './Balloon'
 import PropTypes from 'prop-types'
-import { createWrapper } from './utils'
 
 /**
  * A `Pinnable` component adds an inner decorator between
