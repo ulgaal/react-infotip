@@ -10,8 +10,7 @@ See the License for the specific language governing permissions and
 limitations under the License.</p>
 <h1 id="pinnable">Pinnable</h1></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> React <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>
 <span class="hljs-keyword">import</span> Balloon <span class="hljs-keyword">from</span> <span class="hljs-string">'./Balloon'</span>
-<span class="hljs-keyword">import</span> PropTypes <span class="hljs-keyword">from</span> <span class="hljs-string">'prop-types'</span>
-<span class="hljs-keyword">import</span> { createWrapper } <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Pinnable</code> component adds an inner decorator between
+<span class="hljs-keyword">import</span> PropTypes <span class="hljs-keyword">from</span> <span class="hljs-string">'prop-types'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Pinnable</code> component adds an inner decorator between
 the wrapper component and the content component. This decorator
 provides the ability to pin down a tip and to drag it around.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Pinnable = ({
   pinned,
@@ -22,7 +21,7 @@ provides the ability to pin down a tip and to drag it around.</p></div></div><di
   ...rest
 }) =&gt; (
   <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">Wrapper</span> {<span class="hljs-attribute">...rest</span>}&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">key</span>=<span class="hljs-value">{1}</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">'pinnable'</span> <span class="hljs-attribute">onMouseDown</span>=<span class="hljs-value">{onMouseDown}</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">'pinnable'</span> <span class="hljs-attribute">onMouseDown</span>=<span class="hljs-value">{onMouseDown}</span>&gt;</span>
       <span class="hljs-tag">&lt;<span class="hljs-title">Pin</span> <span class="hljs-attribute">pinned</span>=<span class="hljs-value">{pinned}</span> <span class="hljs-attribute">onClick</span>=<span class="hljs-value">{onToggle}</span> /&gt;</span>
       {children}
     <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>

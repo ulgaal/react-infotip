@@ -78,7 +78,8 @@ timers to determine when a tip should be made visible or hidden.</p></div></div>
           <span class="hljs-keyword">this</span>.subscribers.forEach(subscriber =&gt; {
             subscriber.onVisibilityChange({
               id: <span class="hljs-keyword">this</span>.id,
-              visible: <span class="hljs-keyword">this</span>.visible
+              visible: <span class="hljs-keyword">this</span>.visible,
+              config: <span class="hljs-keyword">this</span>.config
             })
           })
         }, delay)
@@ -114,7 +115,8 @@ timers to determine when a tip should be made visible or hidden.</p></div></div>
           <span class="hljs-keyword">this</span>.subscribers.forEach(subscriber =&gt; {
             subscriber.onVisibilityChange({
               id: <span class="hljs-keyword">this</span>.id,
-              visible: <span class="hljs-keyword">this</span>.visible
+              visible: <span class="hljs-keyword">this</span>.visible,
+              config: <span class="hljs-keyword">this</span>.config
             })
           })
           <span class="hljs-keyword">delete</span> <span class="hljs-keyword">this</span>.geometry
@@ -160,7 +162,11 @@ when the mouse tracking config key is set.</p></div></div><div class="code"><div
       <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.visible) {
         <span class="hljs-keyword">this</span>.visible = <span class="hljs-literal">true</span>
         <span class="hljs-keyword">this</span>.subscribers.forEach(subscriber =&gt; {
-          subscriber.onVisibilityChange({ id: <span class="hljs-keyword">this</span>.id, visible: <span class="hljs-keyword">this</span>.visible })
+          subscriber.onVisibilityChange({
+            id: <span class="hljs-keyword">this</span>.id,
+            visible: <span class="hljs-keyword">this</span>.visible,
+            config: <span class="hljs-keyword">this</span>.config
+          })
         })
       }
     } <span class="hljs-keyword">else</span> {
@@ -284,7 +290,8 @@ the source/target shape, the tip shape and the container shape.</p></div></div><
       <span class="hljs-keyword">this</span>.subscribers.forEach(subscriber =&gt; {
         subscriber.onLayoutChange({
           id: <span class="hljs-keyword">this</span>.id,
-          ...result
+          ...result,
+          config: <span class="hljs-keyword">this</span>.config
         })
       })
     }
