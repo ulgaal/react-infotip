@@ -18,7 +18,6 @@ limitations under the License.
 import React from 'react'
 import Balloon from './Balloon'
 import PropTypes from 'prop-types'
-import { createWrapper } from './utils'
 
 /**
  * A `Pinnable` component adds an inner decorator between
@@ -34,7 +33,7 @@ const Pinnable = ({
   ...rest
 }) => (
   <Wrapper {...rest}>
-    <div key={1} className='pinnable' onMouseDown={onMouseDown}>
+    <div className='pinnable' onMouseDown={onMouseDown}>
       <Pin pinned={pinned} onClick={onToggle} />
       {children}
     </div>

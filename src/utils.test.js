@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 import {
-  toProps,
-  fromProps,
   mergeObjects,
   eqSet,
   diffSet,
@@ -27,6 +25,8 @@ import {
   seq,
   autobind
 } from './utils'
+import { styles } from './styles'
+import { defaultConfig } from './Contexts'
 /* global describe, it, expect */
 
 describe('utils', () => {
@@ -54,46 +54,15 @@ describe('utils', () => {
           d: 4
         }
       })
-    })
-    it('merges three configs', () => {
       expect(
-        mergeObjects(
-          {
-            a: {
-              b: 1,
-              c: 2
-            }
-          },
-          {
-            a: {
-              b: 2,
-              d: 4
-            }
-          },
-          {
-            a: {
-              c: 3
-            },
-            e: 5
-          }
-        )
-      ).toEqual({
-        a: {
-          b: 2,
-          c: 3,
-          d: 4
-        },
-        e: 5
-      })
-    })
-    it('accepts null', () => {
-      expect(mergeObjects(null)).toEqual(null)
+        mergeObjects({ wrapperProps: styles.defaultStyle }, defaultConfig)
+      ).toEqual({ ...defaultConfig, wrapperProps: styles.defaultStyle })
     })
     it('accepts undefined', () => {
       const o1 = { a: { b: 2 }, c: 3 }
       expect(mergeObjects(o1, undefined)).toEqual(o1)
     })
-    it('does nothing for null configs null', () => {
+    it('does nothing for null configs', () => {
       expect(
         mergeObjects(
           {
@@ -117,255 +86,6 @@ describe('utils', () => {
       const bazz = mergeObjects(bar, foo)
       expect(foo === bazz).toBe(false)
       expect(bar === bazz).toBe(false)
-    })
-  })
-
-  describe('toProps', () => {
-    it('serializes objects', () => {
-      expect(toProps({ a: 2 })).toEqual({ a: 2 })
-    })
-
-    it('serializes deep objects', () => {
-      expect(
-        toProps({
-          a: {
-            b: 1,
-            c: {
-              d: 2
-            }
-          },
-          e: 3
-        })
-      ).toEqual({
-        'a.b': 1,
-        'a.c.d': 2,
-        e: 3
-      })
-    })
-
-    it('serializes empty objects', () => {
-      expect(toProps({})).toEqual({ '': {} })
-    })
-
-    it('serializes empty object properties', () => {
-      expect(toProps({ a: {} })).toEqual({ a: {} })
-    })
-
-    it('serializes empty array properties', () => {
-      expect(toProps({ a: [] })).toEqual({ a: [] })
-    })
-
-    it('does not deep-serialize DOM element properties', () => {
-      const element = document.createElement('div')
-      expect(toProps({ a: element })).toEqual({ a: element })
-    })
-
-    it('serializes null object properties', () => {
-      expect(toProps({ a: null })).toEqual({ a: null })
-    })
-
-    it('serializes undefined object properties', () => {
-      expect(toProps({ a: undefined })).toEqual({ a: undefined })
-    })
-
-    it('serializes arrays', () => {
-      expect(toProps(['a', 2, 3])).toEqual({
-        '[0]': 'a',
-        '[1]': 2,
-        '[2]': 3
-      })
-    })
-
-    it('serializes nested arrays', () => {
-      expect(toProps(['a', [1, [2, 'b', 3]], 4, 'c'])).toEqual({
-        '[0]': 'a',
-        '[1][0]': 1,
-        '[1][1][0]': 2,
-        '[1][1][1]': 'b',
-        '[1][1][2]': 3,
-        '[2]': 4,
-        '[3]': 'c'
-      })
-    })
-
-    it('serializes empty arrays', () => {
-      expect(toProps([])).toEqual({ '': [] })
-    })
-
-    it('serializes arrays with null references', () => {
-      expect(toProps([null, 'a'])).toEqual({
-        '[0]': null,
-        '[1]': 'a'
-      })
-    })
-
-    it('serializes arrays with undefined references', () => {
-      expect(toProps([undefined, 'a'])).toEqual({
-        '[0]': undefined,
-        '[1]': 'a'
-      })
-    })
-
-    it('serializes mix of object and arrays', () => {
-      expect(
-        toProps({
-          a: '1',
-          b: undefined,
-          c: [],
-          d: {},
-          e: [
-            'f',
-            ['g'],
-            undefined,
-            [],
-            null,
-            {
-              h: 2,
-              i: 3
-            }
-          ],
-          j: null
-        })
-      ).toEqual({
-        a: '1',
-        b: undefined,
-        c: [],
-        d: {},
-        'e[0]': 'f',
-        'e[1][0]': 'g',
-        'e[2]': undefined,
-        'e[3]': [],
-        'e[4]': null,
-        'e[5].h': 2,
-        'e[5].i': 3,
-        j: null
-      })
-    })
-  })
-
-  describe('fromProps', () => {
-    it('deserializes objects', () => {
-      expect(fromProps({ a: 2 })).toEqual({ a: 2 })
-    })
-
-    it('deserializes deep objects', () => {
-      expect(
-        fromProps({
-          'a.b': 1,
-          'a.c.d': 2,
-          e: 3
-        })
-      ).toEqual({
-        a: {
-          b: 1,
-          c: {
-            d: 2
-          }
-        },
-        e: 3
-      })
-    })
-
-    it('deserializes empty objects', () => {
-      expect(fromProps({ '': {} })).toEqual({})
-    })
-
-    it('deserializes empty object properties', () => {
-      expect(fromProps({ a: {} })).toEqual({ a: {} })
-    })
-
-    it('deserializes empty array properties', () => {
-      expect(fromProps({ a: [] })).toEqual({ a: [] })
-    })
-
-    it('deserializes null object properties', () => {
-      expect(fromProps({ a: null })).toEqual({ a: null })
-    })
-
-    it('deserializes undefined object properties', () => {
-      expect(fromProps({ a: undefined })).toEqual({ a: undefined })
-    })
-
-    it('deserializes arrays', () => {
-      expect(
-        fromProps({
-          '[0]': 'a',
-          '[1]': 2,
-          '[2]': 3
-        })
-      ).toEqual(['a', 2, 3])
-    })
-
-    it('deserializes nested arrays', () => {
-      expect(
-        fromProps({
-          '[0]': 'a',
-          '[1][0]': 1,
-          '[1][1][0]': 2,
-          '[1][1][1]': 'b',
-          '[1][1][2]': 3,
-          '[2]': 4,
-          '[3]': 'c'
-        })
-      ).toEqual(['a', [1, [2, 'b', 3]], 4, 'c'])
-    })
-
-    it('deserializes empty arrays', () => {
-      expect(fromProps({ '': [] })).toEqual([])
-    })
-
-    it('deserializes arrays with null references', () => {
-      expect(
-        fromProps({
-          '[0]': null,
-          '[1]': 'a'
-        })
-      ).toEqual([null, 'a'])
-    })
-
-    it('deserializes arrays with undefined references', () => {
-      expect(
-        fromProps({
-          '[0]': undefined,
-          '[1]': 'a'
-        })
-      ).toEqual([undefined, 'a'])
-    })
-
-    it('deserializes mix of object and arrays', () => {
-      expect(
-        fromProps({
-          a: '1',
-          b: undefined,
-          c: [],
-          d: {},
-          'e[0]': 'f',
-          'e[1][0]': 'g',
-          'e[2]': undefined,
-          'e[3]': [],
-          'e[4]': null,
-          'e[5].h': 2,
-          'e[5].i': 3,
-          j: null
-        })
-      ).toEqual({
-        a: '1',
-        b: undefined,
-        c: [],
-        d: {},
-        e: [
-          'f',
-          ['g'],
-          undefined,
-          [],
-          null,
-          {
-            h: 2,
-            i: 3
-          }
-        ],
-        j: null
-      })
     })
   })
 

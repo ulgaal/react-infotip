@@ -19,10 +19,11 @@ import React, { Component } from 'react'
 import ReactDOM from 'react-dom'
 import Location from './Location'
 import Engine from './Engine'
-import { StorageTip, SourceConfig } from './prop-types'
+import { StorageTip } from './prop-types'
 import PropTypes from 'prop-types'
 import { autobind, eqSet, diffSet, getElement } from './utils'
 import { ConfigContext, StorageContext } from './Contexts'
+import { mergeObjects } from '.'
 
 /**
  * The `Storage` component is in charge of persisting tips for all the
@@ -38,7 +39,7 @@ import { ConfigContext, StorageContext } from './Contexts'
  * for the subtree. It must be defined as a function which receives as
  * input a `Source` `id` and outputs the corresponding tip.
  */
-export class Storage extends Component {
+export default class Storage extends Component {
   constructor (props) {
     super(props)
     autobind(['handleToggle', 'handleMouseDown'], this)
@@ -61,7 +62,7 @@ export class Storage extends Component {
   // in the subtree. These methods ensure that the `Source` and
   // the `Storage` use the same engine
   register (id, source) {
-    const { config } = this.props
+    const { config } = source.props
     let engine = this.engines[id]
     if (!engine) {
       engine = this.engines[id] = new Engine({ id, config })
@@ -92,10 +93,11 @@ export class Storage extends Component {
     const prevIds = new Set(prevTips.map(({ id }) => id))
     if (!eqSet(ids, prevIds)) {
       // Create engines for new ids
-      const { config } = this.props
       for (const id of diffSet(ids, prevIds)) {
         let engine = this.engines[id]
         if (!engine) {
+          const tip = tips.find(tip => tip.id === id)
+          const config = mergeObjects(this.context, tip.config)
           engine = this.engines[id] = new Engine({ id, config })
         }
         engine.subscribe(this)
@@ -104,7 +106,7 @@ export class Storage extends Component {
   }
 
   componentDidMount () {
-    const { tips, config } = this.props
+    const { tips } = this.props
     this.updateEngines(this.props.tips, [])
     this.setState({
       tips: (tips || []).reduce((tips, { id, my, location }) => {
@@ -118,7 +120,6 @@ export class Storage extends Component {
         return tips
       }, {})
     })
-    this.container = getElement(config.position.container)
   }
 
   componentDidUpdate (prevProps) {
@@ -133,15 +134,15 @@ export class Storage extends Component {
   }
 
   // This method is invoked by `Engine` when the tip location changes.
-  onLayoutChange ({ id, my, location }) {
+  onLayoutChange ({ id, my, location, config }) {
     const { pinned } = this.getTip(id)
     if (!pinned) {
-      this.updateTip(id, { my, location })
+      this.updateTip(id, { my, location, config })
     }
   }
 
   // This method is invoked by `Engine` when the tip visibility changes.
-  onVisibilityChange ({ id, visible }) {
+  onVisibilityChange ({ id, visible, config }) {
     const tips = { ...this.state.tips }
     if (visible) {
       tips[id] = {
@@ -150,7 +151,8 @@ export class Storage extends Component {
           left: 0,
           top: 0
         },
-        visible
+        visible,
+        config
       }
     } else {
       delete tips[id]
@@ -193,7 +195,12 @@ export class Storage extends Component {
       onTipChange(
         Object.entries(tips)
           .filter(([, { pinned }]) => pinned)
-          .map(([id, { my, location }]) => ({ id, my, location }))
+          .map(([id, { my, location, config }]) => ({
+            id,
+            my,
+            location,
+            config
+          }))
       )
     }
   }
@@ -243,11 +250,7 @@ export class Storage extends Component {
   }
 
   render () {
-    const {
-      children,
-      tip,
-      config: { wrapper, wrapperProps }
-    } = this.props
+    const { children, tip } = this.props
     const { tips } = this.state
     return (
       // Configure `Source`s in the React subtree so that
@@ -261,7 +264,11 @@ export class Storage extends Component {
         </StorageContext.Provider>
         {Object.entries(tips)
           .filter(([, { visible }]) => visible)
-          .map(([id, { my, location, pinned }]) => {
+          .map(([id, { my, location, pinned, config: sourceConfig }]) => {
+            const config = mergeObjects(this.context, sourceConfig)
+            const { wrapper, wrapperProps, position } = config
+            const container = getElement(position.container)
+
             // Retrieve the tip for the specified id.
             const tipContent = tip(id, pinned)
             if (tipContent) {
@@ -292,7 +299,7 @@ export class Storage extends Component {
                 >
                   {tip}
                 </Location>,
-                this.container
+                container
               )
             }
             return null
@@ -301,6 +308,7 @@ export class Storage extends Component {
     )
   }
 }
+Storage.contextType = ConfigContext
 
 Storage.propTypes = {
   /**
@@ -312,6 +320,7 @@ Storage.propTypes = {
    * | id  | `<string>`       | The id property of the `<Source>` to which the tip belongs |
    * | my  | `<CornerType>`   | The corner of the tip to which the tail attaches           |
    * | location  | `<LocationType>` | The current tip location                                   |
+   * | config  | `<ConfigType>` | The tip config (see Source for details on `<ConfigType>`)           |
    *
    * `<LocationType>` is an object, which contains the following keys:
    *
@@ -327,71 +336,8 @@ Storage.propTypes = {
    */
   tip: PropTypes.func,
   /**
-   * A callback function invoked when the list of persistent tip changes
+   * A callback function invoked when the list of persistent tip changes.
+   * The function receives an array of
    */
-  onTipChange: PropTypes.func,
-  /**
-   * The tip `config`, as an object which contains the following keys:
-   *
-   * | Key           | Type             | Description                                         |
-   * |---------------|------------------|-----------------------------------------------------|
-   * | position      | `<PositionType>` | sub-configuration describing the tip position       |
-   * | show          | `<ShowType>`     | sub-configuration describing how the tip is shown   |
-   * | hide          | `<HideType>`     | sub-configuration describing how the tip is hidden  |
-   * | wrapper       | `<component>`    | The component to instantiate to wrap the tip        |
-   * | wrapperProps  | `<object>`       | The React properties for the wrapper component      |
-   *
-   * `<PositionType>` is an object, which contains the following keys:
-   *
-   * | Key           | Type                   | Description                                                   |
-   * |---------------|------------------------|---------------------------------------------------------------|
-   * | my            | `<CornerType>`         | The corner of the tip to position in relation to the `at` key |
-   * | at            | `<CornerType>`         | The corner of `target` element to position the tip corner at  |
-   | target        | `<target-spec>`        | The element the tip will be positioned in relation to. Can be one of <dl><dt>false</dt><dd>the source itself (default)</dd><dt>[&lt;number&gt;, &lt;number&gt;]</dt><dd>an array of x, y coordinates</dd><dt>'mouse'</dt><dd>the mouse coordinates for the event which triggered the tip to show</dd><dt>&lt;string&gt; \| DOMElement</dt><dd>CSS selector or React ref for another DOMElement</dd></dl>   |
-  | adjust        | `<AdjustType>`         | sub-configuration describing how the tip position should be adjusted |
-  | container     | `<string> \| DOMElement` | CSS selector or React ref to the DOMElement under which tips will attached.      |
-  *
-  * `<CornerType>` is one of the following enumeration value:
-  * * top-left
-  * * top-center
-  * * top-right
-  * * center-left
-  * * center-right
-  * * bottom-left
-  * * bottom-center
-  * * bottom-right
-  *
-  * `<AdjustType>` is an object, which contains the following keys:
-  *
-  * | Key           | Type                   | Description                                                   |
-  * |---------------|------------------------|---------------------------------------------------------------|
-  | mouse         | `<mouse-spec>`         | Describes how mouse movement affects the tip placement. Can be one of <dl><dt>false</dt><dd>do not adjust to mouse move (default)</dd><dt>true</dt><dd>adjust to mouse move</dd><dt><pre>function: event =&gt; ({ x, y })</pre></dt><dd>compute the position of the tip using a function which receives mouse move event as input</dd></dl>
-  * | x             | `<number>`             | x-translation the tip (0 by default)
-  * | y             | `<number>`             | y-translation the tip (0 by default)
-  | method        | `<method-spec>`        | Decribes the method to use to optimize tip placement inside its container. Can be one of <dl><dt>none</dt><dd>no placement adjustment (default)</dd><dt>{ flip: [&lt;CornerType&gt; (, &lt;CornerType&gt;)\* ] }</dt><dd>pick the corner which maximizes overlap between the tip and its container</dd><dt>{ shift: [&lt;AxisType&gt; (, &lt;AxisType&gt;)\*]}</dt><dd>keep the tip inside its container for the specified axis</dd></dl>
-  *
-  * `<AxisType>` is one of the following enumeration value:
-  * * horizontal
-  * * vertical
-  *
-  * `<ShowType>` is an object, which contains the following keys:
-  *
-  * | Key        | Type         | Description                                                                        |
-  * |------------|--------------|------------------------------------------------------------------------------------|
-  * | delay      | `<number>`   | Delay between mouse enter event in the source and the tip display (0ms by default) |
-  *
-  * `<HideType>` is an object, which contains the following keys:
-  *
-  * | Key        | Type         | Description                                                                        |
-  * |------------|--------------|------------------------------------------------------------------------------------|
-  * | delay      | `<number>`   | Delay between mouse leave event from the source or the tip and removal of the tip (0ms by default) |
-  */
-  config: SourceConfig
+  onTipChange: PropTypes.func
 }
-
-// Read the config property from the `ConfigContext` React context
-export default props => (
-  <ConfigContext.Consumer>
-    {config => <Storage config={config} {...props} />}
-  </ConfigContext.Consumer>
-)

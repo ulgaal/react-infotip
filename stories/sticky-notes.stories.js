@@ -97,7 +97,7 @@ storiesOf('Sticky-notes', module)
                               models.find(model => model.id === id).label
                             }`}
                           </span>
-                          <br/>
+                          <br />
                           {pinned ? (
                             <span>
                               I persist if you reload page. You can unpin me

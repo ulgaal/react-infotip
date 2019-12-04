@@ -16,6 +16,7 @@ limitations under the License.
 // utils.js
 // ========
 
+import deepmerge from 'deepmerge'
 /**
  * Returns the corner position of a rect
  */
@@ -110,8 +111,7 @@ export const pixelize = obj =>
 /**
  * Merge two objects
  */
-export const mergeObjects = (...objects) =>
-  fromProps(Object.assign({}, ...objects.map(object => toProps(object))))
+export const mergeObjects = (obj1, obj2) => deepmerge(obj1 || {}, obj2 || {})
 
 /**
  * Converts a graph into map. The map keys are path to the graph node,
