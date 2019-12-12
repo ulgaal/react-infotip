@@ -47,17 +47,16 @@ class Source extends Component {
       visible: false
     }
 
-    const { storage } = props
-
     // Most computations are delegated to an `Engine`.
-    // The source will feed DOM events to the `Engine`, and subscribe
-    // to updates on position, location or visibility from the `Engine`.
+    // The source will feed DOM events to the `Engine`, and receive
+    // updates on position, location or visibility from the `Engine`.
     // A `Source` can exist either in isolation (in which case it has
-    // its own `Engine`), or within a `Storage` (in which case shares
+    // its own `Engine`), or within a `Storage` (in which case it shares
     // an `Engine` with its `Storage`).
+    const { id, config, storage } = this.props
     this.engine = storage
-      ? storage.register(this.props.id, this)
-      : new Engine(props).subscribe(this)
+      ? storage.getEngine({ id, config })
+      : new Engine({ id, config, output: this })
 
     // A `Source` renders an actual DOM element, which is observed by
     // a `ResizeObserver`, so that the engine can take the geometry of
@@ -76,18 +75,16 @@ class Source extends Component {
     )
   }
 
-  // This method is invoked by the source `Engine` when the tip location changes.
+  // This method is invoked by the source `Engine` when the tip location changes,
+  // unless the source is part of a Storage.
   onLayoutChange ({ id, my, location }) {
-    if (!this.props.storage) {
-      this.setState({ my, location })
-    }
+    this.setState({ my, location })
   }
 
-  // This method is invoked by the source `Engine` when the tip visibility changes.
+  // This method is invoked by the source `Engine` when the tip visibility changes,
+  // unless the source is part of a Storage.
   onVisibilityChange ({ id, visible }) {
-    if (!this.props.storage) {
-      this.setState({ visible })
-    }
+    this.setState({ visible })
   }
 
   componentDidMount () {
@@ -99,38 +96,22 @@ class Source extends Component {
     }
   }
 
-  componentDidUpdate (prevProps) {
-    const { config, id, storage } = this.props
-    this.updateTarget()
-    if (storage && prevProps.id && id !== prevProps.id) {
-      storage.unregister(prevProps.id, this)
-      this.engine = storage.register(this.props.id, this)
+  componentWillUnmount () {
+    const { storage, id } = this.props
+    this.observer.disconnect()
+    if (storage) {
+      storage.release(id)
     }
-    this.engine.update({ config })
   }
 
-  // The `target` key of the `config` property enables the tip to appear at a location
-  // different from the source. This method is used to determine the DOM element
-  // used to compute the tip location, unless mouse tracking is enable in which case
-  // the location is the mouse location.
-  getTarget () {
-    const {
-      config: {
-        position: {
-          target: targetConf,
-          adjust: { mouse }
-        }
-      }
-    } = this.props
-    if (!mouse) {
-      if (targetConf === false) {
-        return this.ref.current.firstChild
-      }
-      if (typeof targetConf === 'string' && targetConf !== 'mouse') {
-        return document.querySelector(targetConf)
-      }
+  componentDidUpdate (prevProps) {
+    const { id, config, storage } = this.props
+    if (storage && id !== prevProps.id) {
+      // The source belongs to a `Storage` and its id has changed
+      this.engine = storage.getEngine({ id, config })
+      storage.release(prevProps.id)
     }
-    return null
+    this.engine.update({ config })
   }
 
   // Keep the target DOM element up to date when the `target` key of the `config` property
@@ -161,13 +142,28 @@ class Source extends Component {
     }
   }
 
-  componentWillUnmount () {
-    this.observer.disconnect()
-    if (this.props.storage) {
-      this.props.storage.unregister(this.props.id, this)
-    } else {
-      this.engine.unsubscribe(this)
+  // The `target` key of the `config` property enables the tip to appear at a location
+  // different from the source. This method is used to determine the DOM element
+  // used to compute the tip location, unless mouse tracking is enable in which case
+  // the location is the mouse location.
+  getTarget () {
+    const {
+      config: {
+        position: {
+          target: targetConf,
+          adjust: { mouse }
+        }
+      }
+    } = this.props
+    if (!mouse) {
+      if (targetConf === false) {
+        return this.ref.current.firstChild
+      }
+      if (typeof targetConf === 'string' && targetConf !== 'mouse') {
+        return document.querySelector(targetConf)
+      }
     }
+    return null
   }
 
   observe (target) {

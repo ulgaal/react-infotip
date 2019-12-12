@@ -52,27 +52,15 @@ const BOTTOM = new Set([
  * and `Storage` class. It is responsible for tip timers and tip placement.
  * It is not a React component.
  * It receives DOM events from `Source` and `Storage` and transforms them into
- * higher level events:
+ * higher level events that propagate to the engine output (either
+ * a `Source` or a `Storage`):
  * * `onLayoutChange` when the location of the tip changes.
  * * `onVisibilityChange` when the visibility of the tip changes.
  */
 export default class Engine {
-  constructor ({ id, config }) {
-    this.id = id
-    this.config = config
-    this.subscribers = new Set()
-  }
-
-  // An `Engine` has subscribers (either `Source` or `Storage` or both)
-  // which send DOM events .
-  subscribe (obj) {
-    this.subscribers.add(obj)
-    return this
-  }
-
-  unsubscribe (obj) {
-    this.subscribers.delete(obj)
-    return this
+  constructor (params) {
+    // Params has the following shape: { id, config, output }
+    Object.assign(this, params)
   }
 
   // The `handleMouseOver` and `handleMouseOut` methods use
@@ -91,12 +79,10 @@ export default class Engine {
         this.showTimeoutId = setTimeout(() => {
           this.showTimeoutId = undefined
           this.visible = true
-          this.subscribers.forEach(subscriber => {
-            subscriber.onVisibilityChange({
-              id: this.id,
-              visible: this.visible,
-              config: this.config
-            })
+          this.output.onVisibilityChange({
+            id: this.id,
+            visible: this.visible,
+            config: this.config
           })
         }, delay)
         if (target === 'mouse') {
@@ -128,12 +114,10 @@ export default class Engine {
         this.hideTimeoutId = setTimeout(() => {
           this.hideTimeoutId = undefined
           this.visible = false
-          this.subscribers.forEach(subscriber => {
-            subscriber.onVisibilityChange({
-              id: this.id,
-              visible: this.visible,
-              config: this.config
-            })
+          this.output.onVisibilityChange({
+            id: this.id,
+            visible: this.visible,
+            config: this.config
           })
           delete this.geometry
         }, delay)
@@ -183,12 +167,10 @@ export default class Engine {
     if (pinned) {
       if (!this.visible) {
         this.visible = true
-        this.subscribers.forEach(subscriber => {
-          subscriber.onVisibilityChange({
-            id: this.id,
-            visible: this.visible,
-            config: this.config
-          })
+        this.output.onVisibilityChange({
+          id: this.id,
+          visible: this.visible,
+          config: this.config
         })
       }
     } else {
@@ -313,12 +295,10 @@ export default class Engine {
       }
       result.location.left -= container.left
       result.location.top -= container.top
-      this.subscribers.forEach(subscriber => {
-        subscriber.onLayoutChange({
-          id: this.id,
-          ...result,
-          config: this.config
-        })
+      this.output.onLayoutChange({
+        id: this.id,
+        ...result,
+        config: this.config
       })
     }
   }
