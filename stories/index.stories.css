@@ -33,6 +33,7 @@
   background-color: lightblue;
   border-radius: 2px 2px;
   margin: 2px 2px;
+  cursor: pointer;
 }
 
 .pin-bubble {
