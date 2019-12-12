@@ -1,3 +1,7 @@
+## Version 0.6.1 (2019/12/12)
+- Improved communication between Engine Source and Storage
+- Removed ability to use react refs in container or target definition (not supported any more since deepmerge migration)
+
 ## Version 0.6.0 (2019/12/04)
 
 - Replaced implementation of mergeObjects with dependency on [deepmerge](https://www.npmjs.com/package/deepmerge)

@@ -43,8 +43,10 @@ export default class Storage extends Component {
   constructor (props) {
     super(props)
     autobind(['handleToggle', 'handleMouseDown'], this)
-    // `engines` is a hash of `Source` `id` to `Engine` for all the `Source`
-    // in the React subtree
+    // `engines` is a hash of `Source` `id` to `Engine` references.
+    // An `Engine` reference has the form { refCount: <number>, value: <Engine> }.
+    // A `Source` in the React subtree or a pinned tip increase the refCount
+    // of the `Engine` reference. If it reaches 0, the reference is purged.
     this.engines = {}
 
     // A `Storage` keeps track of one state variable:
@@ -58,31 +60,38 @@ export default class Storage extends Component {
     }
   }
 
-  // `register` and `unregister` are invoked by the `Source`s
-  // in the subtree. These methods ensure that the `Source` and
-  // the `Storage` use the same engine
-  register (id, source) {
-    const { config } = source.props
-    let engine = this.engines[id]
-    if (!engine) {
-      engine = this.engines[id] = new Engine({ id, config })
+  // Create a new `Engine` which will be shared by `Storage` and `Source`
+  getEngine ({ id, config }) {
+    const ref = this.engines[id]
+    if (ref) {
+      ref.refCount++
+      return ref.value
     }
-    engine.subscribe(source)
-    engine.subscribe(this)
+    const engine = new Engine({
+      id,
+      config,
+      output: this
+    })
+    this.engines[id] = {
+      refCount: 1,
+      value: engine
+    }
     return engine
   }
 
-  unregister (id, source) {
-    const { tips } = this.props
-    const engine = this.engines[id]
-    if (engine) {
-      engine.unsubscribe(source)
-      if (tips.findIndex(tip => tip.id === id) === -1) {
-        // Source with no persistent tip unmounts
-        engine.unsubscribe(this)
-        delete this.engines[id]
-      }
+  release (id) {
+    const ref = this.engines[id]
+    if (!ref) {
+      throw new Error(`Invalid release ${id}`)
     }
+    ref.refCount--
+    if (ref.refCount === 0) {
+      delete this.engines[id]
+    }
+  }
+
+  deref (id) {
+    return this.engines[id].value
   }
 
   // `updateEngines` is invoked when the `tips` state variable
@@ -94,13 +103,9 @@ export default class Storage extends Component {
     if (!eqSet(ids, prevIds)) {
       // Create engines for new ids
       for (const id of diffSet(ids, prevIds)) {
-        let engine = this.engines[id]
-        if (!engine) {
-          const tip = tips.find(tip => tip.id === id)
-          const config = mergeObjects(this.context, tip.config)
-          engine = this.engines[id] = new Engine({ id, config })
-        }
-        engine.subscribe(this)
+        const tip = tips.find(tip => tip.id === id)
+        const config = mergeObjects(this.context, tip.config)
+        this.getEngine({ id, config })
       }
     }
   }
@@ -116,7 +121,7 @@ export default class Storage extends Component {
           my,
           location
         }
-        this.engines[id].pinned = true
+        this.deref(id).pinned = true
         return tips
       }, {})
     })
@@ -124,13 +129,6 @@ export default class Storage extends Component {
 
   componentDidUpdate (prevProps) {
     this.updateEngines(this.props.tips, prevProps.tips)
-  }
-
-  componentWillUnmount () {
-    // Stop receiving onLayoutChange and onVisibilityChange events.
-    Object.values(this.engines).forEach(engine => {
-      engine.unsubscribe(this)
-    })
   }
 
   // This method is invoked by `Engine` when the tip location changes.
@@ -154,14 +152,10 @@ export default class Storage extends Component {
         visible,
         config
       }
+      this.getEngine({ id, config })
     } else {
       delete tips[id]
-      const engine = this.engines[id]
-      if (engine.subscribers.size === 1) {
-        // Persistent tip closes, no associated source
-        engine.unsubscribe(this)
-        delete this.engines[id]
-      }
+      this.release(id)
     }
     this.setState({ tips })
   }
@@ -212,7 +206,7 @@ export default class Storage extends Component {
     event.preventDefault()
     event.stopPropagation()
     const tip = this.getTip(id)
-    this.engines[id].pin(!tip.pinned)
+    this.deref(id).pin(!tip.pinned)
     this.dispatchTipChange(this.updateTip(id, { pinned: !tip.pinned }))
   }
 
@@ -264,7 +258,8 @@ export default class Storage extends Component {
         </StorageContext.Provider>
         {Object.entries(tips)
           .filter(([, { visible }]) => visible)
-          .map(([id, { my, location, pinned, config: sourceConfig }]) => {
+          .map(([id, value]) => {
+            const { my, location, pinned, config: sourceConfig } = value
             const config = mergeObjects(this.context, sourceConfig)
             const { wrapper, wrapperProps, position } = config
             const container = getElement(position.container)
@@ -276,7 +271,7 @@ export default class Storage extends Component {
               // `Engine` will handle mouseover and mouseout events as well as
               // changes to the tip geometry, whereas `Storage` will handle
               // mousedown and push pin click events
-              const engine = this.engines[id]
+              const engine = this.deref(id)
               const tip = React.createElement(wrapper, {
                 ...wrapperProps,
                 my,

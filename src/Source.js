@@ -47,17 +47,16 @@ class Source extends Component {
       visible: false
     }
 
-    const { storage } = props
-
     // Most computations are delegated to an `Engine`.
-    // The source will feed DOM events to the `Engine`, and subscribe
-    // to updates on position, location or visibility from the `Engine`.
+    // The source will feed DOM events to the `Engine`, and receive
+    // updates on position, location or visibility from the `Engine`.
     // A `Source` can exist either in isolation (in which case it has
-    // its own `Engine`), or within a `Storage` (in which case shares
+    // its own `Engine`), or within a `Storage` (in which case it shares
     // an `Engine` with its `Storage`).
+    const { id, config, storage } = this.props
     this.engine = storage
-      ? storage.register(this.props.id, this)
-      : new Engine(props).subscribe(this)
+      ? storage.getEngine({ id, config })
+      : new Engine({ id, config, output: this })
 
     // A `Source` renders an actual DOM element, which is observed by
     // a `ResizeObserver`, so that the engine can take the geometry of
@@ -76,18 +75,16 @@ class Source extends Component {
     )
   }
 
-  // This method is invoked by the source `Engine` when the tip location changes.
+  // This method is invoked by the source `Engine` when the tip location changes,
+  // unless the source is part of a Storage.
   onLayoutChange ({ id, my, location }) {
-    if (!this.props.storage) {
-      this.setState({ my, location })
-    }
+    this.setState({ my, location })
   }
 
-  // This method is invoked by the source `Engine` when the tip visibility changes.
+  // This method is invoked by the source `Engine` when the tip visibility changes,
+  // unless the source is part of a Storage.
   onVisibilityChange ({ id, visible }) {
-    if (!this.props.storage) {
-      this.setState({ visible })
-    }
+    this.setState({ visible })
   }
 
   componentDidMount () {
@@ -99,14 +96,50 @@ class Source extends Component {
     }
   }
 
+  componentWillUnmount () {
+    const { storage, id } = this.props
+    this.observer.disconnect()
+    if (storage) {
+      storage.release(id)
+    }
+  }
+
   componentDidUpdate (prevProps) {
-    const { config, id, storage } = this.props
-    this.updateTarget()
-    if (storage && prevProps.id && id !== prevProps.id) {
-      storage.unregister(prevProps.id, this)
-      this.engine = storage.register(this.props.id, this)
+    const { id, config, storage } = this.props
+    if (storage && id !== prevProps.id) {
+      // The source belongs to a `Storage` and its id has changed
+      this.engine = storage.getEngine({ id, config })
+      storage.release(prevProps.id)
     }
     this.engine.update({ config })
+  }
+
+  // Keep the target DOM element up to date when the `target` key of the `config` property
+  // changes
+  updateTarget () {
+    const {
+      config: {
+        position: {
+          target: targetConf,
+          adjust: { mouse }
+        }
+      }
+    } = this.props
+    if (!mouse && Array.isArray(targetConf)) {
+      this.engine.update({
+        target: { left: targetConf[0], top: targetConf[1], width: 1, height: 1 }
+      })
+    }
+    let target = this.getTarget()
+    if (target) {
+      if (target instanceof SVGElement) {
+        // In case of an SVG `Source` the `ResizeObserver` is not triggered
+        // by changes to the target `SVGElement`, so we need to observe the englobing
+        // `SVGSVGElement` instead
+        target = target.ownerSVGElement
+      }
+      this.observe(target)
+    }
   }
 
   // The `target` key of the `config` property enables the tip to appear at a location
@@ -133,43 +166,6 @@ class Source extends Component {
     return null
   }
 
-  // Keep the target DOM element up to date when the `target` key of the `config` property
-  // changes
-  updateTarget () {
-    const {
-      config: {
-        position: {
-          target: targetConf,
-          adjust: { mouse }
-        }
-      }
-    } = this.props
-    if (!mouse && Array.isArray(targetConf)) {
-      this.engine.update({
-        source: { left: targetConf[0], top: targetConf[1], width: 1, height: 1 }
-      })
-    }
-    let target = this.getTarget()
-    if (target) {
-      if (target instanceof SVGElement) {
-        // In case of an SVG `Source` the `ResizeObserver` is not triggered
-        // by changes to the target `SVGElement`, so we need to observe the englobing
-        // `SVGSVGElement` instead
-        target = target.ownerSVGElement
-      }
-      this.observe(target)
-    }
-  }
-
-  componentWillUnmount () {
-    this.observer.disconnect()
-    if (this.props.storage) {
-      this.props.storage.unregister(this.props.id, this)
-    } else {
-      this.engine.unsubscribe(this)
-    }
-  }
-
   observe (target) {
     if (target !== this.target) {
       if (this.target) {
@@ -188,7 +184,7 @@ class Source extends Component {
   // * mousemove events.
   measure (entries) {
     this.engine.update({
-      source: this.getTarget()
+      target: this.getTarget()
     })
   }
 
@@ -300,9 +296,9 @@ Source.propTypes = {
    * |---------------|------------------------|---------------------------------------------------------------|
    * | my            | `<CornerType>`         | The corner of the tip to position in relation to the `at` key |
    * | at            | `<CornerType>`         | The corner of `target` element to position the tip corner at  |
-   | target        | `<target-spec>`        | The element the tip will be positioned in relation to. Can be one of <dl><dt>false</dt><dd>the source itself (default)</dd><dt>[&lt;number&gt;, &lt;number&gt;]</dt><dd>an array of x, y coordinates</dd><dt>'mouse'</dt><dd>the mouse coordinates for the event which triggered the tip to show</dd><dt>&lt;string&gt; \| DOMElement</dt><dd>CSS selector or React ref for another DOMElement</dd></dl>   |
+   | target        | `<target-spec>`        | The element the tip will be positioned in relation to. Can be one of <dl><dt>false</dt><dd>the source itself (default)</dd><dt>[&lt;number&gt;, &lt;number&gt;]</dt><dd>an array of x, y coordinates</dd><dt>'mouse'</dt><dd>the mouse coordinates for the event which triggered the tip to show</dd><dt>&lt;string&gt;</dt><dd>CSS selector for another DOMElement</dd></dl>   |
   | adjust        | `<AdjustType>`         | sub-configuration describing how the tip position should be adjusted |
-  | container     | `<string> \| DOMElement` | CSS selector or React ref to the DOMElement under which tips will attached.      |
+  | container     | `<string>` | CSS selector to the DOMElement under which tips will attached.      |
   *
   * `<CornerType>` is one of the following enumeration value:
   * * top-left

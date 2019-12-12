@@ -52,27 +52,15 @@ const BOTTOM = new Set([
  * and `Storage` class. It is responsible for tip timers and tip placement.
  * It is not a React component.
  * It receives DOM events from `Source` and `Storage` and transforms them into
- * higher level events:
+ * higher level events that propagate to the engine output (either
+ * a `Source` or a `Storage`):
  * * `onLayoutChange` when the location of the tip changes.
  * * `onVisibilityChange` when the visibility of the tip changes.
  */
 export default class Engine {
-  constructor ({ id, config }) {
-    this.id = id
-    this.config = config
-    this.subscribers = new Set()
-  }
-
-  // An `Engine` has subscribers (either `Source` or `Storage` or both)
-  // which send DOM events .
-  subscribe (obj) {
-    this.subscribers.add(obj)
-    return this
-  }
-
-  unsubscribe (obj) {
-    this.subscribers.delete(obj)
-    return this
+  constructor (params) {
+    // Params has the following shape: { id, config, output }
+    Object.assign(this, params)
   }
 
   // The `handleMouseOver` and `handleMouseOut` methods use
@@ -91,17 +79,15 @@ export default class Engine {
         this.showTimeoutId = setTimeout(() => {
           this.showTimeoutId = undefined
           this.visible = true
-          this.subscribers.forEach(subscriber => {
-            subscriber.onVisibilityChange({
-              id: this.id,
-              visible: this.visible,
-              config: this.config
-            })
+          this.output.onVisibilityChange({
+            id: this.id,
+            visible: this.visible,
+            config: this.config
           })
         }, delay)
         if (target === 'mouse') {
           this.update({
-            source: {
+            target: {
               left: event.clientX + window.scrollX,
               top: event.clientY + window.scrollY,
               width: 1,
@@ -128,12 +114,10 @@ export default class Engine {
         this.hideTimeoutId = setTimeout(() => {
           this.hideTimeoutId = undefined
           this.visible = false
-          this.subscribers.forEach(subscriber => {
-            subscriber.onVisibilityChange({
-              id: this.id,
-              visible: this.visible,
-              config: this.config
-            })
+          this.output.onVisibilityChange({
+            id: this.id,
+            visible: this.visible,
+            config: this.config
           })
           delete this.geometry
         }, delay)
@@ -158,7 +142,7 @@ export default class Engine {
         })
     const { x, y } = transform(event)
     this.update({
-      source: {
+      target: {
         left: x,
         top: y,
         width: 1,
@@ -183,12 +167,10 @@ export default class Engine {
     if (pinned) {
       if (!this.visible) {
         this.visible = true
-        this.subscribers.forEach(subscriber => {
-          subscriber.onVisibilityChange({
-            id: this.id,
-            visible: this.visible,
-            config: this.config
-          })
+        this.output.onVisibilityChange({
+          id: this.id,
+          visible: this.visible,
+          config: this.config
         })
       }
     } else {
@@ -202,10 +184,10 @@ export default class Engine {
   // The update method is invoked by `Source`, `Storage` or `Engine` itself
   // when a change occurs, which may have an impact on tip position.
   // There are three main possible changes:
-  // * `source` the source or its target changes.
+  // * `target` the source or its target changes.
   // * `geometry` the shape of the tip changes.
   // * `config` the config property changes.
-  update ({ source, geometry, config }) {
+  update ({ target, geometry, config }) {
     const { position } = this.config
     const updated = {}
 
@@ -215,11 +197,11 @@ export default class Engine {
     }
 
     if (
-      source &&
-      ((source.nodeType === 1 && this.source !== source) ||
-        !isEqual(source, this.source))
+      target &&
+      ((target.nodeType === 1 && this.target !== target) ||
+        !isEqual(target, this.target))
     ) {
-      updated.source = source
+      updated.target = target
     }
 
     if (config) {
@@ -239,10 +221,10 @@ export default class Engine {
   }
 
   // The layout method computes the actual tip placement, taking into account
-  // the source/target shape, the tip shape and the container shape.
+  // the target shape, the tip shape and the container shape.
   layout () {
-    const { source, geometry, container } = this
-    if (source && geometry && container) {
+    const { target, geometry, container } = this
+    if (target && geometry && container) {
       const {
         position: {
           at,
@@ -251,13 +233,13 @@ export default class Engine {
         }
       } = this.config
       const { size, corners } = geometry
-      const source_ = source.nodeType === 1 ? toRect(source) : source
-      const sourceCorner = corner(source_, at)
+      const target_ = target.nodeType === 1 ? toRect(target) : target
+      const targetCorner = corner(target_, at)
       const computeRect = my => {
         const myCorner = corners[my]
         return {
-          left: source_.left + sourceCorner.left - myCorner.left + x,
-          top: source_.top + sourceCorner.top - myCorner.top + y,
+          left: target_.left + targetCorner.left - myCorner.left + x,
+          top: target_.top + targetCorner.top - myCorner.top + y,
           ...size
         }
       }
@@ -313,12 +295,10 @@ export default class Engine {
       }
       result.location.left -= container.left
       result.location.top -= container.top
-      this.subscribers.forEach(subscriber => {
-        subscriber.onLayoutChange({
-          id: this.id,
-          ...result,
-          config: this.config
-        })
+      this.output.onLayoutChange({
+        id: this.id,
+        ...result,
+        config: this.config
       })
     }
   }

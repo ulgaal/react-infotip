@@ -1,4 +1,6 @@
-React tooltip and sticky-note library
+![npm (scoped)](https://img.shields.io/npm/v/@ulgaal/react-infotip) ![GitHub](https://img.shields.io/github/license/ulgaal/react-infotip)
+
+# React tooltip and sticky-note library
 
 - easy-to-use, one-line basic usage
 - stylable and configurable tip-wrapper components
