@@ -226,78 +226,44 @@ storiesOf('Tooltips', module)
   )
   .add(
     'Tip containers',
-    () => {
-      class Containers extends Component {
-        constructor (props) {
-          super(props)
-          this.ref = React.createRef()
-          this.state = { ref: null }
-        }
-
-        componentDidMount () {
-          this.setState({ ref: this.ref.current })
-        }
-
-        render () {
-          const { ref } = this.state
-          return (
-            <div
-              id='green-div'
-              style={{
-                backgroundColor: 'lightgreen',
-                padding: '50px 70px',
-                position: 'relative'
-              }}
-              ref={this.ref}
-            >
-              {ref ? (
-                <MergingConfigProvider
-                  value={{
-                    position: {
-                      my: 'top-center',
-                      at: 'bottom-center'
-                    }
-                  }}
-                >
-                  <span style={{ display: 'flex' }}>
-                    <Source tip='My parent is the document body'>
-                      <span className='default-rect'>
-                        My tip attaches to the default container(body)
-                      </span>
-                    </Source>
-                    <MergingConfigProvider
-                      value={{
-                        position: {
-                          container: '#green-div'
-                        }
-                      }}
-                    >
-                      <Source tip='My parent is the green div'>
-                        <span className='default-rect'>
-                          My tip attaches to a container specified with a CSS
-                          selector
-                        </span>
-                      </Source>
-                    </MergingConfigProvider>
-                    <MergingConfigProvider
-                      value={{ position: { container: ref } }}
-                    >
-                      <Source tip='My parent is also the green div'>
-                        <span className='default-rect'>
-                          My tip attaches to the container specified with a
-                          React ref
-                        </span>
-                      </Source>
-                    </MergingConfigProvider>
-                  </span>
-                </MergingConfigProvider>
-              ) : null}
-            </div>
-          )
-        }
-      }
-      return <Containers />
-    },
+    () => (
+      <div
+        id='green-div'
+        style={{
+          backgroundColor: 'lightgreen',
+          padding: '50px 70px',
+          position: 'relative'
+        }}
+      >
+        <MergingConfigProvider
+          value={{
+            position: {
+              my: 'top-center',
+              at: 'bottom-center'
+            }
+          }}
+        >
+          <Source tip='My parent is the document body'>
+            <span className='default-rect'>
+              My tip attaches to the default container(body)
+            </span>
+          </Source>
+          <MergingConfigProvider
+            value={{
+              position: {
+                container: '#green-div'
+              }
+            }}
+          >
+            <Source tip='My parent is the green div'>
+              <span className='default-rect'>
+                My tip attaches to a container specified with a CSS selector
+              </span>
+            </Source>
+          </MergingConfigProvider>
+        </MergingConfigProvider>
+      </div>
+    ),
     {
       readme: {
         content: ContainersReadme,
@@ -644,10 +610,10 @@ storiesOf('Tooltips', module)
                     borderTopRightRadius: borderRadius,
                     ...(icon
                       ? {
-                        borderTop: `1px solid ${borderColor}`,
-                        borderLeft: `1px solid ${borderColor}`,
-                        borderRight: `1px solid ${borderColor}`
-                      }
+                          borderTop: `1px solid ${borderColor}`,
+                          borderLeft: `1px solid ${borderColor}`,
+                          borderRight: `1px solid ${borderColor}`
+                        }
                       : {})
                   }}
                 >
@@ -663,10 +629,10 @@ storiesOf('Tooltips', module)
                     borderBottomRightRadius: borderRadius,
                     ...(icon
                       ? {
-                        borderBottom: `1px solid ${borderColor}`,
-                        borderLeft: `1px solid ${borderColor}`,
-                        borderRight: `1px solid ${borderColor}`
-                      }
+                          borderBottom: `1px solid ${borderColor}`,
+                          borderLeft: `1px solid ${borderColor}`,
+                          borderRight: `1px solid ${borderColor}`
+                        }
                       : {})
                   }}
                 >

@@ -60,3 +60,8 @@
 .bicolor-body {
   flex-grow: 1;
 }
+
+#green-div {
+  display: flex;
+  justify-content: space-between;
+}
