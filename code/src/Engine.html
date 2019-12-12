@@ -42,24 +42,13 @@ const BOTTOM = new Set([
 and <code>Storage</code> class. It is responsible for tip timers and tip placement.
 It is not a React component.
 It receives DOM events from <code>Source</code> and <code>Storage</code> and transforms them into
-higher level events:</p>
+higher level events that propagate to the engine output (either
+a <code>Source</code> or a <code>Storage</code>):</p>
 <ul>
 <li><code>onLayoutChange</code> when the location of the tip changes.</li>
 <li><code>onVisibilityChange</code> when the visibility of the tip changes.</li>
 </ul></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Engine</span> </span>{
-  constructor ({ id, config }) {
-    <span class="hljs-keyword">this</span>.id = id
-    <span class="hljs-keyword">this</span>.config = config
-    <span class="hljs-keyword">this</span>.subscribers = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Set</span>()
-  }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>An <code>Engine</code> has subscribers (either <code>Source</code> or <code>Storage</code> or both)
-which send DOM events .</p></div></div><div class="code"><div class="wrapper">  subscribe (obj) {
-    <span class="hljs-keyword">this</span>.subscribers.add(obj)
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>
-  }
-
-  unsubscribe (obj) {
-    <span class="hljs-keyword">this</span>.subscribers.delete(obj)
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>
+  constructor (params) {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Params has the following shape: { id, config, output }</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-built_in">Object</span>.assign(<span class="hljs-keyword">this</span>, params)
   }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The <code>handleMouseOver</code> and <code>handleMouseOut</code> methods use
 timers to determine when a tip should be made visible or hidden.</p></div></div><div class="code"><div class="wrapper">  handleMouseOver (event) {
     <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.pinned) {
@@ -75,17 +64,15 @@ timers to determine when a tip should be made visible or hidden.</p></div></div>
         <span class="hljs-keyword">this</span>.showTimeoutId = setTimeout(() =&gt; {
           <span class="hljs-keyword">this</span>.showTimeoutId = <span class="hljs-literal">undefined</span>
           <span class="hljs-keyword">this</span>.visible = <span class="hljs-literal">true</span>
-          <span class="hljs-keyword">this</span>.subscribers.forEach(subscriber =&gt; {
-            subscriber.onVisibilityChange({
-              id: <span class="hljs-keyword">this</span>.id,
-              visible: <span class="hljs-keyword">this</span>.visible,
-              config: <span class="hljs-keyword">this</span>.config
-            })
+          <span class="hljs-keyword">this</span>.output.onVisibilityChange({
+            id: <span class="hljs-keyword">this</span>.id,
+            visible: <span class="hljs-keyword">this</span>.visible,
+            config: <span class="hljs-keyword">this</span>.config
           })
         }, delay)
         <span class="hljs-keyword">if</span> (target === <span class="hljs-string">'mouse'</span>) {
           <span class="hljs-keyword">this</span>.update({
-            source: {
+            target: {
               left: event.clientX + <span class="hljs-built_in">window</span>.scrollX,
               top: event.clientY + <span class="hljs-built_in">window</span>.scrollY,
               width: <span class="hljs-number">1</span>,
@@ -112,12 +99,10 @@ timers to determine when a tip should be made visible or hidden.</p></div></div>
         <span class="hljs-keyword">this</span>.hideTimeoutId = setTimeout(() =&gt; {
           <span class="hljs-keyword">this</span>.hideTimeoutId = <span class="hljs-literal">undefined</span>
           <span class="hljs-keyword">this</span>.visible = <span class="hljs-literal">false</span>
-          <span class="hljs-keyword">this</span>.subscribers.forEach(subscriber =&gt; {
-            subscriber.onVisibilityChange({
-              id: <span class="hljs-keyword">this</span>.id,
-              visible: <span class="hljs-keyword">this</span>.visible,
-              config: <span class="hljs-keyword">this</span>.config
-            })
+          <span class="hljs-keyword">this</span>.output.onVisibilityChange({
+            id: <span class="hljs-keyword">this</span>.id,
+            visible: <span class="hljs-keyword">this</span>.visible,
+            config: <span class="hljs-keyword">this</span>.config
           })
           <span class="hljs-keyword">delete</span> <span class="hljs-keyword">this</span>.geometry
         }, delay)
@@ -139,7 +124,7 @@ when the mouse tracking config key is set.</p></div></div><div class="code"><div
         })
     <span class="hljs-keyword">const</span> { x, y } = transform(event)
     <span class="hljs-keyword">this</span>.update({
-      source: {
+      target: {
         left: x,
         top: y,
         width: <span class="hljs-number">1</span>,
@@ -161,12 +146,10 @@ when the mouse tracking config key is set.</p></div></div><div class="code"><div
     <span class="hljs-keyword">if</span> (pinned) {
       <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.visible) {
         <span class="hljs-keyword">this</span>.visible = <span class="hljs-literal">true</span>
-        <span class="hljs-keyword">this</span>.subscribers.forEach(subscriber =&gt; {
-          subscriber.onVisibilityChange({
-            id: <span class="hljs-keyword">this</span>.id,
-            visible: <span class="hljs-keyword">this</span>.visible,
-            config: <span class="hljs-keyword">this</span>.config
-          })
+        <span class="hljs-keyword">this</span>.output.onVisibilityChange({
+          id: <span class="hljs-keyword">this</span>.id,
+          visible: <span class="hljs-keyword">this</span>.visible,
+          config: <span class="hljs-keyword">this</span>.config
         })
       }
     } <span class="hljs-keyword">else</span> {
@@ -179,10 +162,10 @@ when the mouse tracking config key is set.</p></div></div><div class="code"><div
 when a change occurs, which may have an impact on tip position.
 There are three main possible changes:</p>
 <ul>
-<li><code>source</code> the source or its target changes.</li>
+<li><code>target</code> the source or its target changes.</li>
 <li><code>geometry</code> the shape of the tip changes.</li>
 <li><code>config</code> the config property changes.</li>
-</ul></div></div><div class="code"><div class="wrapper">  update ({ source, geometry, config }) {
+</ul></div></div><div class="code"><div class="wrapper">  update ({ target, geometry, config }) {
     <span class="hljs-keyword">const</span> { position } = <span class="hljs-keyword">this</span>.config
     <span class="hljs-keyword">const</span> updated = {}
 
@@ -192,11 +175,11 @@ There are three main possible changes:</p>
     }
 
     <span class="hljs-keyword">if</span> (
-      source &amp;&amp;
-      ((source.nodeType === <span class="hljs-number">1</span> &amp;&amp; <span class="hljs-keyword">this</span>.source !== source) ||
-        !isEqual(source, <span class="hljs-keyword">this</span>.source))
+      target &amp;&amp;
+      ((target.nodeType === <span class="hljs-number">1</span> &amp;&amp; <span class="hljs-keyword">this</span>.target !== target) ||
+        !isEqual(target, <span class="hljs-keyword">this</span>.target))
     ) {
-      updated.source = source
+      updated.target = target
     }
 
     <span class="hljs-keyword">if</span> (config) {
@@ -214,9 +197,9 @@ There are three main possible changes:</p>
       <span class="hljs-keyword">this</span>.layout()
     }
   }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The layout method computes the actual tip placement, taking into account
-the source/target shape, the tip shape and the container shape.</p></div></div><div class="code"><div class="wrapper">  layout () {
-    <span class="hljs-keyword">const</span> { source, geometry, container } = <span class="hljs-keyword">this</span>
-    <span class="hljs-keyword">if</span> (source &amp;&amp; geometry &amp;&amp; container) {
+the target shape, the tip shape and the container shape.</p></div></div><div class="code"><div class="wrapper">  layout () {
+    <span class="hljs-keyword">const</span> { target, geometry, container } = <span class="hljs-keyword">this</span>
+    <span class="hljs-keyword">if</span> (target &amp;&amp; geometry &amp;&amp; container) {
       <span class="hljs-keyword">const</span> {
         position: {
           at,
@@ -225,13 +208,13 @@ the source/target shape, the tip shape and the container shape.</p></div></div><
         }
       } = <span class="hljs-keyword">this</span>.config
       <span class="hljs-keyword">const</span> { size, corners } = geometry
-      <span class="hljs-keyword">const</span> source_ = source.nodeType === <span class="hljs-number">1</span> ? toRect(source) : source
-      <span class="hljs-keyword">const</span> sourceCorner = corner(source_, at)
+      <span class="hljs-keyword">const</span> target_ = target.nodeType === <span class="hljs-number">1</span> ? toRect(target) : target
+      <span class="hljs-keyword">const</span> targetCorner = corner(target_, at)
       <span class="hljs-keyword">const</span> computeRect = my =&gt; {
         <span class="hljs-keyword">const</span> myCorner = corners[my]
         <span class="hljs-keyword">return</span> {
-          left: source_.left + sourceCorner.left - myCorner.left + x,
-          top: source_.top + sourceCorner.top - myCorner.top + y,
+          left: target_.left + targetCorner.left - myCorner.left + x,
+          top: target_.top + targetCorner.top - myCorner.top + y,
           ...size
         }
       }
@@ -287,12 +270,10 @@ the source/target shape, the tip shape and the container shape.</p></div></div><
       }
       result.location.left -= container.left
       result.location.top -= container.top
-      <span class="hljs-keyword">this</span>.subscribers.forEach(subscriber =&gt; {
-        subscriber.onLayoutChange({
-          id: <span class="hljs-keyword">this</span>.id,
-          ...result,
-          config: <span class="hljs-keyword">this</span>.config
-        })
+      <span class="hljs-keyword">this</span>.output.onLayoutChange({
+        id: <span class="hljs-keyword">this</span>.id,
+        ...result,
+        config: <span class="hljs-keyword">this</span>.config
       })
     }
   }

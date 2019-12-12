@@ -32,16 +32,15 @@ to provide tips.</p></div></div><div class="code"><div class="wrapper"><span cla
         top: <span class="hljs-number">0</span>
       },
       visible: <span class="hljs-literal">false</span>
-    }
-
-    <span class="hljs-keyword">const</span> { storage } = props</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Most computations are delegated to an <code>Engine</code>.
-The source will feed DOM events to the <code>Engine</code>, and subscribe
-to updates on position, location or visibility from the <code>Engine</code>.
+    }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Most computations are delegated to an <code>Engine</code>.
+The source will feed DOM events to the <code>Engine</code>, and receive
+updates on position, location or visibility from the <code>Engine</code>.
 A <code>Source</code> can exist either in isolation (in which case it has
-its own <code>Engine</code>), or within a <code>Storage</code> (in which case shares
-an <code>Engine</code> with its <code>Storage</code>).</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-keyword">this</span>.engine = storage
-      ? storage.register(<span class="hljs-keyword">this</span>.props.id, <span class="hljs-keyword">this</span>)
-      : <span class="hljs-keyword">new</span> Engine(props).subscribe(<span class="hljs-keyword">this</span>)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Source</code> renders an actual DOM element, which is observed by
+its own <code>Engine</code>), or within a <code>Storage</code> (in which case it shares
+an <code>Engine</code> with its <code>Storage</code>).</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-keyword">const</span> { id, config, storage } = <span class="hljs-keyword">this</span>.props
+    <span class="hljs-keyword">this</span>.engine = storage
+      ? storage.getEngine({ id, config })
+      : <span class="hljs-keyword">new</span> Engine({ id, config, output: <span class="hljs-keyword">this</span> })</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Source</code> renders an actual DOM element, which is observed by
 a <code>ResizeObserver</code>, so that the engine can take the geometry of
 the source into consideration to compute tip placement.</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-keyword">this</span>.ref = React.createRef()
     <span class="hljs-keyword">this</span>.observer = <span class="hljs-keyword">new</span> ResizeObserver(<span class="hljs-keyword">this</span>.measure.bind(<span class="hljs-keyword">this</span>))
@@ -55,14 +54,12 @@ the source into consideration to compute tip placement.</p></div></div><div clas
       ],
       <span class="hljs-keyword">this</span>
     )
-  }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>This method is invoked by the source <code>Engine</code> when the tip location changes.</p></div></div><div class="code"><div class="wrapper">  onLayoutChange ({ id, my, location }) {
-    <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.props.storage) {
-      <span class="hljs-keyword">this</span>.setState({ my, location })
-    }
-  }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>This method is invoked by the source <code>Engine</code> when the tip visibility changes.</p></div></div><div class="code"><div class="wrapper">  onVisibilityChange ({ id, visible }) {
-    <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.props.storage) {
-      <span class="hljs-keyword">this</span>.setState({ visible })
-    }
+  }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>This method is invoked by the source <code>Engine</code> when the tip location changes,
+unless the source is part of a Storage.</p></div></div><div class="code"><div class="wrapper">  onLayoutChange ({ id, my, location }) {
+    <span class="hljs-keyword">this</span>.setState({ my, location })
+  }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>This method is invoked by the source <code>Engine</code> when the tip visibility changes,
+unless the source is part of a Storage.</p></div></div><div class="code"><div class="wrapper">  onVisibilityChange ({ id, visible }) {
+    <span class="hljs-keyword">this</span>.setState({ visible })
   }
 
   componentDidMount () {
@@ -72,14 +69,43 @@ the source into consideration to compute tip placement.</p></div></div><div clas
     }
   }
 
+  componentWillUnmount () {
+    <span class="hljs-keyword">const</span> { storage, id } = <span class="hljs-keyword">this</span>.props
+    <span class="hljs-keyword">this</span>.observer.disconnect()
+    <span class="hljs-keyword">if</span> (storage) {
+      storage.release(id)
+    }
+  }
+
   componentDidUpdate (prevProps) {
-    <span class="hljs-keyword">const</span> { config, id, storage } = <span class="hljs-keyword">this</span>.props
-    <span class="hljs-keyword">this</span>.updateTarget()
-    <span class="hljs-keyword">if</span> (storage &amp;&amp; prevProps.id &amp;&amp; id !== prevProps.id) {
-      storage.unregister(prevProps.id, <span class="hljs-keyword">this</span>)
-      <span class="hljs-keyword">this</span>.engine = storage.register(<span class="hljs-keyword">this</span>.props.id, <span class="hljs-keyword">this</span>)
+    <span class="hljs-keyword">const</span> { id, config, storage } = <span class="hljs-keyword">this</span>.props
+    <span class="hljs-keyword">if</span> (storage &amp;&amp; id !== prevProps.id) {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The source belongs to a <code>Storage</code> and its id has changed</p></div></div><div class="code"><div class="wrapper">      <span class="hljs-keyword">this</span>.engine = storage.getEngine({ id, config })
+      storage.release(prevProps.id)
     }
     <span class="hljs-keyword">this</span>.engine.update({ config })
+  }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Keep the target DOM element up to date when the <code>target</code> key of the <code>config</code> property
+changes</p></div></div><div class="code"><div class="wrapper">  updateTarget () {
+    <span class="hljs-keyword">const</span> {
+      config: {
+        position: {
+          target: targetConf,
+          adjust: { mouse }
+        }
+      }
+    } = <span class="hljs-keyword">this</span>.props
+    <span class="hljs-keyword">if</span> (!mouse &amp;&amp; <span class="hljs-built_in">Array</span>.isArray(targetConf)) {
+      <span class="hljs-keyword">this</span>.engine.update({
+        target: { left: targetConf[<span class="hljs-number">0</span>], top: targetConf[<span class="hljs-number">1</span>], width: <span class="hljs-number">1</span>, height: <span class="hljs-number">1</span> }
+      })
+    }
+    <span class="hljs-keyword">let</span> target = <span class="hljs-keyword">this</span>.getTarget()
+    <span class="hljs-keyword">if</span> (target) {
+      <span class="hljs-keyword">if</span> (target <span class="hljs-keyword">instanceof</span> SVGElement) {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>In case of an SVG <code>Source</code> the <code>ResizeObserver</code> is not triggered
+by changes to the target <code>SVGElement</code>, so we need to observe the englobing
+<code>SVGSVGElement</code> instead</p></div></div><div class="code"><div class="wrapper">        target = target.ownerSVGElement
+      }
+      <span class="hljs-keyword">this</span>.observe(target)
+    }
   }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The <code>target</code> key of the <code>config</code> property enables the tip to appear at a location
 different from the source. This method is used to determine the DOM element
 used to compute the tip location, unless mouse tracking is enable in which case
@@ -101,38 +127,6 @@ the location is the mouse location.</p></div></div><div class="code"><div class=
       }
     }
     <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>
-  }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Keep the target DOM element up to date when the <code>target</code> key of the <code>config</code> property
-changes</p></div></div><div class="code"><div class="wrapper">  updateTarget () {
-    <span class="hljs-keyword">const</span> {
-      config: {
-        position: {
-          target: targetConf,
-          adjust: { mouse }
-        }
-      }
-    } = <span class="hljs-keyword">this</span>.props
-    <span class="hljs-keyword">if</span> (!mouse &amp;&amp; <span class="hljs-built_in">Array</span>.isArray(targetConf)) {
-      <span class="hljs-keyword">this</span>.engine.update({
-        source: { left: targetConf[<span class="hljs-number">0</span>], top: targetConf[<span class="hljs-number">1</span>], width: <span class="hljs-number">1</span>, height: <span class="hljs-number">1</span> }
-      })
-    }
-    <span class="hljs-keyword">let</span> target = <span class="hljs-keyword">this</span>.getTarget()
-    <span class="hljs-keyword">if</span> (target) {
-      <span class="hljs-keyword">if</span> (target <span class="hljs-keyword">instanceof</span> SVGElement) {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>In case of an SVG <code>Source</code> the <code>ResizeObserver</code> is not triggered
-by changes to the target <code>SVGElement</code>, so we need to observe the englobing
-<code>SVGSVGElement</code> instead</p></div></div><div class="code"><div class="wrapper">        target = target.ownerSVGElement
-      }
-      <span class="hljs-keyword">this</span>.observe(target)
-    }
-  }
-
-  componentWillUnmount () {
-    <span class="hljs-keyword">this</span>.observer.disconnect()
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.props.storage) {
-      <span class="hljs-keyword">this</span>.props.storage.unregister(<span class="hljs-keyword">this</span>.props.id, <span class="hljs-keyword">this</span>)
-    } <span class="hljs-keyword">else</span> {
-      <span class="hljs-keyword">this</span>.engine.unsubscribe(<span class="hljs-keyword">this</span>)
-    }
   }
 
   observe (target) {
@@ -152,7 +146,7 @@ to avoid code duplication between <code>Source</code> and <code>Storage</code></
 <li>mousemove events.</li>
 </ul></div></div><div class="code"><div class="wrapper">  measure (entries) {
     <span class="hljs-keyword">this</span>.engine.update({
-      source: <span class="hljs-keyword">this</span>.getTarget()
+      target: <span class="hljs-keyword">this</span>.getTarget()
     })
   }
 
@@ -285,8 +279,7 @@ Source.propTypes = {</span></div></div></div><div class="segment"><div class="co
 <tr>
 <td>target</td>
 <td><code>&lt;target-spec&gt;</code></td>
-<td>The element the tip will be positioned in relation to. Can be one of <dl><dt>false</dt><dd>the source itself (default)</dd><dt>[&lt;number&gt;, &lt;number&gt;]</dt><dd>an array of x, y coordinates</dd><dt>&#39;mouse&#39;</dt><dd>the mouse coordinates for the event which triggered the tip to show</dd><dt>&lt;string&gt; \</td>
-<td>DOMElement</dt><dd>CSS selector or React ref for another DOMElement</dd></dl></td>
+<td>The element the tip will be positioned in relation to. Can be one of <dl><dt>false</dt><dd>the source itself (default)</dd><dt>[&lt;number&gt;, &lt;number&gt;]</dt><dd>an array of x, y coordinates</dd><dt>&#39;mouse&#39;</dt><dd>the mouse coordinates for the event which triggered the tip to show</dd><dt>&lt;string&gt;</dt><dd>CSS selector for another DOMElement</dd></dl></td>
 </tr>
 <tr>
 <td>adjust</td>
@@ -295,9 +288,8 @@ Source.propTypes = {</span></div></div></div><div class="segment"><div class="co
 </tr>
 <tr>
 <td>container</td>
-<td>`<string> \</td>
-<td>DOMElement`</td>
-<td>CSS selector or React ref to the DOMElement under which tips will attached.</td>
+<td><code>&lt;string&gt;</code></td>
+<td>CSS selector to the DOMElement under which tips will attached.</td>
 </tr>
 </tbody>
 </table>
