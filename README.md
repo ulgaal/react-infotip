@@ -1,4 +1,4 @@
-![npm (scoped)](https://img.shields.io/npm/v/@ulgaal/react-infotip) ![GitHub](https://img.shields.io/github/license/ulgaal/react-infotip)
+[![npm (scoped)](https://img.shields.io/npm/v/@ulgaal/react-infotip)](https://www.npmjs.com/package/@ulgaal/react-infotip) [![GitHub](https://img.shields.io/github/license/ulgaal/react-infotip)](https://github.com/ulgaal/react-infotip/blob/master/LICENSE)
 
 # React tooltip and sticky-note library
 
