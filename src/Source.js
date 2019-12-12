@@ -146,7 +146,7 @@ class Source extends Component {
     } = this.props
     if (!mouse && Array.isArray(targetConf)) {
       this.engine.update({
-        source: { left: targetConf[0], top: targetConf[1], width: 1, height: 1 }
+        target: { left: targetConf[0], top: targetConf[1], width: 1, height: 1 }
       })
     }
     let target = this.getTarget()
@@ -188,7 +188,7 @@ class Source extends Component {
   // * mousemove events.
   measure (entries) {
     this.engine.update({
-      source: this.getTarget()
+      target: this.getTarget()
     })
   }
 

@@ -101,7 +101,7 @@ export default class Engine {
         }, delay)
         if (target === 'mouse') {
           this.update({
-            source: {
+            target: {
               left: event.clientX + window.scrollX,
               top: event.clientY + window.scrollY,
               width: 1,
@@ -158,7 +158,7 @@ export default class Engine {
         })
     const { x, y } = transform(event)
     this.update({
-      source: {
+      target: {
         left: x,
         top: y,
         width: 1,
@@ -202,10 +202,10 @@ export default class Engine {
   // The update method is invoked by `Source`, `Storage` or `Engine` itself
   // when a change occurs, which may have an impact on tip position.
   // There are three main possible changes:
-  // * `source` the source or its target changes.
+  // * `target` the source or its target changes.
   // * `geometry` the shape of the tip changes.
   // * `config` the config property changes.
-  update ({ source, geometry, config }) {
+  update ({ target, geometry, config }) {
     const { position } = this.config
     const updated = {}
 
@@ -215,11 +215,11 @@ export default class Engine {
     }
 
     if (
-      source &&
-      ((source.nodeType === 1 && this.source !== source) ||
-        !isEqual(source, this.source))
+      target &&
+      ((target.nodeType === 1 && this.target !== target) ||
+        !isEqual(target, this.target))
     ) {
-      updated.source = source
+      updated.target = target
     }
 
     if (config) {
@@ -239,10 +239,10 @@ export default class Engine {
   }
 
   // The layout method computes the actual tip placement, taking into account
-  // the source/target shape, the tip shape and the container shape.
+  // the target shape, the tip shape and the container shape.
   layout () {
-    const { source, geometry, container } = this
-    if (source && geometry && container) {
+    const { target, geometry, container } = this
+    if (target && geometry && container) {
       const {
         position: {
           at,
@@ -251,13 +251,13 @@ export default class Engine {
         }
       } = this.config
       const { size, corners } = geometry
-      const source_ = source.nodeType === 1 ? toRect(source) : source
-      const sourceCorner = corner(source_, at)
+      const target_ = target.nodeType === 1 ? toRect(target) : target
+      const targetCorner = corner(target_, at)
       const computeRect = my => {
         const myCorner = corners[my]
         return {
-          left: source_.left + sourceCorner.left - myCorner.left + x,
-          top: source_.top + sourceCorner.top - myCorner.top + y,
+          left: target_.left + targetCorner.left - myCorner.left + x,
+          top: target_.top + targetCorner.top - myCorner.top + y,
           ...size
         }
       }
