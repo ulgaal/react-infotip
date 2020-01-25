@@ -8,6 +8,10 @@ import { pixelize } from '../utils'
  * on the `Balloon`
  */
 export const BalloonTail = props => {
+  // console.log('BalloonTail', props)
+  if (!props.metrics) {
+    return null
+  }
   const {
     my,
     metrics: {

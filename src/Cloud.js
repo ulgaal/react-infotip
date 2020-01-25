@@ -15,14 +15,13 @@ limitations under the License.
 */
 // Cloud
 // =====
-import React, { Component } from 'react'
+import React, { useRef, useState, useCallback, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { CornerType } from './prop-types'
-import { pixelize } from './utils'
 import isEqual from 'lodash.isequal'
-import ResizeObserver from 'resize-observer-polyfill'
 import { styles } from './styles'
 import { CloudShape } from './svg/CloudShape'
+import useResizeObserver from './useResizeObserver'
 
 /**
  * A `Cloud` component wraps another React component in
@@ -42,219 +41,98 @@ import { CloudShape } from './svg/CloudShape'
  * </div>
  * ```
  */
-export default class Cloud extends Component {
-  constructor (props) {
-    super(props)
+const Cloud = props => {
+  // console.log('Cloud', props)
+  const {
+    children,
+    my,
+    tail,
+    folds,
+    style,
+    className,
+    onGeometryChange
+  } = props
 
-    // A ResizeObserver is tied to the content `<span>` of the
-    // `Cloud` to measure it precisely.
-    this.ref = React.createRef()
-    this.observer = new ResizeObserver(this.measure.bind(this))
+  // A ResizeObserver is tied to the content `<span>` of the
+  // `Cloud` to measure it precisely.
+  const ref = useRef(null)
 
-    // A `Cloud` keeps track of a `metrics` state variable
-    // which contains info extracted by processing the CSS style of
-    // the `Cloud` and info extracted by measuring its content `<span>`.
-    this.state = {
-      metrics: {
-        size: {
-          width: 0,
-          height: 0
-        },
-        innerSize: {
-          width: 0,
-          height: 0
-        },
-        corners: {
-          'top-left': {
-            left: 0,
-            top: 0
-          },
-          'top-center': {
-            left: 0,
-            top: 0
-          },
-          'top-right': {
-            left: 0,
-            top: 0
-          },
-          'center-left': {
-            left: 0,
-            top: 0
-          },
-          'center-right': {
-            left: 0,
-            top: 0
-          },
-          'bottom-left': {
-            left: 0,
-            top: 0
-          },
-          'bottom-center': {
-            left: 0,
-            top: 0
-          },
-          'bottom-right': {
-            left: 0,
-            top: 0
-          }
-        },
-        tail: {
-          width: 25,
-          height: 25
-        },
-        folds: props.folds,
-        delta: 0
-      }
+  // A `Cloud` keeps track of a `metrics` state variable
+  // which contains info extracted by processing the CSS style of
+  // the `Cloud` and info extracted by measuring its content `<span>`.
+  const [metrics, setMetrics] = useState(null)
+
+  const [innerSize, setInnerSize] = useState(null)
+  const measure = useCallback(entry => {
+    // Retrieve the dimensions of the content `<span>`
+    // from the `ResizeObserver`
+    const boundingClientRect = entry.target.getBoundingClientRect()
+    const innerSize = {
+      width: boundingClientRect.width,
+      height: boundingClientRect.height
     }
-  }
+    setInnerSize(innerSize)
+  }, [])
+  useResizeObserver(ref, measure)
 
-  componentDidMount () {
-    this.observe(this.ref.current)
-  }
-
-  componentDidUpdate (prevProps) {
-    this.observe(this.ref.current)
-    if (
-      !isEqual(this.props.tail, prevProps.tail) ||
-      !isEqual(this.props.style, prevProps.style) ||
-      this.props.folds !== prevProps.folds
-    ) {
-      this.measure([{ target: this.ref.current }])
-    }
-  }
-
-  componentWillUnmount () {
-    this.observer.disconnect()
-  }
-
-  observe (target) {
-    if (target !== this.target) {
-      if (this.target) {
-        this.observer.unobserve(this.target)
-      }
-      this.observer.observe(target)
-      this.target = target
-    }
-  }
-
-  measure (entries) {
-    const { tail, folds } = this.props
-    for (const { target } of entries) {
-      // Retrieve the dimensions of the content `<span>`
-      // from the `ResizeObserver`
-      const boundingClientRect = target.getBoundingClientRect()
-      const innerSize = {
-        width: boundingClientRect.width,
-        height: boundingClientRect.height
-      }
-
-      const length = 2 * (innerSize.width + innerSize.height)
-      const delta = (0.5 * length) / folds
-
-      const size = {
-        width: innerSize.width + delta,
-        height: innerSize.height + delta
-      }
-      const metrics = {
-        size,
-        innerSize,
-        corners: {
-          // Compute the coordinates of the tail tip for
-          // all possible tail configurations, in local coordinates.
-          // These coordinates must be passed to the `Engine` so that
-          // precise tip placement can be computed.
-          'top-left': {
-            left: -tail.width,
-            top: -tail.height
-          },
-          'top-center': {
-            left: 0.5 * size.width,
-            top: -tail.height
-          },
-          'top-right': {
-            left: size.width + tail.width,
-            top: -tail.height
-          },
-          'center-left': {
-            left: -tail.width,
-            top: 0.5 * size.height
-          },
-          'center-right': {
-            left: size.width + tail.width,
-            top: 0.5 * size.height
-          },
-          'bottom-left': {
-            left: -tail.width,
-            top: size.height + tail.height
-          },
-          'bottom-center': {
-            left: 0.5 * size.width,
-            top: size.height + tail.height
-          },
-          'bottom-right': {
-            left: size.width + tail.width,
-            top: size.height + tail.height
-          }
-        },
-        tail,
-        folds,
-        delta
-      }
-      if (!isEqual(metrics, this.state.metrics)) {
-        const { onGeometryChange } = this.props
-        this.setState({
-          metrics
-        })
+  // Update the metrics if tail, fold or innerSize change
+  useEffect(() => {
+    if (innerSize) {
+      const newMetrics = computeMetrics(tail, folds, innerSize)
+      if (!isEqual(newMetrics, metrics)) {
+        setMetrics(newMetrics)
         if (typeof onGeometryChange === 'function') {
-          const { corners, size } = metrics
+          const { corners, size } = newMetrics
           onGeometryChange({ corners, size })
         }
       }
     }
-  }
+  }, [tail, folds, innerSize])
 
-  render () {
-    const { children, my, style, className } = this.props
-    const { metrics } = this.state
+  let containerStyle
+  let contentStyle
+  if (metrics) {
     const {
       size: { width, height },
       delta
     } = metrics
-    return (
-      <div
-        className='rit-cloud'
-        style={{
-          visibility: width === 0 && height === 0 ? 'hidden' : 'visible',
-          position: 'relative',
-          ...pixelize({
-            width,
-            height
-          })
-        }}
-      >
-        <CloudShape
-          my={my}
-          metrics={metrics}
-          style={{ ...(className ? {} : style) }}
-          className={className}
-        />
-        <span
-          ref={this.ref}
-          style={{
-            display: 'inline-block',
-            whiteSpace: 'nowrap',
-            position: 'absolute',
-            left: 0.5 * delta,
-            top: 0.5 * delta,
-            color: style.color,
-            padding: style.padding
-          }}
-        >
-          {children}
-        </span>
-      </div>
-    )
+    containerStyle = {
+      visibility: 'visible',
+      width: `${width}px`,
+      height: `${height}px`
+    }
+    contentStyle = {
+      display: 'inline-block',
+      whiteSpace: 'nowrap',
+      position: 'absolute',
+      left: 0.5 * delta,
+      top: 0.5 * delta,
+      color: style.color,
+      padding: style.padding
+    }
+  } else {
+    containerStyle = {
+      visibility: 'hidden'
+    }
+    contentStyle = {
+      display: 'inline-block',
+      padding: style.padding
+    }
   }
+  const shapeStyle = className ? {} : style
+  return (
+    <div className='rit-cloud' style={containerStyle}>
+      <CloudShape
+        my={my}
+        metrics={metrics}
+        style={shapeStyle}
+        className={className}
+      />
+      <span ref={ref} style={contentStyle}>
+        {children}
+      </span>
+    </div>
+  )
 }
 
 Cloud.propTypes = {
@@ -323,3 +201,60 @@ Cloud.defaultProps = {
   onGeometryChange: null,
   style: styles.defaultStyle
 }
+
+const computeMetrics = (tail, folds, innerSize) => {
+  const length = 2 * (innerSize.width + innerSize.height)
+  const delta = (0.5 * length) / folds
+
+  const size = {
+    width: innerSize.width + delta,
+    height: innerSize.height + delta
+  }
+  return {
+    size,
+    innerSize,
+    corners: {
+      // Compute the coordinates of the tail tip for
+      // all possible tail configurations, in local coordinates.
+      // These coordinates must be passed to the `Engine` so that
+      // precise tip placement can be computed.
+      'top-left': {
+        left: -tail.width,
+        top: -tail.height
+      },
+      'top-center': {
+        left: 0.5 * size.width,
+        top: -tail.height
+      },
+      'top-right': {
+        left: size.width + tail.width,
+        top: -tail.height
+      },
+      'center-left': {
+        left: -tail.width,
+        top: 0.5 * size.height
+      },
+      'center-right': {
+        left: size.width + tail.width,
+        top: 0.5 * size.height
+      },
+      'bottom-left': {
+        left: -tail.width,
+        top: size.height + tail.height
+      },
+      'bottom-center': {
+        left: 0.5 * size.width,
+        top: size.height + tail.height
+      },
+      'bottom-right': {
+        left: size.width + tail.width,
+        top: size.height + tail.height
+      }
+    },
+    tail,
+    folds,
+    delta
+  }
+}
+
+export default Cloud
