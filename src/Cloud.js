@@ -18,18 +18,11 @@ limitations under the License.
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { CornerType } from './prop-types'
-import { pixelize, seq } from './utils'
+import { pixelize } from './utils'
 import isEqual from 'lodash.isequal'
 import ResizeObserver from 'resize-observer-polyfill'
 import { styles } from './styles'
-import CloudShape from './svg/CloudShape'
-
-let shapeid = 0
-const randomCoefs = count => ({
-  l: [...seq(0, count)].map(() => Math.random()),
-  f1: [...seq(0, count)].map(() => Math.random()),
-  f3: [...seq(0, count)].map(() => Math.random())
-})
+import { CloudShape } from './svg/CloudShape'
 
 /**
  * A `Cloud` component wraps another React component in
@@ -111,13 +104,7 @@ export default class Cloud extends Component {
         },
         folds: props.folds,
         delta: 0
-      },
-      // Generate a set of random coefficients which
-      // determine the cloud shape
-      coefs: randomCoefs(props.folds),
-      // Because SVG `<defs>` elements are used internally,
-      // generate a new id to uniquely identify that set of `<defs>`.
-      shapeid: shapeid++
+      }
     }
   }
 
@@ -216,9 +203,7 @@ export default class Cloud extends Component {
       if (!isEqual(metrics, this.state.metrics)) {
         const { onGeometryChange } = this.props
         this.setState({
-          metrics,
-          coefs: randomCoefs(folds),
-          shapeid: shapeid++
+          metrics
         })
         if (typeof onGeometryChange === 'function') {
           const { corners, size } = metrics
@@ -230,7 +215,7 @@ export default class Cloud extends Component {
 
   render () {
     const { children, my, style, className } = this.props
-    const { metrics, coefs, shapeid } = this.state
+    const { metrics } = this.state
     const {
       size: { width, height },
       delta
@@ -250,8 +235,6 @@ export default class Cloud extends Component {
         <CloudShape
           my={my}
           metrics={metrics}
-          coefs={coefs}
-          shapeid={shapeid}
           style={{ ...(className ? {} : style) }}
           className={className}
         />

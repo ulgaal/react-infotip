@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { parseBorder, parseBoxShadow } from '../css'
 import { seq } from '../utils'
+import { useId } from '../useId'
 
 // Define a few 2D-vector helper functions
 const add = (p1, p2) => ({
@@ -19,19 +20,43 @@ const mid = (p1, p2) => scale(add(p1, p2), 0.5)
 const norm2 = p => p.x * p.x + p.y * p.y
 const norm = p => Math.sqrt(norm2(p))
 
+const randomCoefs = folds => ({
+  l: [...seq(0, folds)].map(() => Math.random()),
+  f1: [...seq(0, folds)].map(() => Math.random()),
+  f3: [...seq(0, folds)].map(() => Math.random())
+})
+
 /**
  * `CloudShape` is an internal SVG component used to display the outline
  * of the `Cloud` component
  */
 export const CloudShape = props => {
+  // console.log('CloudShape', props)
+  if (!props.metrics) {
+    return null
+  }
+
   const {
     my,
     metrics: { innerSize, size, tail, folds },
-    style,
-    coefs,
-    shapeid
+    style
   } = props
+
+  // Generate a set of random coefficients dependent on
+  // the number of folds
+  const coefsRef = useRef(null)
+  const foldsRef = useRef(null)
+  if (folds !== foldsRef.current) {
+    coefsRef.current = randomCoefs(folds)
+    foldsRef.current = folds
+  }
+  const coefs = coefsRef.current
+
+  // Because SVG `<defs>` elements are used internally,
+  // generate a new id to uniquely identify that set of `<defs>`.
+  const shapeid = useId()
   const id = `cloud_${shapeid}`
+
   const center = {
     x: innerSize.width / 2,
     y: innerSize.height / 2
