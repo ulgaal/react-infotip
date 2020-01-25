@@ -16,13 +16,15 @@ export const BalloonTail = props => {
     my,
     metrics: {
       size,
+      tail: { width: aw, height: ah }
+    },
+    style: {
       margin,
       borderWidth,
       borderColor,
       backgroundColor,
       borderRadius,
-      borderStyle,
-      tail: { width: aw, height: ah }
+      borderStyle
     }
   } = props
   const dash = {}
@@ -120,5 +122,16 @@ export const BalloonTail = props => {
 
 BalloonTail.propTypes = {
   my: CornerType,
-  metrics: PropTypes.object
+  metrics: PropTypes.object,
+  style: PropTypes.object
 }
+
+export const areEqual = (prev, next) => {
+  return (
+    prev.metrics === next.metrics &&
+    prev.my === next.my &&
+    prev.Style === next.style
+  )
+}
+
+export default React.memo(BalloonTail, areEqual)

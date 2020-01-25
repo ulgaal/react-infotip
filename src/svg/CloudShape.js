@@ -38,8 +38,7 @@ export const CloudShape = props => {
 
   const {
     my,
-    metrics: { innerSize, size, tail, folds },
-    style
+    metrics: { innerSize, size, tail, folds, style = {}, className }
   } = props
 
   // Generate a set of random coefficients dependent on
@@ -211,7 +210,18 @@ export const CloudShape = props => {
       {shadow.color ? (
         <use href={`#${id}`} filter='url(#shadow)' fill={shadow.color} />
       ) : null}
-      <use href={`#${id}`} fill={backgroundColor} />
+      <use
+        href={`#${id}`}
+        fill={backgroundColor}
+        style={style}
+        className={className}
+      />
     </svg>
   )
 }
+
+export const areEqual = (prev, next) => {
+  return prev.metrics === next.metrics && prev.my === next.my
+}
+
+export default React.memo(CloudShape, areEqual)

@@ -20,7 +20,7 @@ import PropTypes from 'prop-types'
 import { CornerType } from './prop-types'
 import isEqual from 'lodash.isequal'
 import { styles } from './styles'
-import { CloudShape } from './svg/CloudShape'
+import CloudShape from './svg/CloudShape'
 import useResizeObserver from './useResizeObserver'
 
 /**
@@ -78,7 +78,13 @@ const Cloud = props => {
   // Update the metrics if tail, fold or innerSize change
   useEffect(() => {
     if (innerSize) {
-      const newMetrics = computeMetrics(tail, folds, innerSize)
+      const newMetrics = computeMetrics({
+        tail,
+        folds,
+        innerSize,
+        style,
+        className
+      })
       if (!isEqual(newMetrics, metrics)) {
         setMetrics(newMetrics)
         if (typeof onGeometryChange === 'function') {
@@ -87,7 +93,7 @@ const Cloud = props => {
         }
       }
     }
-  }, [tail, folds, innerSize])
+  }, [tail, folds, innerSize, style, className])
 
   let containerStyle
   let contentStyle
@@ -119,15 +125,9 @@ const Cloud = props => {
       padding: style.padding
     }
   }
-  const shapeStyle = className ? {} : style
   return (
     <div className='rit-cloud' style={containerStyle}>
-      <CloudShape
-        my={my}
-        metrics={metrics}
-        style={shapeStyle}
-        className={className}
-      />
+      <CloudShape my={my} metrics={metrics} />
       <span ref={ref} style={contentStyle}>
         {children}
       </span>
@@ -202,7 +202,7 @@ Cloud.defaultProps = {
   style: styles.defaultStyle
 }
 
-const computeMetrics = (tail, folds, innerSize) => {
+const computeMetrics = ({ tail, folds, innerSize, style, className }) => {
   const length = 2 * (innerSize.width + innerSize.height)
   const delta = (0.5 * length) / folds
 
@@ -253,7 +253,9 @@ const computeMetrics = (tail, folds, innerSize) => {
     },
     tail,
     folds,
-    delta
+    delta,
+    style,
+    className
   }
 }
 

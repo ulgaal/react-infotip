@@ -20,8 +20,9 @@ import PropTypes from 'prop-types'
 import { CornerType } from './prop-types'
 import isEqual from 'lodash.isequal'
 import { styles } from './styles'
-import { BalloonTail } from './svg/BalloonTail'
+import BalloonTail from './svg/BalloonTail'
 import useResizeObserver from './useResizeObserver'
+import useComputedStyle from './useComputedStyle'
 
 /**
  * A `Balloon` component wraps another React component in
@@ -41,7 +42,7 @@ import useResizeObserver from './useResizeObserver'
  * ```
  */
 const Balloon = props => {
-  const { children, my, tail, className, onGeometryChange } = props
+  const { children, my, tail, style, className, onGeometryChange } = props
 
   // A ResizeObserver is tied to the bubble `<span>` of the
   // `Balloon` to measure it precisely.
@@ -52,36 +53,25 @@ const Balloon = props => {
   // the `Balloon` and info extracted by measuring its bubble `<span>`.
   const [metrics, setMetrics] = useState(null)
 
-  const [nodeProps, setNodeProps] = useState(null)
+  // Extract relevant style props from the DOM
+  const computedStyle = useComputedStyle(style, className)
+  console.log('computedStyle', computedStyle)
+
+  const [size, setSize] = useState(null)
   const measure = useCallback(entry => {
     const { target } = entry
     const boundingClientRect = target.getBoundingClientRect()
-    const styles = window.getComputedStyle(target)
-
-    setNodeProps({
-      size: {
-        width: boundingClientRect.width,
-        height: boundingClientRect.height
-      },
-      margin: {
-        top: parseInt(styles.marginTop, 10),
-        right: parseInt(styles.marginRight, 10),
-        bottom: parseInt(styles.marginBottom, 10),
-        left: parseInt(styles.marginLeft, 10)
-      },
-      borderStyle: styles.borderTopStyle,
-      borderColor: styles.borderTopColor,
-      backgroundColor: styles.backgroundColor,
-      borderWidth: Math.round(parseFloat(styles.borderTopWidth)),
-      borderRadius: Math.round(parseFloat(styles.borderTopLeftRadius))
+    setSize({
+      width: boundingClientRect.width,
+      height: boundingClientRect.height
     })
   }, [])
   useResizeObserver(ref, measure)
 
   // Update the metrics if tail or size change
   useEffect(() => {
-    if (nodeProps) {
-      const newMetrics = computeMetrics(tail, nodeProps)
+    if (size) {
+      const newMetrics = computeMetrics(tail, computedStyle, size)
       if (!isEqual(newMetrics, metrics)) {
         setMetrics(newMetrics)
         if (typeof onGeometryChange === 'function') {
@@ -90,11 +80,12 @@ const Balloon = props => {
         }
       }
     }
-  }, [tail, nodeProps])
+  }, [tail, computedStyle, size])
 
   let containerStyle
   if (metrics) {
-    const { size, margin } = metrics
+    const { size } = metrics
+    const { margin } = computedStyle
     containerStyle = {
       display: 'inline-block',
       position: 'relative',
@@ -121,7 +112,7 @@ const Balloon = props => {
       >
         {children}
       </span>
-      <BalloonTail my={my} metrics={metrics} />
+      <BalloonTail my={my} metrics={metrics} style={computedStyle} />
     </span>
   )
 }
@@ -189,27 +180,13 @@ Balloon.defaultProps = {
   style: styles.defaultStyle
 }
 
-const computeMetrics = (tail, nodeProps) => {
-  const {
-    size,
-    margin,
-    borderWidth,
-    borderRadius,
-    borderStyle,
-    borderColor,
-    backgroundColor
-  } = nodeProps
+const computeMetrics = (tail, style, size) => {
+  const { margin, borderWidth, borderRadius } = style
   const { width: aw, height: ah } = tail
 
   // Extact CSS value from the computed CSS style
   return {
     size,
-    margin,
-    borderWidth,
-    borderRadius,
-    borderStyle,
-    borderColor,
-    backgroundColor,
     // Compute the coordinates of the tail tip for
     // all possible tail configurations, in local coordinates.
     // These coordinates must be passed to the `Engine` so that
