@@ -34,12 +34,10 @@ export const defaultConfig = {
     container: null
   },
   show: {
-    delay: 0,
-    onShow: undefined
+    delay: 0
   },
   hide: {
-    delay: 0,
-    onHide: undefined
+    delay: 0
   },
   wrapper: Balloon,
   wrapperProps: {}
