@@ -177,7 +177,11 @@ Balloon.propTypes = {
   /**
    * A CSS class specification to use to render the ballon (if used, will replace `style`)
    */
-  className: PropTypes.string
+  className: PropTypes.string,
+  /**
+   * `true` if the balloon is pinned to the screen
+   */
+  pinned: PropTypes.bool
 }
 
 Balloon.defaultProps = {
@@ -241,7 +245,8 @@ const areEqual = (prev, next) => {
     prev.my === next.my &&
     prev.tail === next.tail &&
     prev.style === next.style &&
-    prev.className === next.className
+    prev.className === next.className &&
+    prev.pinned === next.pinned
   )
 }
 

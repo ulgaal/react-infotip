@@ -200,7 +200,11 @@ Cloud.propTypes = {
    * | height  | `<number>` | height of the wrapper. |
    *
    */
-  onGeometryChange: PropTypes.func
+  onGeometryChange: PropTypes.func,
+  /**
+   * `true` if the balloon is pinned to the screen
+   */
+  pinned: PropTypes.bool
 }
 
 Cloud.defaultProps = {
@@ -277,7 +281,8 @@ const areEqual = (prev, next) => {
     prev.tail === next.tail &&
     prev.folds === next.folds &&
     prev.style === next.style &&
-    prev.className === next.className
+    prev.className === next.className &&
+    prev.pinned === next.pinned
   )
 }
 

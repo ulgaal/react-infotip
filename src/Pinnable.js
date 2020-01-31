@@ -26,6 +26,7 @@ import PropTypes from 'prop-types'
  * provides the ability to pin down a tip and to drag it around.
  */
 const Pinnable = props => {
+  // console.log('Pinnable', props)
   const {
     pinned,
     wrapper: Wrapper = Balloon,
@@ -35,7 +36,7 @@ const Pinnable = props => {
     ...rest
   } = props
   return (
-    <Wrapper {...rest}>
+    <Wrapper pinned={pinned} {...rest}>
       <div className='pinnable' onMouseDown={onMouseDown}>
         <Pin pinned={pinned} onClick={onToggle} />
         {children}
