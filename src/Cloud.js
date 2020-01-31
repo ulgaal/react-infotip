@@ -62,7 +62,6 @@ const Cloud = props => {
   // the `Cloud` and info extracted by measuring its content `<span>`.
   const [metrics, setMetrics] = useState(null)
 
-  const [innerSize, setInnerSize] = useState(null)
   const measure = useCallback(entry => {
     // Retrieve the dimensions of the content `<span>`
     // from the `ResizeObserver`
@@ -71,17 +70,30 @@ const Cloud = props => {
       width: boundingClientRect.width,
       height: boundingClientRect.height
     }
-    setInnerSize(innerSize)
+    const newMetrics = computeMetrics({
+      tail,
+      folds,
+      innerSize,
+      style,
+      className
+    })
+    if (!isEqual(newMetrics, metrics)) {
+      setMetrics(newMetrics)
+      if (typeof onGeometryChange === 'function') {
+        const { corners, size } = newMetrics
+        onGeometryChange({ corners, size })
+      }
+    }
   }, [])
   useResizeObserver(ref, measure)
 
   // Update the metrics if tail, fold or innerSize change
   useEffect(() => {
-    if (innerSize) {
+    if (metrics) {
       const newMetrics = computeMetrics({
         tail,
         folds,
-        innerSize,
+        innerSize: metrics.innerSize,
         style,
         className
       })
@@ -93,7 +105,7 @@ const Cloud = props => {
         }
       }
     }
-  }, [tail, folds, innerSize, style, className])
+  }, [tail, folds, style, className])
 
   let containerStyle
   let contentStyle
@@ -259,4 +271,14 @@ const computeMetrics = ({ tail, folds, innerSize, style, className }) => {
   }
 }
 
-export default Cloud
+const areEqual = (prev, next) => {
+  return (
+    prev.my === next.my &&
+    prev.tail === next.tail &&
+    prev.folds === next.folds &&
+    prev.style === next.style &&
+    prev.className === next.className
+  )
+}
+
+export default React.memo(Cloud, areEqual)

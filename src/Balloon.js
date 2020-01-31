@@ -42,6 +42,7 @@ import useComputedStyle from './useComputedStyle'
  * ```
  */
 const Balloon = props => {
+  // console.log('Balloon', props)
   const { children, my, tail, style, className, onGeometryChange } = props
 
   // A ResizeObserver is tied to the bubble `<span>` of the
@@ -55,24 +56,30 @@ const Balloon = props => {
 
   // Extract relevant style props from the DOM
   const computedStyle = useComputedStyle(style, className)
-  console.log('computedStyle', computedStyle)
 
-  const [size, setSize] = useState(null)
   const measure = useCallback(entry => {
     const { target } = entry
     const boundingClientRect = target.getBoundingClientRect()
-    setSize({
+    const size = {
       width: boundingClientRect.width,
       height: boundingClientRect.height
-    })
+    }
+    const newMetrics = computeMetrics(tail, computedStyle, size)
+    if (!isEqual(metrics, newMetrics)) {
+      setMetrics(newMetrics)
+      if (typeof onGeometryChange === 'function') {
+        const { corners, size } = newMetrics
+        onGeometryChange({ corners, size })
+      }
+    }
   }, [])
   useResizeObserver(ref, measure)
 
-  // Update the metrics if tail or size change
+  // Update the metrics if tail or style change
   useEffect(() => {
-    if (size) {
-      const newMetrics = computeMetrics(tail, computedStyle, size)
-      if (!isEqual(newMetrics, metrics)) {
+    if (metrics) {
+      const newMetrics = computeMetrics(tail, computedStyle, metrics.size)
+      if (!isEqual(metrics, newMetrics)) {
         setMetrics(newMetrics)
         if (typeof onGeometryChange === 'function') {
           const { corners, size } = newMetrics
@@ -80,7 +87,7 @@ const Balloon = props => {
         }
       }
     }
-  }, [tail, computedStyle, size])
+  }, [tail, computedStyle, metrics])
 
   let containerStyle
   if (metrics) {
@@ -229,4 +236,13 @@ const computeMetrics = (tail, style, size) => {
   }
 }
 
-export default Balloon
+const areEqual = (prev, next) => {
+  return (
+    prev.my === next.my &&
+    prev.tail === next.tail &&
+    prev.style === next.style &&
+    prev.className === next.className
+  )
+}
+
+export default React.memo(Balloon, areEqual)
