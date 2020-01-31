@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { storiesOf } from '@storybook/react'
 import { withKnobs } from '@storybook/addon-knobs'
 
@@ -31,7 +31,12 @@ import TableReadme from './md/storage/table.md'
 import docgen from './docgen'
 import { generateMarkdown } from './generateMarkdown'
 
-import { styleDecorator, wrapperDecorator, layoutDecorator } from './decorators'
+import {
+  styleDecorator,
+  wrapperDecorator,
+  layoutDecorator,
+  WrapperContext
+} from './decorators'
 
 import './sticky-notes.stories.css'
 import faker from 'faker'
@@ -62,7 +67,16 @@ storiesOf('Sticky-notes', module)
         console.log(err)
       }
       const PersistentContainer = () => {
-        const [pinnedTips, setPinnedTips] = useState(storedTips)
+        const config = useContext(ConfigContext)
+        const wrapper = useContext(WrapperContext)
+        const [pinnedTips, setPinnedTips] = useState(() => {
+          return storedTips.map(tip => {
+            const { config } = tip
+            config.wrapper = Pinnable
+            config.wrapperProps = { ...config.wrapperProps, wrapper }
+            return tip
+          })
+        })
         const persistTips = tips => {
           setPinnedTips(tips)
           try {
@@ -72,59 +86,48 @@ storiesOf('Sticky-notes', module)
           }
         }
         return (
-          <ConfigContext.Consumer>
-            {({ wrapper }) => {
-              return (
-                <div style={{ height: '250px' }}>
-                  <MergingConfigProvider
-                    value={{
-                      show: {
-                        delay: 0
-                      },
-                      hide: {
-                        delay: 200
-                      },
-                      wrapper: Pinnable,
-                      wrapperProps: { wrapper }
-                    }}
-                  >
-                    <Storage
-                      tips={pinnedTips}
-                      tip={(id, pinned) => (
-                        <div key={id} className='storable-tip'>
-                          <span>
-                            {`Tip for ${
-                              models.find(model => model.id === id).label
-                            }`}
-                          </span>
-                          <br />
-                          {pinned ? (
-                            <span>
-                              I persist if you reload page. You can unpin me
-                            </span>
-                          ) : (
-                            <span>You can drag and pin me</span>
-                          )}
-                        </div>
-                      )}
-                      onTipChange={persistTips}
-                    >
-                      <div
-                        style={{ display: 'flex' }}
-                        className='centered-rect'
-                      >
-                        {models.map(({ id, label }, i) => (
-                          <Source key={i} id={id}>
-                            <span className='default-rect'>{label}</span>
-                          </Source>
-                        ))}
-                      </div>
-                    </Storage>
-                  </MergingConfigProvider>
+          <div style={{ height: '250px' }}>
+            <MergingConfigProvider
+              value={{
+                show: {
+                  delay: 105
+                },
+                hide: {
+                  delay: 100
+                },
+                wrapper: Pinnable,
+                wrapperProps: { wrapper: config.wrapper }
+              }}
+            >
+              <Storage
+                tips={pinnedTips}
+                tip={(id, pinned) => (
+                  <div key={id} className='storable-tip'>
+                    <span>
+                      {`Tip for ${models.find(model => model.id === id).label}`}
+                    </span>
+                    <br />
+                    {pinned ? (
+                      <span>
+                        I persist if you reload page. You can unpin me
+                      </span>
+                    ) : (
+                      <span>You can drag and pin me</span>
+                    )}
+                  </div>
+                )}
+                onTipChange={persistTips}
+              >
+                <div style={{ display: 'flex' }} className='centered-rect'>
+                  {models.map(({ id, label }, i) => (
+                    <Source key={i} id={id}>
+                      <span className='default-rect'>{label}</span>
+                    </Source>
+                  ))}
                 </div>
-              )
-            }}
-          </ConfigContext.Consumer>
+              </Storage>
+            </MergingConfigProvider>
+          </div>
         )
       }
       return <PersistentContainer models={models} />
@@ -221,43 +224,38 @@ storiesOf('Sticky-notes', module)
       }
       const TableContainer = () => {
         const [tips, setTips] = useState([])
+        const { wrapper } = useContext(ConfigContext)
         return (
-          <ConfigContext.Consumer>
-            {({ wrapper }) => {
-              return (
-                <MergingConfigProvider
-                  value={{
-                    show: {
-                      delay: 200
-                    },
-                    hide: {
-                      delay: 600
-                    },
-                    position: {
-                      container: '#company-table'
-                    },
-                    wrapper: Pinnable,
-                    wrapperProps: { wrapper }
-                  }}
-                >
-                  <div id='company-table'>
-                    <Storage
-                      tips={tips}
-                      tip={(id, pinned) => {
-                        const model = models[id]
-                        return <Card key={id} model={model} />
-                      }}
-                      onTipChange={tips => {
-                        setTips(tips)
-                      }}
-                    >
-                      <ReactTable data={models} columns={columns} />
-                    </Storage>
-                  </div>
-                </MergingConfigProvider>
-              )
+          <MergingConfigProvider
+            value={{
+              show: {
+                delay: 210
+              },
+              hide: {
+                delay: 200
+              },
+              position: {
+                container: '#company-table'
+              },
+              wrapper: Pinnable,
+              wrapperProps: { wrapper }
             }}
-          </ConfigContext.Consumer>
+          >
+            <div id='company-table'>
+              <Storage
+                tips={tips}
+                tip={(id, pinned) => {
+                  const model = models[id]
+                  return <Card key={id} model={model} />
+                }}
+                onTipChange={tips => {
+                  setTips(tips)
+                }}
+              >
+                <ReactTable data={models} columns={columns} />
+              </Storage>
+            </div>
+          </MergingConfigProvider>
         )
       }
       return <TableContainer />

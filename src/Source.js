@@ -15,34 +15,71 @@ limitations under the License.
 */
 // Source
 // ======
-import React, { useState, useRef, useCallback, useEffect } from 'react'
+import React, {
+  useRef,
+  useCallback,
+  useEffect,
+  useReducer,
+  useMemo,
+  useContext
+} from 'react'
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 import { SourceConfig } from './prop-types'
 import { mergeObjects, getElement } from './utils'
 import Location from './Location'
-import Storage from './Storage'
 import { ConfigContext, StorageContext } from './Contexts'
-import Engine from './Engine'
+import Engine, { LAYOUT, VISIBILITY } from './Engine'
 import useResizeObserver from './useResizeObserver'
+import isEqual from 'lodash.isequal'
+
+const sourceReducer = (state, action) => {
+  const { type } = action
+  switch (type) {
+    // This action is invoked by the source `Engine` when the tip location changes,
+    // unless the source is part of a Storage.
+    case LAYOUT: {
+      const { my, location } = action
+      return { ...state, my, location }
+    }
+    // This action is invoked by the source `Engine` when the tip visibility changes,
+    // unless the source is part of a Storage.
+    case VISIBILITY: {
+      const { visible } = action
+      return { ...state, visible }
+    }
+    default:
+      throw new Error(`Unknown action: ${type}`)
+  }
+}
 
 /**
  * The `Source` component acts as a wrapper for other components and enables them
  * to provide tips.
  */
 const Source = props => {
-  // console.log('Source', props)
+  console.log('Source', props)
+  const { id, config: localConfig } = props
 
-  // A `Source` keeps track of three state variables
+  // Merge the context and local configs
+  const contextConfig = useContext(ConfigContext)
+  const config = useMemo(() => {
+    const newConfig = mergeObjects(contextConfig, localConfig)
+    return isEqual(config, newConfig) ? config : newConfig
+  }, [contextConfig, localConfig])
+
+  // A `Source` keeps track of four state variables
   // * `my`: the position which provides optimal placement of the tip as computed by its `Engine`.
   // * `location`: the actual coordinates of the tip.
   // * `visible`: whether the tip is currently visible.
-  const [my, setMy] = useState('top-left')
-  const [location, setLocation] = useState({
-    left: 0,
-    top: 0
+  const [state, dispatch] = useReducer(sourceReducer, {
+    my: 'top-left',
+    location: {
+      left: 0,
+      top: 0
+    },
+    visible: false
   })
-  const [visible, setVisible] = useState(false)
 
   // Most computations are delegated to an `Engine`.
   // The source will feed DOM events to the `Engine`, and receive
@@ -50,32 +87,17 @@ const Source = props => {
   // A `Source` can exist either in isolation (in which case it has
   // its own `Engine`), or within a `Storage` (in which case it shares
   // an `Engine` with its `Storage`).
-  const { id, config, storage } = props
-
-  // This callback is invoked by the source `Engine` when the tip location changes,
-  // unless the source is part of a Storage.
-  const onLayoutChange = useCallback(({ id, my, location }) => {
-    setMy(my)
-    setLocation(location)
-  }, [])
-
-  // This callback is invoked by the source `Engine` when the tip visibility changes,
-  // unless the source is part of a Storage.
-  const onVisibilityChange = useCallback(({ id, visible }) => {
-    setVisible(visible)
-  }, [])
-  const engineRef = useRef(
-    storage
+  const storage = useContext(StorageContext)
+  const engineRef = useRef(null)
+  if (!engineRef.current) {
+    engineRef.current = storage
       ? storage.getEngine({ id, config })
       : new Engine({
           id,
           config,
-          output: {
-            onLayoutChange,
-            onVisibilityChange
-          }
+          dispatch
         })
-  )
+  }
   const engine = engineRef.current
 
   // A `Source` renders an actual DOM element, which is observed by
@@ -99,8 +121,11 @@ const Source = props => {
   const {
     position: {
       target: targetConf,
-      adjust: { mouse }
-    }
+      adjust: { mouse },
+      container
+    },
+    wrapper,
+    wrapperProps
   } = config
   const getTarget = useCallback(() => {
     if (!mouse) {
@@ -146,17 +171,21 @@ const Source = props => {
   const prevId = prevIdRef.current
   useEffect(() => {
     if (storage && prevId && id !== prevId) {
+      console.log('Source.useEffect', { id, prevId })
       // The source belongs to a `Storage` and its id has changed
       engineRef.current = storage.getEngine({ id, config })
-      storage.release(prevId.current)
+      storage.release(prevId)
     }
     engineRef.current.update({ config })
+  }, [id, config])
+  useEffect(() => {
+    // ComponentWillUnmount
     return () => {
       if (storage) {
         storage.release(id)
       }
     }
-  }, [id, config])
+  }, [])
 
   // Delegate all computations triggered by DOM events to the `Engine`
   // to avoid code duplication between `Source` and `Storage`
@@ -193,22 +222,13 @@ const Source = props => {
     [engine]
   )
 
-  const {
-    tip,
-    children,
-    config: {
-      wrapper,
-      wrapperProps,
-      position: { container }
-    },
-    svg
-  } = props
+  const { tip, children, svg } = props
 
   // The tip itself consists of a wrapper component (`Balloon` by default)
   // which provides the user-supplied tip component with a tip appearance.
   const wrappedTip = React.createElement(wrapper, {
     ...wrapperProps,
-    my,
+    my: state.my,
     onGeometryChange: handleGeometryChange,
     children: tip
   })
@@ -236,14 +256,14 @@ const Source = props => {
   const tagChildren = [
     ...React.Children.toArray(children),
     // For `Source`s contained in a `Storage`, let the storage take care of the rendering.
-    ...(visible && !storage
+    ...(state.visible && !storage
       ? [
           // A portal is used to attach the tip to another DOM parent (so that it
           // naturally floats above other DOM nodes it the DOM tree). The additional
           // benefit of the portal is that DOM events are still channeled through
           // the `Source`, which is required not to break timers used to show and hide tip.
           ReactDOM.createPortal(
-            <Location location={location}>{wrappedTip}</Location>,
+            <Location location={state.location}>{wrappedTip}</Location>,
             getElement(container)
           )
         ]
@@ -331,26 +351,17 @@ Source.propTypes = {
    * If the `Source` is contained in a `Storage`, a pointer to this `Storage` (this
    * property will be automatically valued by the englobing `Storage`)
    */
-  storage: PropTypes.instanceOf(Storage)
+  storage: PropTypes.object
 }
 
-// Configure `Source`s which have a `Storage` ancestor in their React
-// component tree so that they have a `storage` property pointing to their `Storage`.
-// Also read the `config` property from the `ConfigContext` React context.
-export default ({ config, ...rest }) => (
-  <StorageContext.Consumer>
-    {storage => {
-      return (
-        <ConfigContext.Consumer>
-          {contextConfig => (
-            <Source
-              config={mergeObjects(contextConfig, config)}
-              storage={storage}
-              {...rest}
-            />
-          )}
-        </ConfigContext.Consumer>
-      )
-    }}
-  </StorageContext.Consumer>
-)
+export const areEqual = (prev, next) => {
+  return (
+    prev.id === next.id &&
+    prev.config === next.config &&
+    prev.tip === next.tip &&
+    prev.pinned === next.pinned &&
+    prev.children === next.children
+  )
+}
+
+export default React.memo(Source, areEqual)

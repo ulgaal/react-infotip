@@ -52,14 +52,14 @@ const BOTTOM = new Set([
  * and `Storage` class. It is responsible for tip timers and tip placement.
  * It is not a React component.
  * It receives DOM events from `Source` and `Storage` and transforms them into
- * higher level events that propagate to the engine output (either
- * a `Source` or a `Storage`):
- * * `onLayoutChange` when the location of the tip changes.
- * * `onVisibilityChange` when the visibility of the tip changes.
+ * higher level events that propagate to the engine reducer (either
+ * a `Source` reducer or a `Storage` reducer):
+ * * `LAYOUT` when the location of the tip changes.
+ * * `VISIBILITY` when the visibility of the tip changes.
  */
 export default class Engine {
   constructor (params) {
-    // Params has the following shape: { id, config, output }
+    // Params has the following shape: { id, config, dispatch }
     Object.assign(this, params)
   }
 
@@ -79,7 +79,8 @@ export default class Engine {
         this.showTimeoutId = setTimeout(() => {
           this.showTimeoutId = undefined
           this.visible = true
-          this.output.onVisibilityChange({
+          this.dispatch({
+            type: VISIBILITY,
             id: this.id,
             visible: this.visible,
             config: this.config
@@ -114,7 +115,8 @@ export default class Engine {
         this.hideTimeoutId = setTimeout(() => {
           this.hideTimeoutId = undefined
           this.visible = false
-          this.output.onVisibilityChange({
+          this.dispatch({
+            type: VISIBILITY,
             id: this.id,
             visible: this.visible,
             config: this.config
@@ -137,9 +139,9 @@ export default class Engine {
       typeof mouse === 'function'
         ? mouse
         : event => ({
-          x: event.clientX + window.scrollX,
-          y: event.clientY + window.scrollY
-        })
+            x: event.clientX + window.scrollX,
+            y: event.clientY + window.scrollY
+          })
     const { x, y } = transform(event)
     this.update({
       target: {
@@ -167,7 +169,8 @@ export default class Engine {
     if (pinned) {
       if (!this.visible) {
         this.visible = true
-        this.output.onVisibilityChange({
+        this.dispatch({
+          type: VISIBILITY,
           id: this.id,
           visible: this.visible,
           config: this.config
@@ -295,7 +298,8 @@ export default class Engine {
       }
       result.location.left -= container.left
       result.location.top -= container.top
-      this.output.onLayoutChange({
+      this.dispatch({
+        type: LAYOUT,
         id: this.id,
         ...result,
         config: this.config
@@ -303,3 +307,6 @@ export default class Engine {
     }
   }
 }
+
+export const LAYOUT = 'LAYOUT'
+export const VISIBILITY = 'VISIBILITY'
