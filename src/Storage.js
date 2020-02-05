@@ -15,138 +15,21 @@ limitations under the License.
 */
 // Storage
 // =======
-import React, {
-  useReducer,
-  useRef,
-  useCallback,
-  useEffect,
-  useMemo
-} from 'react'
+import React, { useReducer, useCallback, useRef, useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import Location from './Location'
-import Engine, { LAYOUT, VISIBILITY } from './Engine'
 import { StorageTip } from './prop-types'
 import PropTypes from 'prop-types'
-import { eqSet, diffSet, getElement } from './utils'
 import { StorageContext } from './Contexts'
-
-const INIT = 'INIT'
-const TOGGLE = 'TOGGLE'
-const MOVE = 'MOVE'
-
-const storageReducer = (state, action) => {
-  console.log('storageReducer', { state, action })
-  const { storage, onTipChange } = state
-  const doNotify = tips => {
-    if (typeof onTipChange === 'function') {
-      onTipChange(
-        Object.entries(tips)
-          .filter(([, { pinned }]) => pinned)
-          .map(([id, { my, location, config }]) => ({
-            id,
-            my,
-            location,
-            config
-          }))
-      )
-    }
-  }
-
-  const { type } = action
-  switch (type) {
-    case INIT: {
-      const { storedTips } = action
-      const tips = (storedTips || []).reduce((tips, tip) => {
-        const { id, ...rest } = tip
-        tips[id] = {
-          id,
-          ...rest,
-          visible: true,
-          pinned: true
-        }
-
-        storage.deref(id).pinned = true
-        return tips
-      }, {})
-      return { ...state, tips }
-    }
-    // This action is invoked by `Engine` when the tip location changes.
-    case LAYOUT: {
-      const { id, my, location, config } = action
-      const tip = state.tips[id]
-      if (!tip.pinned) {
-        return {
-          ...state,
-          tips: {
-            ...state.tips,
-            [id]: { ...tip, my, location, config }
-          }
-        }
-      }
-      return state
-    }
-    // This action is invoked by `Engine` when the tip visibility changes.
-    case VISIBILITY: {
-      const { id, visible, config } = action
-      const newTips = { ...state.tips }
-      if (visible) {
-        newTips[id] = {
-          my: 'top-left',
-          location: {
-            left: 0,
-            top: 0
-          },
-          visible,
-          config
-        }
-        storage.getEngine({ id, config })
-      } else {
-        delete newTips[id]
-        storage.release(id)
-      }
-      return {
-        ...state,
-        tips: newTips
-      }
-    }
-
-    // This action is invoked when the push pin of the `Pinnable` wrapper is clicked
-    case TOGGLE: {
-      const { id } = action
-      const tip = state.tips[id]
-      storage.deref(id).pin(!tip.pinned)
-      const tips = {
-        ...state.tips,
-        [id]: { ...tip, pinned: !tip.pinned }
-      }
-      doNotify(tips)
-      return { ...state, tips }
-    }
-
-    // This action is invoked when the `Pinnable` wrapper is dragged
-    case MOVE: {
-      const { id, delta, notify = false } = action
-      const tip = state.tips[id]
-      const tips = {
-        ...state.tips,
-        [id]: {
-          ...tip,
-          location: {
-            left: tip.location.left + delta.x,
-            top: tip.location.top + delta.y
-          }
-        }
-      }
-      if (notify) {
-        doNotify(tips)
-      }
-      return { ...state, tips }
-    }
-
-    default:
-      throw new Error(`Unknown action: ${type}`)
-  }
-}
+import { LOGS } from './utils'
+import {
+  storageInit,
+  storageReducer,
+  UPDATE_PINNED,
+  MOVE,
+  TOGGLE
+} from './reducers/storageReducer'
+import { MOUSE_OVER, MOUSE_OUT } from './reducers/sourceReducer'
 
 /**
  * The `Storage` component is in charge of persisting tips for all the
@@ -167,193 +50,178 @@ const Storage = props => {
   // console.log('Storage', props)
   const { children, tip, tips: storedTips, onTipChange } = props
 
-  // `engines` is a hash of `Source` `id` to `Engine` references.
-  // An `Engine` reference has the form { refCount: <number>, value: <Engine> }.
-  // A `Source` in the React subtree or a pinned tip increase the refCount
-  // of the `Engine` reference. If it reaches 0, the reference is purged.
-  const enginesRef = useRef({})
-
-  const storage = useMemo(() => {
-    const engines = enginesRef.current
-    return {
-      getEngine: ({ id, config }) => {
-        if (id == 0) {
-          try {
-            throw new Error()
-          } catch (e) {
-            console.log(e.stack)
-          }
-        }
-        // Create a new `Engine` which will be shared by `Storage` and `Source`
-        const ref = engines[id]
-        if (ref) {
-          ref.refCount++
-          console.log(`getEngine(${id})`, engines)
-          return ref.value
-        }
-        const engine = new Engine({
-          id,
-          config,
-          dispatch
-        })
-        engines[id] = {
-          refCount: 1,
-          value: engine
-        }
-        console.log(`getEngine(${id})`, engines)
-        return engine
-      },
-      release: id => {
-        const engines = enginesRef.current
-        const ref = engines[id]
-        if (!ref) {
-          throw new Error(`Invalid release ${id}`)
-        }
-        ref.refCount--
-        if (ref.refCount === 0) {
-          delete engines[id]
-        }
-        console.log(`release(${id})`, engines)
-      },
-      deref: id => {
-        const engines = enginesRef.current
-        return engines[id].value
-      }
-    }
-  }, [enginesRef])
-
-  // `updateEngines` is invoked when the `tips` prop
-  // changes (for instance when a persistent tip needs to be
-  // displayed but its `Source` is not attached to the subtree yet).
-  const updateEngines = useCallback((tips, prevTips) => {
-    const ids = new Set(tips.map(({ id }) => id))
-    const prevIds = new Set(prevTips.map(({ id }) => id))
-    if (!eqSet(ids, prevIds)) {
-      // Create engines for new ids
-      for (const id of diffSet(ids, prevIds)) {
-        const { config } = tips.find(tip => tip.id === id)
-        storage.getEngine({ id, config })
-      }
-    }
-  }, [])
-
   // A `Storage` keeps track of one state variable:
-  // a hash of `Source` `id` to tip state. Each tip state consists in four fields:
-  // * `pinned`: true if the tip is currently pinned
-  // * `my`: the position which provides optimal placement of the tip as computed by its `Engine`.
-  // * `location`: the actual coordinates of the tip.
-  // * `visible`: whether the tip is currently visible.
-  const [state, dispatch] = useReducer(storageReducer, null, () => {
-    return {
-      storage,
-      onTipChange,
-      tips: {},
-      engines: {}
-    }
-  })
-  console.log('Storage', { state, props })
+  // a hash of `Source` `id` to refcounted source state.
+  const [state, dispatch] = useReducer(
+    storageReducer,
+    { storedTips, onTipChange },
+    storageInit
+  )
+  if (LOGS.storage > 0) {
+    console.log('Storage', props, state)
+  }
 
-  useEffect(() => {
-    // componentDidMount
-    dispatch({ type: INIT, storedTips })
-  }, [])
-
+  // Notify the reducer if the list of persisted tips
+  // changes
   const prevStoredTipsRef = useRef()
   useEffect(() => {
     prevStoredTipsRef.current = storedTips
   })
   const prevStoredTips = prevStoredTipsRef.current
   useEffect(() => {
-    updateEngines(storedTips, prevStoredTips || [])
+    // Do not dispatch on componentDidMount
+    if (prevStoredTips) {
+      dispatch({ type: UPDATE_PINNED, storedTips, prevStoredTips })
+    }
   }, [storedTips])
 
-  const handleToggle = useCallback((id, event) => {
-    event.stopPropagation()
-    event.preventDefault()
-    dispatch({ type: TOGGLE, id })
+  // This callback is passed to sources so that they
+  // get access to the dispatch of the storageReducer
+  const storage = useCallback(params => {
+    return [params, dispatch]
   }, [])
 
-  const handleMouseDown = useCallback((id, event) => {
-    const p0 = { x: event.clientX, y: event.clientY }
-    event.stopPropagation()
-    event.preventDefault()
-    const handlers = {}
-    // Position mouse handlers to create a modal drag loop
-    handlers.handleMouseMove = event => {
-      event.preventDefault()
+  // Tranform DOM events into reducer actions (events
+  // actually come from sources and bubble to the storage):
+  // * click events.
+  // * mousedown events.
+  // * mouseout events.
+  // * mouseover events.
+  // * mousemove events.
+
+  const handleToggle = useCallback(event => {
+    const target = event.target.closest('[data-rit-id]')
+    if (target) {
+      const id = target.dataset.ritId
       event.stopPropagation()
-      dispatch({
-        type: 'MOVE',
-        id,
-        delta: { x: event.clientX - p0.x, y: event.clientY - p0.y }
-      })
-      p0.x = event.clientX
-      p0.y = event.clientY
-    }
-    handlers.handleMouseUp = event => {
       event.preventDefault()
-      event.stopPropagation()
-      window.removeEventListener('mousemove', handlers.handleMouseMove, true)
-      window.removeEventListener('mouseup', handlers.handleMouseUp, true)
-      dispatch({
-        type: 'MOVE',
-        id,
-        delta: { x: event.clientX - p0.x, y: event.clientY - p0.y },
-        notify: true
-      })
+      dispatch({ type: TOGGLE, id })
     }
-    window.addEventListener('mousemove', handlers.handleMouseMove, true)
-    window.addEventListener('mouseup', handlers.handleMouseUp, true)
   }, [])
+
+  const handleMouseDown = useCallback(
+    event => {
+      const target = event.target.closest('[data-rit-id]')
+      if (target) {
+        const id = target.dataset.ritId
+        const p0 = { x: event.clientX, y: event.clientY }
+        event.stopPropagation()
+        event.preventDefault()
+        const handlers = {}
+        // Position mouse handlers to create a modal drag loop
+        handlers.handleMouseMove = event => {
+          event.preventDefault()
+          event.stopPropagation()
+          dispatch({
+            type: MOVE,
+            id,
+            delta: { x: event.clientX - p0.x, y: event.clientY - p0.y }
+          })
+          p0.x = event.clientX
+          p0.y = event.clientY
+        }
+        handlers.handleMouseUp = event => {
+          event.preventDefault()
+          event.stopPropagation()
+          window.removeEventListener(
+            'mousemove',
+            handlers.handleMouseMove,
+            true
+          )
+          window.removeEventListener('mouseup', handlers.handleMouseUp, true)
+          dispatch({
+            type: MOVE,
+            id,
+            delta: { x: event.clientX - p0.x, y: event.clientY - p0.y },
+            notify: true
+          })
+        }
+        window.addEventListener('mousemove', handlers.handleMouseMove, true)
+        window.addEventListener('mouseup', handlers.handleMouseUp, true)
+      }
+    },
+    [dispatch]
+  )
+
+  const handleMouseOut = useCallback(
+    event => {
+      const target = event.target.closest('[data-rit-id]')
+      if (target) {
+        const id = target.dataset.ritId
+        dispatch({ type: MOUSE_OUT, id, dispatch })
+      }
+    },
+    [dispatch]
+  )
+
+  const handleMouseOver = useCallback(
+    event => {
+      const target = event.target.closest('[data-rit-id]')
+      if (target) {
+        const id = target.dataset.ritId
+        dispatch({
+          type: MOUSE_OVER,
+          id,
+          position: { x: event.clientX, y: event.clientY },
+          dispatch
+        })
+      }
+    },
+    [dispatch]
+  )
 
   return (
     // Configure `Source`s in the React subtree so that
     // they have a `storage` property pointing to the `Storage`.
-    <div style={{ display: 'contents' }}>
+    <div
+      style={{ display: 'contents' }}
+      onMouseOut={handleMouseOut}
+      onMouseOver={handleMouseOver}
+    >
       <StorageContext.Provider value={storage}>
         {
-          // Render the React subtree
+          // Render the React subtree (which contains the `Source`s)
           children
         }
       </StorageContext.Provider>
-      {Object.entries(state.tips)
-        .filter(([, { visible }]) => visible)
-        .map(([id, value]) => {
-          const { my, location, pinned, config } = value
-          const { wrapper, wrapperProps, position } = config
-          const container = getElement(position.container)
+      {Object.values(state.sources)
+        .filter(({ source: { visible } }) => visible)
+        .map(({ source }) => {
+          const {
+            id,
+            my,
+            location = {
+              left: 0,
+              top: 0
+            },
+            pinned,
+            config,
+            containerElt
+          } = source
+          const { wrapper, wrapperProps } = config
 
           // Retrieve the tip for the specified id.
           const tipContent = tip(id, pinned)
           if (tipContent) {
-            // Retrieve the `Engine` for the specified id.
-            // `Engine` will handle mouseover and mouseout events as well as
-            // changes to the tip geometry, whereas `Storage` will handle
-            // mousedown and push pin click events
-            const engine = storage.deref(id)
             const tip = React.createElement(wrapper, {
               ...wrapperProps,
               my,
               pinned,
-              onGeometryChange: geometry => engine.update({ geometry }),
-              onToggle: event => handleToggle(id, event),
-              onMouseDown: event => handleMouseDown(id, event),
+              id,
+              dispatch,
+              onToggle: handleToggle,
+              onMouseDown: handleMouseDown,
               children: [tipContent]
             })
             // A portal is used to attach the tip to another DOM parent (so that it
             // naturally floats above other DOM nodes it the DOM tree). The additional
             // benefit of the portal is that DOM events are still channeled through
-            // the `Engine`, which is required not to break timers used to show and hide tip.
+            // the reducer, which is required not to break timers used to show and hide tip.
             return ReactDOM.createPortal(
-              <Location
-                key={id}
-                location={location}
-                onMouseOver={event => engine.handleMouseOver(event)}
-                onMouseOut={event => engine.handleMouseOut(event)}
-              >
+              <Location key={id} location={location}>
                 {tip}
               </Location>,
-              container
+              containerElt
             )
           }
           return null

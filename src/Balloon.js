@@ -21,8 +21,9 @@ import { CornerType } from './prop-types'
 import isEqual from 'lodash.isequal'
 import { styles } from './styles'
 import BalloonTail from './svg/BalloonTail'
-import useResizeObserver from './useResizeObserver'
-import useComputedStyle from './useComputedStyle'
+import useResizeObserver from './hooks/useResizeObserver'
+import useComputedStyle from './hooks/useComputedStyle'
+import { GEOMETRY } from './reducers/sourceReducer'
 
 /**
  * A `Balloon` component wraps another React component in
@@ -43,7 +44,7 @@ import useComputedStyle from './useComputedStyle'
  */
 const Balloon = props => {
   // console.log('Balloon', props)
-  const { children, my, tail, style, className, onGeometryChange } = props
+  const { children, my, tail, style, className, id, dispatch } = props
 
   // A ResizeObserver is tied to the bubble `<span>` of the
   // `Balloon` to measure it precisely.
@@ -67,9 +68,9 @@ const Balloon = props => {
     const newMetrics = computeMetrics(tail, computedStyle, size)
     if (!isEqual(metrics, newMetrics)) {
       setMetrics(newMetrics)
-      if (typeof onGeometryChange === 'function') {
+      if (typeof dispatch === 'function') {
         const { corners, size } = newMetrics
-        onGeometryChange({ corners, size })
+        dispatch({ type: GEOMETRY, id, geometry: { corners, size } })
       }
     }
   }, [])
@@ -81,9 +82,9 @@ const Balloon = props => {
       const newMetrics = computeMetrics(tail, computedStyle, metrics.size)
       if (!isEqual(metrics, newMetrics)) {
         setMetrics(newMetrics)
-        if (typeof onGeometryChange === 'function') {
+        if (typeof dispatch === 'function') {
           const { corners, size } = newMetrics
-          onGeometryChange({ corners, size })
+          dispatch({ type: GEOMETRY, id, geometry: { corners, size } })
         }
       }
     }
@@ -108,7 +109,7 @@ const Balloon = props => {
   }
 
   return (
-    <span className='rit-balloon' style={containerStyle}>
+    <span className='rit-balloon' style={containerStyle} data-rit-id={id}>
       <span
         ref={ref}
         style={{
@@ -137,7 +138,7 @@ Balloon.propTypes = {
     height: PropTypes.number
   }),
   /**
-   * A callback function invoked when the geometry of the balloon changes.
+   * A dispatch function invoked when the geometry of the balloon changes.
    * The function receives a hash with the following keys:
    *
    * | Key  | Type            | Description                                                                    |
@@ -169,7 +170,7 @@ Balloon.propTypes = {
    * | height  | `<number>` | height of the wrapper. |
    *
    */
-  onGeometryChange: PropTypes.func,
+  dispatch: PropTypes.func,
   /**
    * The CSS style to use to render the balloon
    */
@@ -181,13 +182,17 @@ Balloon.propTypes = {
   /**
    * `true` if the balloon is pinned to the screen
    */
-  pinned: PropTypes.bool
+  pinned: PropTypes.bool,
+  /**
+   * If the balloon is contained in a `Storage`, an id which uniquely identifies
+   * the `Source` to which this balloon belongs
+   */
+  id: PropTypes.string
 }
 
 Balloon.defaultProps = {
   my: 'top-left',
   tail: { width: 8, height: 8 },
-  onGeometryChange: null,
   style: styles.defaultStyle
 }
 

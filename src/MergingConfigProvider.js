@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react'
+import React, { useContext, useRef, useMemo, useEffect } from 'react'
 import { mergeObjects } from './utils'
 import { ConfigContext } from './Contexts'
 import isEqual from 'lodash.isequal'
@@ -11,10 +11,16 @@ export const MergingConfigProvider = props => {
   // console.log('MergingConfigProvider', props)
   const { value, children } = props
   const contextConfig = useContext(ConfigContext)
+  const prevConfigRef = useRef()
+  // Keep config as stable as possible
   const config = useMemo(() => {
-    const newConfig = mergeObjects(contextConfig, value)
-    return isEqual(config, newConfig) ? config : newConfig
+    const prevConfig = prevConfigRef.current
+    const nextConfig = mergeObjects(contextConfig, value)
+    return isEqual(prevConfig, nextConfig) ? prevConfig : nextConfig
   }, [contextConfig, value])
+  useEffect(() => {
+    prevConfigRef.current = config
+  })
   return (
     <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>
   )

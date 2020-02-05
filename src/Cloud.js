@@ -21,7 +21,8 @@ import { CornerType } from './prop-types'
 import isEqual from 'lodash.isequal'
 import { styles } from './styles'
 import CloudShape from './svg/CloudShape'
-import useResizeObserver from './useResizeObserver'
+import useResizeObserver from './hooks/useResizeObserver'
+import { GEOMETRY } from './reducers/sourceReducer'
 
 /**
  * A `Cloud` component wraps another React component in
@@ -43,15 +44,7 @@ import useResizeObserver from './useResizeObserver'
  */
 const Cloud = props => {
   // console.log('Cloud', props)
-  const {
-    children,
-    my,
-    tail,
-    folds,
-    style,
-    className,
-    onGeometryChange
-  } = props
+  const { children, my, tail, folds, style, className, id, dispatch } = props
 
   // A ResizeObserver is tied to the content `<span>` of the
   // `Cloud` to measure it precisely.
@@ -79,9 +72,9 @@ const Cloud = props => {
     })
     if (!isEqual(newMetrics, metrics)) {
       setMetrics(newMetrics)
-      if (typeof onGeometryChange === 'function') {
+      if (typeof dispatch === 'function') {
         const { corners, size } = newMetrics
-        onGeometryChange({ corners, size })
+        dispatch({ type: GEOMETRY, id, geometry: { corners, size } })
       }
     }
   }, [])
@@ -99,9 +92,9 @@ const Cloud = props => {
       })
       if (!isEqual(newMetrics, metrics)) {
         setMetrics(newMetrics)
-        if (typeof onGeometryChange === 'function') {
+        if (typeof dispatch === 'function') {
           const { corners, size } = newMetrics
-          onGeometryChange({ corners, size })
+          dispatch({ type: GEOMETRY, id, geometry: { corners, size } })
         }
       }
     }
@@ -138,7 +131,7 @@ const Cloud = props => {
     }
   }
   return (
-    <div className='rit-cloud' style={containerStyle}>
+    <div className='rit-cloud' style={containerStyle} data-rit-id={id}>
       <CloudShape my={my} metrics={metrics} />
       <span ref={ref} style={contentStyle}>
         {children}
@@ -168,7 +161,7 @@ Cloud.propTypes = {
    */
   style: PropTypes.object,
   /**
-   * A callback function invoked when the geometry of the cloud changes.
+   * A dispatch function invoked when the geometry of the cloud changes.
    * The function receives a hash with the following keys:
    *
    * | Key  | Type            | Description                                                                    |
@@ -200,11 +193,16 @@ Cloud.propTypes = {
    * | height  | `<number>` | height of the wrapper. |
    *
    */
-  onGeometryChange: PropTypes.func,
+  dispatch: PropTypes.func,
   /**
-   * `true` if the balloon is pinned to the screen
+   * `true` if the cloud is pinned to the screen
    */
-  pinned: PropTypes.bool
+  pinned: PropTypes.bool,
+  /**
+   * If the cloud is contained in a `Storage`, an id which uniquely identifies
+   * the `Source` to which this cloud belongs
+   */
+  id: PropTypes.string
 }
 
 Cloud.defaultProps = {
@@ -214,7 +212,6 @@ Cloud.defaultProps = {
     height: 25
   },
   folds: 13,
-  onGeometryChange: null,
   style: styles.defaultStyle
 }
 

@@ -229,7 +229,7 @@ storiesOf('Sticky-notes', module)
           <MergingConfigProvider
             value={{
               show: {
-                delay: 210
+                delay: 150
               },
               hide: {
                 delay: 200
@@ -252,7 +252,7 @@ storiesOf('Sticky-notes', module)
                   setTips(tips)
                 }}
               >
-                <ReactTable data={models} columns={columns} />
+                <ReactTable data={models} columns={columns} pageSize={25} />
               </Storage>
             </div>
           </MergingConfigProvider>

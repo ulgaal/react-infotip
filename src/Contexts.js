@@ -15,8 +15,7 @@ limitations under the License.
 */
 // Contexts
 // ========
-import React, { useContext } from 'react'
-import { mergeObjects } from './utils'
+import React from 'react'
 import Balloon from './Balloon'
 
 // The default value of the `config` property used by `Source` and  `Storage`
