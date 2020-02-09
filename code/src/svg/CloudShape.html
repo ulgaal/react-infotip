@@ -1,0 +1,206 @@
+<!DOCTYPE html><html lang="en"><head><title>src/svg/CloudShape</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="src/svg/CloudShape"><meta name="groc-project-path" content="src/svg/CloudShape.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/svg/CloudShape.js</div></div><div id="document"><div class="segment"><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> React, { useRef } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>
+<span class="hljs-keyword">import</span> { parseBorder, parseBoxShadow } <span class="hljs-keyword">from</span> <span class="hljs-string">'../css'</span>
+<span class="hljs-keyword">import</span> { seq } <span class="hljs-keyword">from</span> <span class="hljs-string">'../utils'</span>
+<span class="hljs-keyword">import</span> { useId } <span class="hljs-keyword">from</span> <span class="hljs-string">'../useId'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Define a few 2D-vector helper functions</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> add = (p1, p2) =&gt; ({
+  x: p1.x + p2.x,
+  y: p1.y + p2.y
+})
+<span class="hljs-keyword">const</span> subst = (p1, p2) =&gt; ({
+  x: p1.x - p2.x,
+  y: p1.y - p2.y
+})
+<span class="hljs-keyword">const</span> scale = (p, f) =&gt; ({
+  x: f * p.x,
+  y: f * p.y
+})
+<span class="hljs-keyword">const</span> mid = (p1, p2) =&gt; scale(add(p1, p2), <span class="hljs-number">0.5</span>)
+<span class="hljs-keyword">const</span> norm2 = p =&gt; p.x * p.x + p.y * p.y
+<span class="hljs-keyword">const</span> norm = p =&gt; <span class="hljs-built_in">Math</span>.sqrt(norm2(p))
+
+<span class="hljs-keyword">const</span> randomCoefs = folds =&gt; ({
+  l: [...seq(<span class="hljs-number">0</span>, folds)].map(() =&gt; <span class="hljs-built_in">Math</span>.random()),
+  f1: [...seq(<span class="hljs-number">0</span>, folds)].map(() =&gt; <span class="hljs-built_in">Math</span>.random()),
+  f3: [...seq(<span class="hljs-number">0</span>, folds)].map(() =&gt; <span class="hljs-built_in">Math</span>.random())
+})</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>CloudShape</code> is an internal SVG component used to display the outline
+of the <code>Cloud</code> component</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> CloudShape = props =&gt; {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>console.log(&#39;CloudShape&#39;, props)</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">if</span> (!props.metrics) {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>
+  }
+
+  <span class="hljs-keyword">const</span> {
+    my,
+    metrics: { innerSize, size, tail, folds, style = {}, className }
+  } = props</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Generate a set of random coefficients dependent on
+the number of folds</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> coefsRef = useRef(<span class="hljs-literal">null</span>)
+  <span class="hljs-keyword">const</span> foldsRef = useRef(<span class="hljs-literal">null</span>)
+  <span class="hljs-keyword">if</span> (folds !== foldsRef.current) {
+    coefsRef.current = randomCoefs(folds)
+    foldsRef.current = folds
+  }
+  <span class="hljs-keyword">const</span> coefs = coefsRef.current</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Because SVG <code>&lt;defs&gt;</code> elements are used internally,
+generate a new id to uniquely identify that set of <code>&lt;defs&gt;</code>.</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> shapeid = useId()
+  <span class="hljs-keyword">const</span> id = <span class="hljs-string">`cloud_<span class="hljs-subst">${shapeid}</span>`</span>
+
+  <span class="hljs-keyword">const</span> center = {
+    x: innerSize.width / <span class="hljs-number">2</span>,
+    y: innerSize.height / <span class="hljs-number">2</span>
+  }
+  <span class="hljs-keyword">const</span> tail_ = { x: tail.width, y: tail.height }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Extact CSS value from the CSS style</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> border = parseBorder(style.border)
+  <span class="hljs-keyword">const</span> backgroundColor = style.backgroundColor
+  <span class="hljs-keyword">const</span> dash = {}
+  <span class="hljs-keyword">switch</span> (border.style) {
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'dotted'</span>:
+      dash.strokeDasharray = <span class="hljs-string">`<span class="hljs-subst">${border.width}</span> <span class="hljs-subst">${border.width}</span>`</span>
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'dashed'</span>:
+      dash.strokeDasharray = <span class="hljs-string">`<span class="hljs-subst">${3 * border.width}</span> <span class="hljs-subst">${3 * border.width}</span>`</span>
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">default</span>:
+  }
+  <span class="hljs-keyword">const</span> shadow = parseBoxShadow(style.boxShadow)
+
+  <span class="hljs-keyword">const</span> path = <span class="hljs-built_in">document</span>.createElementNS(<span class="hljs-string">'http://www.w3.org/2000/svg'</span>, <span class="hljs-string">'path'</span>)
+  <span class="hljs-keyword">const</span> length = <span class="hljs-number">2</span> * (innerSize.width + innerSize.height)
+  <span class="hljs-keyword">const</span> delta = length / folds
+  path.setAttribute(
+    <span class="hljs-string">'d'</span>,
+    <span class="hljs-string">`M 0 0 h <span class="hljs-subst">${innerSize.width}</span> v <span class="hljs-subst">${innerSize.height}</span> h <span class="hljs-subst">${-innerSize.width}</span> z`</span>
+  )
+  <span class="hljs-keyword">let</span> p = <span class="hljs-literal">null</span>
+  <span class="hljs-keyword">let</span> v = <span class="hljs-literal">null</span>
+  <span class="hljs-keyword">switch</span> (my) {
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'top-left'</span>:
+      p = { x: <span class="hljs-number">0</span>, y: <span class="hljs-number">0</span> }
+      v = { x: -<span class="hljs-number">1</span>, y: -<span class="hljs-number">1</span> }
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'top-center'</span>:
+      p = { x: <span class="hljs-number">0.5</span> * innerSize.width, y: <span class="hljs-number">0</span> }
+      v = { x: <span class="hljs-number">0</span>, y: -<span class="hljs-number">1</span> }
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'top-right'</span>:
+      p = { x: innerSize.width, y: <span class="hljs-number">0</span> }
+      v = { x: <span class="hljs-number">1</span>, y: -<span class="hljs-number">1</span> }
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'center-left'</span>:
+      p = { x: <span class="hljs-number">0</span>, y: <span class="hljs-number">0.5</span> * innerSize.height }
+      v = { x: -<span class="hljs-number">1</span>, y: <span class="hljs-number">0</span> }
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'center-right'</span>:
+      p = { x: innerSize.width, y: <span class="hljs-number">0.5</span> * innerSize.height }
+      v = { x: <span class="hljs-number">1</span>, y: <span class="hljs-number">0</span> }
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'bottom-left'</span>:
+      p = { x: <span class="hljs-number">0</span>, y: innerSize.height }
+      v = { x: -<span class="hljs-number">1</span>, y: <span class="hljs-number">1</span> }
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'bottom-center'</span>:
+      p = { x: <span class="hljs-number">0.5</span> * innerSize.width, y: innerSize.height }
+      v = { x: <span class="hljs-number">0</span>, y: <span class="hljs-number">1</span> }
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">default</span>:
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'bottom-right'</span>:
+      p = { x: innerSize.width, y: innerSize.height }
+      v = { x: <span class="hljs-number">1</span>, y: <span class="hljs-number">1</span> }
+      <span class="hljs-keyword">break</span>
+  }
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">svg</span>
+      <span class="hljs-attribute">width</span>=<span class="hljs-value">{`${size.width</span> + <span class="hljs-attribute">2</span> * <span class="hljs-attribute">tail.width</span>}<span class="hljs-attribute">px</span>`}
+      <span class="hljs-attribute">height</span>=<span class="hljs-value">{`${size.height</span> + <span class="hljs-attribute">2</span> * <span class="hljs-attribute">tail.height</span>}<span class="hljs-attribute">px</span>`}
+      <span class="hljs-attribute">viewBox</span>=<span class="hljs-value">{`${-tail.width}</span> <span class="hljs-attribute">-</span>${<span class="hljs-attribute">tail.height</span>} ${<span class="hljs-attribute">size.width</span> +
+        <span class="hljs-attribute">2</span> * <span class="hljs-attribute">tail.width</span>} ${<span class="hljs-attribute">size.height</span> + <span class="hljs-attribute">2</span> * <span class="hljs-attribute">tail.height</span>}`}
+      <span class="hljs-attribute">style</span>=<span class="hljs-value">{{</span>
+        <span class="hljs-attribute">position:</span> '<span class="hljs-attribute">absolute</span>',
+        <span class="hljs-attribute">left:</span> `${<span class="hljs-attribute">-tail.width</span>}<span class="hljs-attribute">px</span>`,
+        <span class="hljs-attribute">top:</span> `${<span class="hljs-attribute">-tail.height</span>}<span class="hljs-attribute">px</span>`
+      }}
+    &gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">defs</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">filter</span> <span class="hljs-attribute">id</span>=<span class="hljs-value">'shadow'</span> <span class="hljs-attribute">x</span>=<span class="hljs-value">'-10%'</span> <span class="hljs-attribute">y</span>=<span class="hljs-value">'-10%'</span> <span class="hljs-attribute">width</span>=<span class="hljs-value">'120%'</span> <span class="hljs-attribute">height</span>=<span class="hljs-value">'120%'</span>&gt;</span>
+          <span class="hljs-tag">&lt;<span class="hljs-title">feGaussianBlur</span> <span class="hljs-attribute">stdDeviation</span>=<span class="hljs-value">'2 2'</span> <span class="hljs-attribute">result</span>=<span class="hljs-value">'shadow'</span> /&gt;</span>
+          <span class="hljs-tag">&lt;<span class="hljs-title">feOffset</span> <span class="hljs-attribute">dx</span>=<span class="hljs-value">{shadow.dx}</span> <span class="hljs-attribute">dy</span>=<span class="hljs-value">{shadow.dy}</span> /&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-title">filter</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">g</span> <span class="hljs-attribute">id</span>=<span class="hljs-value">{id}</span> <span class="hljs-attribute">transform</span>=<span class="hljs-value">{`translate(${0.25</span> * <span class="hljs-attribute">delta</span>},${<span class="hljs-attribute">0.25</span> * <span class="hljs-attribute">delta</span>})`}&gt;</span>
+          {// Draw the cloud tail
+          [...seq(0, 3)].map(i =&gt; {
+            const c = add(p, scale(v, norm(tail_) * (0.25 + (0.5 * i) / 2)))
+            const r = norm(tail_) * 0.15 * Math.pow(0.6, i)
+            return (
+              <span class="hljs-tag">&lt;<span class="hljs-title">circle</span>
+                <span class="hljs-attribute">key</span>=<span class="hljs-value">{i}</span>
+                <span class="hljs-attribute">cx</span>=<span class="hljs-value">{c.x}</span>
+                <span class="hljs-attribute">cy</span>=<span class="hljs-value">{c.y}</span>
+                <span class="hljs-attribute">r</span>=<span class="hljs-value">{r}</span>
+                <span class="hljs-attribute">stroke</span>=<span class="hljs-value">{border.color}</span>
+                <span class="hljs-attribute">strokeWidth</span>=<span class="hljs-value">{border.width}</span>
+                {<span class="hljs-attribute">...dash</span>}
+              /&gt;</span>
+            )</span>
+          })}
+          &lt;path
+            d={</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Draw the cloud folds</p></div></div><div class="code"><div class="wrapper">              [...seq(<span class="hljs-number">0</span>, folds)]
+                .map(i =&gt; i * delta + coefs.l[i] * delta * <span class="hljs-number">0.2</span>)
+                .reduce((d, l, i, ls) =&gt; {
+                  <span class="hljs-keyword">const</span> p1 = path.getPointAtLength(<span class="hljs-built_in">Math</span>.min(length, l))
+                  <span class="hljs-keyword">const</span> p2 = path.getPointAtLength(
+                    <span class="hljs-built_in">Math</span>.min(length, ls[(i + <span class="hljs-number">1</span>) % folds])
+                  )
+                  <span class="hljs-keyword">const</span> p3 = mid(p1, p2)
+                  <span class="hljs-keyword">const</span> v = subst(p2, p1)
+                  <span class="hljs-keyword">const</span> na = { x: v.y, y: -v.x }
+                  <span class="hljs-keyword">const</span> nb = { x: -v.y, y: v.x }
+                  <span class="hljs-keyword">const</span> n =
+                    norm2(subst(add(p1, na), center)) &gt;
+                    norm2(subst(add(p1, nb), center))
+                      ? na
+                      : nb
+                  <span class="hljs-keyword">const</span> f1 = <span class="hljs-number">0.25</span> + coefs.f1[i] * <span class="hljs-number">0.25</span>
+                  <span class="hljs-keyword">const</span> f2 = f1 * <span class="hljs-number">0.8</span>
+                  <span class="hljs-keyword">const</span> f3 = coefs.f3[i] * <span class="hljs-number">0.1</span>
+                  <span class="hljs-keyword">const</span> p4 = add(p3, scale(n, f1))
+                  <span class="hljs-keyword">const</span> rp4 = subst(p4, p1)
+                  <span class="hljs-keyword">const</span> rp2 = subst(p2, p4)
+                  <span class="hljs-keyword">const</span> n0 = add(scale(n, f2), scale(v, f3))
+                  <span class="hljs-keyword">const</span> n1 = add(rp4, scale({ x: n.y, y: -n.x }, f2))
+                  <span class="hljs-keyword">const</span> n2 = scale({ x: -n.y, y: n.x }, f2)
+                  <span class="hljs-keyword">const</span> n3 = add(rp2, add(scale(n, f2), scale(v, -f3)))
+                  <span class="hljs-keyword">if</span> (i === <span class="hljs-number">0</span>) {
+                    d.push(<span class="hljs-string">`M <span class="hljs-subst">${p1.x}</span> <span class="hljs-subst">${p1.y}</span>`</span>)
+                  }
+                  d.push(<span class="hljs-string">`c <span class="hljs-subst">${n0.x}</span> <span class="hljs-subst">${n0.y}</span> <span class="hljs-subst">${n1.x}</span> <span class="hljs-subst">${n1.y}</span> <span class="hljs-subst">${rp4.x}</span> <span class="hljs-subst">${rp4.y}</span>`</span>)
+                  d.push(<span class="hljs-string">`c <span class="hljs-subst">${n2.x}</span> <span class="hljs-subst">${n2.y}</span> <span class="hljs-subst">${n3.x}</span> <span class="hljs-subst">${n3.y}</span> <span class="hljs-subst">${rp2.x}</span> <span class="hljs-subst">${rp2.y}</span>`</span>)
+                  <span class="hljs-keyword">return</span> d
+                }, [])
+                .join(<span class="hljs-string">' '</span>)
+            }
+            stroke={border.color}
+            strokeWidth={border.width}
+            {...dash}
+          /&gt;
+          <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">rect</span>
+            <span class="hljs-attribute">x</span>=<span class="hljs-value">{-0.25</span> * <span class="hljs-attribute">delta</span>}
+            <span class="hljs-attribute">y</span>=<span class="hljs-value">{-0.25</span> * <span class="hljs-attribute">delta</span>}
+            <span class="hljs-attribute">width</span>=<span class="hljs-value">{innerSize.width</span> + <span class="hljs-attribute">0.5</span> * <span class="hljs-attribute">delta</span>}
+            <span class="hljs-attribute">height</span>=<span class="hljs-value">{innerSize.height</span> + <span class="hljs-attribute">0.5</span> * <span class="hljs-attribute">delta</span>}
+            <span class="hljs-attribute">fill</span>=<span class="hljs-value">'none'</span>
+            <span class="hljs-attribute">stroke</span>=<span class="hljs-value">'none'</span>
+          /&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-title">g</span>&gt;</span>
+      <span class="hljs-tag">&lt;/<span class="hljs-title">defs</span>&gt;</span>
+      {shadow.color ? (
+        <span class="hljs-tag">&lt;<span class="hljs-title">use</span> <span class="hljs-attribute">href</span>=<span class="hljs-value">{`#${id}`}</span> <span class="hljs-attribute">filter</span>=<span class="hljs-value">'url(#shadow)'</span> <span class="hljs-attribute">fill</span>=<span class="hljs-value">{shadow.color}</span> /&gt;</span>
+      )</span> : <span class="hljs-literal">null</span>}
+      &lt;use
+        href={<span class="hljs-string">`#<span class="hljs-subst">${id}</span>`</span>}
+        fill={backgroundColor}
+        style={style}
+        className={className}
+      /&gt;
+    <span class="xml"><span class="hljs-tag">&lt;/<span class="hljs-title">svg</span>&gt;</span>
+  )</span>
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> areEqual = (prev, next) =&gt; {
+  <span class="hljs-keyword">return</span> prev.metrics === next.metrics &amp;&amp; prev.my === next.my
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> React.memo(CloudShape, areEqual)</div></div></div></div></body></html>

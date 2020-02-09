@@ -115,36 +115,6 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "foldPrefix": "^",
               "name": "JavaScript"
             },
-            "sourcePath": "/home/laaglu/git/react-infotip/src/Engine.js",
-            "projectPath": "src/Engine.js",
-            "targetPath": "src/Engine",
-            "pageTitle": "src/Engine",
-            "title": "Engine"
-          },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 1,
-                "title": "Engine",
-                "slug": "engine"
-              },
-              "depth": 1
-            }
-          ]
-        }, {
-          "type": "file",
-          "data": {
-            "language": {
-              "nameMatchers": [".js"],
-              "pygmentsLexer": "javascript",
-              "multiLineComment": ["/*", "*", "*/"],
-              "singleLineComment": ["//"],
-              "ignorePrefix": "}",
-              "foldPrefix": "^",
-              "name": "JavaScript"
-            },
             "sourcePath": "/home/laaglu/git/react-infotip/src/Location.js",
             "projectPath": "src/Location.js",
             "targetPath": "src/Location",
@@ -163,6 +133,26 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "depth": 1
             }
           ]
+        }, {
+          "type": "file",
+          "data": {
+            "language": {
+              "nameMatchers": [".js"],
+              "pygmentsLexer": "javascript",
+              "multiLineComment": ["/*", "*", "*/"],
+              "singleLineComment": ["//"],
+              "ignorePrefix": "}",
+              "foldPrefix": "^",
+              "name": "JavaScript"
+            },
+            "sourcePath": "/home/laaglu/git/react-infotip/src/MergingConfigProvider.js",
+            "projectPath": "src/MergingConfigProvider.js",
+            "targetPath": "src/MergingConfigProvider",
+            "pageTitle": "src/MergingConfigProvider",
+            "title": "MergingConfigProvider"
+          },
+          "depth": 2,
+          "outline": []
         }, {
           "type": "file",
           "data": {
@@ -284,6 +274,56 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             }
           ]
         }, {
+          "type": "folder",
+          "data": {
+            "path": "src/hooks",
+            "title": "hooks"
+          },
+          "depth": 2,
+          "children": [
+            {
+              "type": "file",
+              "data": {
+                "language": {
+                  "nameMatchers": [".js"],
+                  "pygmentsLexer": "javascript",
+                  "multiLineComment": ["/*", "*", "*/"],
+                  "singleLineComment": ["//"],
+                  "ignorePrefix": "}",
+                  "foldPrefix": "^",
+                  "name": "JavaScript"
+                },
+                "sourcePath": "/home/laaglu/git/react-infotip/src/hooks/useComputedStyle.js",
+                "projectPath": "src/hooks/useComputedStyle.js",
+                "targetPath": "src/hooks/useComputedStyle",
+                "pageTitle": "src/hooks/useComputedStyle",
+                "title": "useComputedStyle"
+              },
+              "depth": 3,
+              "outline": []
+            }, {
+              "type": "file",
+              "data": {
+                "language": {
+                  "nameMatchers": [".js"],
+                  "pygmentsLexer": "javascript",
+                  "multiLineComment": ["/*", "*", "*/"],
+                  "singleLineComment": ["//"],
+                  "ignorePrefix": "}",
+                  "foldPrefix": "^",
+                  "name": "JavaScript"
+                },
+                "sourcePath": "/home/laaglu/git/react-infotip/src/hooks/useResizeObserver.js",
+                "projectPath": "src/hooks/useResizeObserver.js",
+                "targetPath": "src/hooks/useResizeObserver",
+                "pageTitle": "src/hooks/useResizeObserver",
+                "title": "useResizeObserver"
+              },
+              "depth": 3,
+              "outline": []
+            }
+          ]
+        }, {
           "type": "file",
           "data": {
             "language": {
@@ -344,6 +384,66 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             }
           ]
         }, {
+          "type": "folder",
+          "data": {
+            "path": "src/reducers",
+            "title": "reducers"
+          },
+          "depth": 2,
+          "children": [
+            {
+              "type": "file",
+              "data": {
+                "language": {
+                  "nameMatchers": [".js"],
+                  "pygmentsLexer": "javascript",
+                  "multiLineComment": ["/*", "*", "*/"],
+                  "singleLineComment": ["//"],
+                  "ignorePrefix": "}",
+                  "foldPrefix": "^",
+                  "name": "JavaScript"
+                },
+                "sourcePath": "/home/laaglu/git/react-infotip/src/reducers/sourceReducer.js",
+                "projectPath": "src/reducers/sourceReducer.js",
+                "targetPath": "src/reducers/sourceReducer",
+                "pageTitle": "src/reducers/sourceReducer",
+                "title": "sourceReducer"
+              },
+              "depth": 3,
+              "outline": [
+                {
+                  "type": "heading",
+                  "data": {
+                    "level": 1,
+                    "title": "sourceReducer",
+                    "slug": "sourcereducer"
+                  },
+                  "depth": 1
+                }
+              ]
+            }, {
+              "type": "file",
+              "data": {
+                "language": {
+                  "nameMatchers": [".js"],
+                  "pygmentsLexer": "javascript",
+                  "multiLineComment": ["/*", "*", "*/"],
+                  "singleLineComment": ["//"],
+                  "ignorePrefix": "}",
+                  "foldPrefix": "^",
+                  "name": "JavaScript"
+                },
+                "sourcePath": "/home/laaglu/git/react-infotip/src/reducers/storageReducer.js",
+                "projectPath": "src/reducers/storageReducer.js",
+                "targetPath": "src/reducers/storageReducer",
+                "pageTitle": "src/reducers/storageReducer",
+                "title": "storageReducer"
+              },
+              "depth": 3,
+              "outline": []
+            }
+          ]
+        }, {
           "type": "file",
           "data": {
             "language": {
@@ -373,6 +473,96 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "depth": 1
             }
           ]
+        }, {
+          "type": "folder",
+          "data": {
+            "path": "src/svg",
+            "title": "svg"
+          },
+          "depth": 2,
+          "children": [
+            {
+              "type": "file",
+              "data": {
+                "language": {
+                  "nameMatchers": [".js"],
+                  "pygmentsLexer": "javascript",
+                  "multiLineComment": ["/*", "*", "*/"],
+                  "singleLineComment": ["//"],
+                  "ignorePrefix": "}",
+                  "foldPrefix": "^",
+                  "name": "JavaScript"
+                },
+                "sourcePath": "/home/laaglu/git/react-infotip/src/svg/BalloonTail.js",
+                "projectPath": "src/svg/BalloonTail.js",
+                "targetPath": "src/svg/BalloonTail",
+                "pageTitle": "src/svg/BalloonTail",
+                "title": "BalloonTail"
+              },
+              "depth": 3,
+              "outline": []
+            }, {
+              "type": "file",
+              "data": {
+                "language": {
+                  "nameMatchers": [".js"],
+                  "pygmentsLexer": "javascript",
+                  "multiLineComment": ["/*", "*", "*/"],
+                  "singleLineComment": ["//"],
+                  "ignorePrefix": "}",
+                  "foldPrefix": "^",
+                  "name": "JavaScript"
+                },
+                "sourcePath": "/home/laaglu/git/react-infotip/src/svg/CloudShape.js",
+                "projectPath": "src/svg/CloudShape.js",
+                "targetPath": "src/svg/CloudShape",
+                "pageTitle": "src/svg/CloudShape",
+                "title": "CloudShape"
+              },
+              "depth": 3,
+              "outline": []
+            }, {
+              "type": "file",
+              "data": {
+                "language": {
+                  "nameMatchers": [".js"],
+                  "pygmentsLexer": "javascript",
+                  "multiLineComment": ["/*", "*", "*/"],
+                  "singleLineComment": ["//"],
+                  "ignorePrefix": "}",
+                  "foldPrefix": "^",
+                  "name": "JavaScript"
+                },
+                "sourcePath": "/home/laaglu/git/react-infotip/src/svg/Pin.js",
+                "projectPath": "src/svg/Pin.js",
+                "targetPath": "src/svg/Pin",
+                "pageTitle": "src/svg/Pin",
+                "title": "Pin"
+              },
+              "depth": 3,
+              "outline": []
+            }
+          ]
+        }, {
+          "type": "file",
+          "data": {
+            "language": {
+              "nameMatchers": [".js"],
+              "pygmentsLexer": "javascript",
+              "multiLineComment": ["/*", "*", "*/"],
+              "singleLineComment": ["//"],
+              "ignorePrefix": "}",
+              "foldPrefix": "^",
+              "name": "JavaScript"
+            },
+            "sourcePath": "/home/laaglu/git/react-infotip/src/useId.js",
+            "projectPath": "src/useId.js",
+            "targetPath": "src/useId",
+            "pageTitle": "src/useId",
+            "title": "useId"
+          },
+          "depth": 2,
+          "outline": []
         }, {
           "type": "file",
           "data": {

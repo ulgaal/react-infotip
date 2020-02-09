@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="en"><head><title>src/hooks/useComputedStyle</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="src/hooks/useComputedStyle"><meta name="groc-project-path" content="src/hooks/useComputedStyle.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/hooks/useComputedStyle.js</div></div><div id="document"><div class="segment"><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> { useRef } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>
+
+const camelToHyphen = str =&gt;
+  str.replace(
+    /[A-Z]/,
+    (match, offset) =&gt; (offset &gt; 0 ? <span class="hljs-string">'-'</span> : <span class="hljs-string">''</span>) + match.toLowerCase()
+  )
+
+const useComputedStyle = (style, className) =&gt; {
+  const styleRef = useRef(null)
+  const classNameRef = useRef(null)
+  const computedStyleRef = useRef(null)
+  if (styleRef.current !== style || classNameRef.current !== className) {
+    styleRef.current = style
+    classNameRef.current = className
+    const element = document.createElement(<span class="hljs-string">'div'</span>)
+    if (className) {
+      element.className = className
+    } else {
+      for (const [key, value] of Object.entries(style || {})) {
+        element.style[camelToHyphen(key)] = value
+      }
+    }
+    document.body.appendChild(element)
+    const computedStyle = window.getComputedStyle(element)
+    computedStyleRef.current = {
+      margin: {
+        top: Math.round(parseFloat(computedStyle.marginTop)),
+        right: Math.round(parseFloat(computedStyle.marginRight)),
+        bottom: Math.round(parseFloat(computedStyle.marginBottom)),
+        left: Math.round(parseFloat(computedStyle.marginLeft))
+      },
+      borderStyle: computedStyle.borderTopStyle,
+      borderColor: computedStyle.borderTopColor,
+      backgroundColor: computedStyle.backgroundColor,
+      borderWidth: Math.round(parseFloat(computedStyle.borderTopWidth)),
+      borderRadius: Math.round(parseFloat(computedStyle.borderTopLeftRadius))
+    }
+    document.body.removeChild(element)
+  }
+  return computedStyleRef.current
+}
+
+export default useComputedStyle</div></div></div></div></body></html>

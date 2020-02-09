@@ -8,14 +8,14 @@ distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.</p>
-<h1 id="cloud">Cloud</h1></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> React, { Component } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>
+<h1 id="cloud">Cloud</h1></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> React, { useRef, useState, useCallback, useEffect } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>
 <span class="hljs-keyword">import</span> PropTypes <span class="hljs-keyword">from</span> <span class="hljs-string">'prop-types'</span>
-<span class="hljs-keyword">import</span> { CornerType } <span class="hljs-keyword">from</span> <span class="hljs-string">'./prop-types'</span>
-<span class="hljs-keyword">import</span> { pixelize, seq } <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span>
+<span class="hljs-keyword">import</span> { CornerType, TailType } <span class="hljs-keyword">from</span> <span class="hljs-string">'./prop-types'</span>
 <span class="hljs-keyword">import</span> isEqual <span class="hljs-keyword">from</span> <span class="hljs-string">'lodash.isequal'</span>
-<span class="hljs-keyword">import</span> ResizeObserver <span class="hljs-keyword">from</span> <span class="hljs-string">'resize-observer-polyfill'</span>
 <span class="hljs-keyword">import</span> { styles } <span class="hljs-keyword">from</span> <span class="hljs-string">'./styles'</span>
-<span class="hljs-keyword">import</span> { parseBorder, parseBoxShadow } <span class="hljs-keyword">from</span> <span class="hljs-string">'./css'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Cloud</code> component wraps another React component in
+<span class="hljs-keyword">import</span> CloudShape <span class="hljs-keyword">from</span> <span class="hljs-string">'./svg/CloudShape'</span>
+<span class="hljs-keyword">import</span> useResizeObserver <span class="hljs-keyword">from</span> <span class="hljs-string">'./hooks/useResizeObserver'</span>
+<span class="hljs-keyword">import</span> { GEOMETRY } <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/sourceReducer'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Cloud</code> component wraps another React component in
 a cloud-shaped styleable wrapper.</p>
 <p>Graphically a <code>Cloud</code> is composed of a cloud outline and a content.
 The cloud shape is randomly computed using just a <code>folds</code> parameter
@@ -26,222 +26,93 @@ which indicates the number of folds the cloud <code>Cloud</code> have.</p>
  <span class="hljs-tag">&lt;<span class="hljs-title">span</span>&gt;</span> // Cloud content (overlaps the outline)
   ... tip content
  <span class="hljs-tag">&lt;/<span class="hljs-title">span</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span></code></pre></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Cloud</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span> </span>{
-  constructor (props) {
-    <span class="hljs-keyword">super</span>(props)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A ResizeObserver is tied to the content <code>&lt;span&gt;</code> of the
-<code>Cloud</code> to measure it precisely.</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-keyword">this</span>.ref = React.createRef()
-    <span class="hljs-keyword">this</span>.observer = <span class="hljs-keyword">new</span> ResizeObserver(<span class="hljs-keyword">this</span>.measure.bind(<span class="hljs-keyword">this</span>))</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Cloud</code> keeps track of a <code>metrics</code> state variable
+<span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span></code></pre></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Cloud = props =&gt; {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>console.log(&#39;Cloud&#39;, props)</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> { children, my, tail, folds, style, className, id, dispatch } = props</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A ResizeObserver is tied to the content <code>&lt;span&gt;</code> of the
+<code>Cloud</code> to measure it precisely.</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> ref = useRef(<span class="hljs-literal">null</span>)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Cloud</code> keeps track of a <code>metrics</code> state variable
 which contains info extracted by processing the CSS style of
-the <code>Cloud</code> and info extracted by measuring its content <code>&lt;span&gt;</code>.</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-keyword">this</span>.state = {
-      metrics: {
-        size: {
-          width: <span class="hljs-number">0</span>,
-          height: <span class="hljs-number">0</span>
-        },
-        innerSize: {
-          width: <span class="hljs-number">0</span>,
-          height: <span class="hljs-number">0</span>
-        },
-        corners: {
-          <span class="hljs-string">'top-left'</span>: {
-            left: <span class="hljs-number">0</span>,
-            top: <span class="hljs-number">0</span>
-          },
-          <span class="hljs-string">'top-center'</span>: {
-            left: <span class="hljs-number">0</span>,
-            top: <span class="hljs-number">0</span>
-          },
-          <span class="hljs-string">'top-right'</span>: {
-            left: <span class="hljs-number">0</span>,
-            top: <span class="hljs-number">0</span>
-          },
-          <span class="hljs-string">'center-left'</span>: {
-            left: <span class="hljs-number">0</span>,
-            top: <span class="hljs-number">0</span>
-          },
-          <span class="hljs-string">'center-right'</span>: {
-            left: <span class="hljs-number">0</span>,
-            top: <span class="hljs-number">0</span>
-          },
-          <span class="hljs-string">'bottom-left'</span>: {
-            left: <span class="hljs-number">0</span>,
-            top: <span class="hljs-number">0</span>
-          },
-          <span class="hljs-string">'bottom-center'</span>: {
-            left: <span class="hljs-number">0</span>,
-            top: <span class="hljs-number">0</span>
-          },
-          <span class="hljs-string">'bottom-right'</span>: {
-            left: <span class="hljs-number">0</span>,
-            top: <span class="hljs-number">0</span>
-          }
-        },
-        tail: {
-          width: <span class="hljs-number">25</span>,
-          height: <span class="hljs-number">25</span>
-        },
-        folds: props.folds,
-        delta: <span class="hljs-number">0</span>
-      },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Generate a set of random coefficients which
-determine the cloud shape</p></div></div><div class="code"><div class="wrapper">      coefs: randomCoefs(props.folds),</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Because SVG <code>&lt;defs&gt;</code> elements are used internally,
-generate a new id to uniquely identify that set of <code>&lt;defs&gt;</code>.</p></div></div><div class="code"><div class="wrapper">      shapeid: shapeid++
+the <code>Cloud</code> and info extracted by measuring its content <code>&lt;span&gt;</code>.</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> [metrics, setMetrics] = useState(<span class="hljs-literal">null</span>)
+
+  <span class="hljs-keyword">const</span> measure = useCallback(entry =&gt; {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Retrieve the dimensions of the content <code>&lt;span&gt;</code>
+from the <code>ResizeObserver</code></p></div></div><div class="code"><div class="wrapper">    <span class="hljs-keyword">const</span> boundingClientRect = entry.target.getBoundingClientRect()
+    <span class="hljs-keyword">const</span> innerSize = {
+      width: boundingClientRect.width,
+      height: boundingClientRect.height
     }
-  }
-
-  componentDidMount () {
-    <span class="hljs-keyword">this</span>.observe(<span class="hljs-keyword">this</span>.ref.current)
-  }
-
-  componentDidUpdate (prevProps) {
-    <span class="hljs-keyword">this</span>.observe(<span class="hljs-keyword">this</span>.ref.current)
-    <span class="hljs-keyword">if</span> (
-      !isEqual(<span class="hljs-keyword">this</span>.props.tail, prevProps.tail) ||
-      !isEqual(<span class="hljs-keyword">this</span>.props.style, prevProps.style) ||
-      <span class="hljs-keyword">this</span>.props.folds !== prevProps.folds
-    ) {
-      <span class="hljs-keyword">this</span>.measure([{ target: <span class="hljs-keyword">this</span>.ref.current }])
+    <span class="hljs-keyword">const</span> newMetrics = computeMetrics({
+      tail,
+      folds,
+      innerSize,
+      style,
+      className
+    })
+    <span class="hljs-keyword">if</span> (!isEqual(newMetrics, metrics)) {
+      setMetrics(newMetrics)
+      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> dispatch === <span class="hljs-string">'function'</span>) {
+        <span class="hljs-keyword">const</span> { corners, size } = newMetrics
+        dispatch({ type: GEOMETRY, id, geometry: { corners, size } })
+      }
     }
-  }
-
-  componentWillUnmount () {
-    <span class="hljs-keyword">this</span>.observer.disconnect()
-  }
-
-  observe (target) {
-    <span class="hljs-keyword">if</span> (target !== <span class="hljs-keyword">this</span>.target) {
-      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.target) {
-        <span class="hljs-keyword">this</span>.observer.unobserve(<span class="hljs-keyword">this</span>.target)
-      }
-      <span class="hljs-keyword">this</span>.observer.observe(target)
-      <span class="hljs-keyword">this</span>.target = target
-    }
-  }
-
-  measure (entries) {
-    <span class="hljs-keyword">const</span> { tail, folds } = <span class="hljs-keyword">this</span>.props
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> { target } <span class="hljs-keyword">of</span> entries) {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Retrieve the dimensions of the content <code>&lt;span&gt;</code>
-from the <code>ResizeObserver</code></p></div></div><div class="code"><div class="wrapper">      <span class="hljs-keyword">const</span> boundingClientRect = target.getBoundingClientRect()
-      <span class="hljs-keyword">const</span> innerSize = {
-        width: boundingClientRect.width,
-        height: boundingClientRect.height
-      }
-
-      <span class="hljs-keyword">const</span> length = <span class="hljs-number">2</span> * (innerSize.width + innerSize.height)
-      <span class="hljs-keyword">const</span> delta = (<span class="hljs-number">0.5</span> * length) / folds
-
-      <span class="hljs-keyword">const</span> size = {
-        width: innerSize.width + delta,
-        height: innerSize.height + delta
-      }
-      <span class="hljs-keyword">const</span> metrics = {
-        size,
-        innerSize,
-        corners: {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Compute the coordinates of the tail tip for
-all possible tail configurations, in local coordinates.
-These coordinates must be passed to the <code>Engine</code> so that
-precise tip placement can be computed.</p></div></div><div class="code"><div class="wrapper">          <span class="hljs-string">'top-left'</span>: {
-            left: -tail.width,
-            top: -tail.height
-          },
-          <span class="hljs-string">'top-center'</span>: {
-            left: <span class="hljs-number">0.5</span> * size.width,
-            top: -tail.height
-          },
-          <span class="hljs-string">'top-right'</span>: {
-            left: size.width + tail.width,
-            top: -tail.height
-          },
-          <span class="hljs-string">'center-left'</span>: {
-            left: -tail.width,
-            top: <span class="hljs-number">0.5</span> * size.height
-          },
-          <span class="hljs-string">'center-right'</span>: {
-            left: size.width + tail.width,
-            top: <span class="hljs-number">0.5</span> * size.height
-          },
-          <span class="hljs-string">'bottom-left'</span>: {
-            left: -tail.width,
-            top: size.height + tail.height
-          },
-          <span class="hljs-string">'bottom-center'</span>: {
-            left: <span class="hljs-number">0.5</span> * size.width,
-            top: size.height + tail.height
-          },
-          <span class="hljs-string">'bottom-right'</span>: {
-            left: size.width + tail.width,
-            top: size.height + tail.height
-          }
-        },
+  }, [])
+  useResizeObserver(ref, measure)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Update the metrics if tail, fold or innerSize change</p></div></div><div class="code"><div class="wrapper">  useEffect(() =&gt; {
+    <span class="hljs-keyword">if</span> (metrics) {
+      <span class="hljs-keyword">const</span> newMetrics = computeMetrics({
         tail,
         folds,
-        delta
-      }
-      <span class="hljs-keyword">if</span> (!isEqual(metrics, <span class="hljs-keyword">this</span>.state.metrics)) {
-        <span class="hljs-keyword">const</span> { onGeometryChange } = <span class="hljs-keyword">this</span>.props
-        <span class="hljs-keyword">this</span>.setState({
-          metrics,
-          coefs: randomCoefs(folds),
-          shapeid: shapeid++
-        })
-        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> onGeometryChange === <span class="hljs-string">'function'</span>) {
-          <span class="hljs-keyword">const</span> { corners, size } = metrics
-          onGeometryChange({ corners, size })
+        innerSize: metrics.innerSize,
+        style,
+        className
+      })
+      <span class="hljs-keyword">if</span> (!isEqual(newMetrics, metrics)) {
+        setMetrics(newMetrics)
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> dispatch === <span class="hljs-string">'function'</span>) {
+          <span class="hljs-keyword">const</span> { corners, size } = newMetrics
+          dispatch({ type: GEOMETRY, id, geometry: { corners, size } })
         }
       }
     }
-  }
+  }, [tail, folds, style, className])
 
-  render () {
-    <span class="hljs-keyword">const</span> { children, my, style, className } = <span class="hljs-keyword">this</span>.props
-    <span class="hljs-keyword">const</span> { metrics, coefs, shapeid } = <span class="hljs-keyword">this</span>.state
+  <span class="hljs-keyword">let</span> containerStyle
+  <span class="hljs-keyword">let</span> contentStyle
+  <span class="hljs-keyword">if</span> (metrics) {
     <span class="hljs-keyword">const</span> {
       size: { width, height },
       delta
     } = metrics
-    <span class="hljs-keyword">return</span> (
-      <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">div</span>
-        <span class="hljs-attribute">className</span>=<span class="hljs-value">'rit-cloud'</span>
-        <span class="hljs-attribute">style</span>=<span class="hljs-value">{{</span>
-          <span class="hljs-attribute">visibility:</span> <span class="hljs-attribute">width</span> =<span class="hljs-value">==</span> <span class="hljs-attribute">0</span> &amp;&amp; <span class="hljs-attribute">height</span> =<span class="hljs-value">==</span> <span class="hljs-attribute">0</span> ? '<span class="hljs-attribute">hidden</span>' <span class="hljs-attribute">:</span> '<span class="hljs-attribute">visible</span>',
-          <span class="hljs-attribute">position:</span> '<span class="hljs-attribute">relative</span>',
-          <span class="hljs-attribute">...pixelize</span>({
-            <span class="hljs-attribute">width</span>,
-            <span class="hljs-attribute">height</span>
-          })
-        }}
-      &gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">SvgCloud</span>
-          <span class="hljs-attribute">my</span>=<span class="hljs-value">{my}</span>
-          <span class="hljs-attribute">metrics</span>=<span class="hljs-value">{metrics}</span>
-          <span class="hljs-attribute">coefs</span>=<span class="hljs-value">{coefs}</span>
-          <span class="hljs-attribute">shapeid</span>=<span class="hljs-value">{shapeid}</span>
-          <span class="hljs-attribute">style</span>=<span class="hljs-value">{{</span> <span class="hljs-attribute">...</span>(<span class="hljs-attribute">className</span> ? {} <span class="hljs-attribute">:</span> <span class="hljs-attribute">style</span>) }}
-          <span class="hljs-attribute">className</span>=<span class="hljs-value">{className}</span>
-        /&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">span</span>
-          <span class="hljs-attribute">ref</span>=<span class="hljs-value">{this.ref}</span>
-          <span class="hljs-attribute">style</span>=<span class="hljs-value">{{</span>
-            <span class="hljs-attribute">display:</span> '<span class="hljs-attribute">inline-block</span>',
-            <span class="hljs-attribute">whiteSpace:</span> '<span class="hljs-attribute">nowrap</span>',
-            <span class="hljs-attribute">position:</span> '<span class="hljs-attribute">absolute</span>',
-            <span class="hljs-attribute">left:</span> <span class="hljs-attribute">0.5</span> * <span class="hljs-attribute">delta</span>,
-            <span class="hljs-attribute">top:</span> <span class="hljs-attribute">0.5</span> * <span class="hljs-attribute">delta</span>,
-            <span class="hljs-attribute">color:</span> <span class="hljs-attribute">style.color</span>,
-            <span class="hljs-attribute">padding:</span> <span class="hljs-attribute">style.padding</span>
-          }}
-        &gt;</span>
-          {children}
-        <span class="hljs-tag">&lt;/<span class="hljs-title">span</span>&gt;</span>
-      <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
-    )</span>
+    containerStyle = {
+      visibility: <span class="hljs-string">'visible'</span>,
+      width: <span class="hljs-string">`<span class="hljs-subst">${width}</span>px`</span>,
+      height: <span class="hljs-string">`<span class="hljs-subst">${height}</span>px`</span>
+    }
+    contentStyle = {
+      display: <span class="hljs-string">'inline-block'</span>,
+      whiteSpace: <span class="hljs-string">'nowrap'</span>,
+      position: <span class="hljs-string">'absolute'</span>,
+      left: <span class="hljs-number">0.5</span> * delta,
+      top: <span class="hljs-number">0.5</span> * delta,
+      color: style.color,
+      padding: style.padding
+    }
+  } <span class="hljs-keyword">else</span> {
+    containerStyle = {
+      visibility: <span class="hljs-string">'hidden'</span>
+    }
+    contentStyle = {
+      display: <span class="hljs-string">'inline-block'</span>,
+      padding: style.padding
+    }
   }
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">'rit-cloud'</span> <span class="hljs-attribute">style</span>=<span class="hljs-value">{containerStyle}</span> <span class="hljs-attribute">data-rit-id</span>=<span class="hljs-value">{id}</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">CloudShape</span> <span class="hljs-attribute">my</span>=<span class="hljs-value">{my}</span> <span class="hljs-attribute">metrics</span>=<span class="hljs-value">{metrics}</span> /&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">span</span> <span class="hljs-attribute">ref</span>=<span class="hljs-value">{ref}</span> <span class="hljs-attribute">style</span>=<span class="hljs-value">{contentStyle}</span>&gt;</span>
+        {children}
+      <span class="hljs-tag">&lt;/<span class="hljs-title">span</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
+  )</span>
 }
 
-Cloud.propTypes = {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The corner of the cloud to which the tail attaches</p></div></div><div class="code"><div class="wrapper">  my: CornerType,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The size of the cloud tail</p></div></div><div class="code"><div class="wrapper">  tail: PropTypes.shape({
-    width: PropTypes.number,
-    height: PropTypes.number
-  }),</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The number of randomly generated cloud folds</p></div></div><div class="code"><div class="wrapper">  folds: PropTypes.number,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The CSS style to use to render the cloud</p></div></div><div class="code"><div class="wrapper">  style: PropTypes.object,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A callback function invoked when the geometry of the cloud changes.
-The function receives a hash with the following keys:</p>
+Cloud.propTypes = {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The corner of the cloud to which the tail attaches</p></div></div><div class="code"><div class="wrapper">  my: CornerType,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The size of the cloud tail</p></div></div><div class="code"><div class="wrapper">  tail: TailType,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The number of randomly generated cloud folds</p></div></div><div class="code"><div class="wrapper">  folds: PropTypes.number,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The CSS style to use to render the cloud</p></div></div><div class="code"><div class="wrapper">  style: PropTypes.object,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A dispatch function invoked when the geometry of the cloud changes.
+The function receives a GEOMETRY action with the following keys:</p>
 <table>
 <thead>
 <tr>
@@ -342,7 +213,8 @@ The function receives a hash with the following keys:</p>
 <td>height of the wrapper.</td>
 </tr>
 </tbody>
-</table></div></div><div class="code"><div class="wrapper">  onGeometryChange: PropTypes.func
+</table></div></div><div class="code"><div class="wrapper">  dispatch: PropTypes.func,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>true</code> if the cloud is pinned to the screen</p></div></div><div class="code"><div class="wrapper">  pinned: PropTypes.bool,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>If the cloud is contained in a <code>Storage</code>, an id which uniquely identifies
+the <code>Source</code> to which this cloud belongs</p></div></div><div class="code"><div class="wrapper">  id: PropTypes.string
 }
 
 Cloud.defaultProps = {
@@ -352,189 +224,73 @@ Cloud.defaultProps = {
     height: <span class="hljs-number">25</span>
   },
   folds: <span class="hljs-number">13</span>,
-  onGeometryChange: <span class="hljs-literal">null</span>,
   style: styles.defaultStyle
-}</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Define a few 2D-vector helper functions</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> add = (p1, p2) =&gt; ({
-  x: p1.x + p2.x,
-  y: p1.y + p2.y
-})
-<span class="hljs-keyword">const</span> subst = (p1, p2) =&gt; ({
-  x: p1.x - p2.x,
-  y: p1.y - p2.y
-})
-<span class="hljs-keyword">const</span> scale = (p, f) =&gt; ({
-  x: f * p.x,
-  y: f * p.y
-})
-<span class="hljs-keyword">const</span> mid = (p1, p2) =&gt; scale(add(p1, p2), <span class="hljs-number">0.5</span>)
-<span class="hljs-keyword">const</span> norm2 = p =&gt; p.x * p.x + p.y * p.y
-<span class="hljs-keyword">const</span> norm = p =&gt; <span class="hljs-built_in">Math</span>.sqrt(norm2(p))
-<span class="hljs-keyword">const</span> randomCoefs = count =&gt; ({
-  l: [...seq(<span class="hljs-number">0</span>, count)].map(() =&gt; <span class="hljs-built_in">Math</span>.random()),
-  f1: [...seq(<span class="hljs-number">0</span>, count)].map(() =&gt; <span class="hljs-built_in">Math</span>.random()),
-  f3: [...seq(<span class="hljs-number">0</span>, count)].map(() =&gt; <span class="hljs-built_in">Math</span>.random())
-})
+}
 
-<span class="hljs-keyword">let</span> shapeid = <span class="hljs-number">0</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>SvgCloud</code> is an internal SVG component used to display the outline
-of the <code>Cloud</code> component</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> SvgCloud = props =&gt; {
-  <span class="hljs-keyword">const</span> {
-    my,
-    metrics: { innerSize, size, tail, folds },
-    style,
-    coefs,
-    shapeid
-  } = props
-  <span class="hljs-keyword">const</span> id = <span class="hljs-string">`cloud_<span class="hljs-subst">${shapeid}</span>`</span>
-  <span class="hljs-keyword">const</span> center = {
-    x: innerSize.width / <span class="hljs-number">2</span>,
-    y: innerSize.height / <span class="hljs-number">2</span>
-  }
-  <span class="hljs-keyword">const</span> tail_ = { x: tail.width, y: tail.height }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Extact CSS value from the CSS style</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> border = parseBorder(style.border)
-  <span class="hljs-keyword">const</span> backgroundColor = style.backgroundColor
-  <span class="hljs-keyword">const</span> dash = {}
-  <span class="hljs-keyword">switch</span> (border.style) {
-    <span class="hljs-keyword">case</span> <span class="hljs-string">'dotted'</span>:
-      dash.strokeDasharray = <span class="hljs-string">`<span class="hljs-subst">${border.width}</span> <span class="hljs-subst">${border.width}</span>`</span>
-      <span class="hljs-keyword">break</span>
-    <span class="hljs-keyword">case</span> <span class="hljs-string">'dashed'</span>:
-      dash.strokeDasharray = <span class="hljs-string">`<span class="hljs-subst">${3 * border.width}</span> <span class="hljs-subst">${3 * border.width}</span>`</span>
-      <span class="hljs-keyword">break</span>
-    <span class="hljs-keyword">default</span>:
-  }
-  <span class="hljs-keyword">const</span> shadow = parseBoxShadow(style.boxShadow)
-
-  <span class="hljs-keyword">const</span> path = <span class="hljs-built_in">document</span>.createElementNS(<span class="hljs-string">'http://www.w3.org/2000/svg'</span>, <span class="hljs-string">'path'</span>)
+<span class="hljs-keyword">const</span> computeMetrics = ({ tail, folds, innerSize, style, className }) =&gt; {
   <span class="hljs-keyword">const</span> length = <span class="hljs-number">2</span> * (innerSize.width + innerSize.height)
-  <span class="hljs-keyword">const</span> delta = length / folds
-  path.setAttribute(
-    <span class="hljs-string">'d'</span>,
-    <span class="hljs-string">`M 0 0 h <span class="hljs-subst">${innerSize.width}</span> v <span class="hljs-subst">${innerSize.height}</span> h <span class="hljs-subst">${-innerSize.width}</span> z`</span>
-  )
-  <span class="hljs-keyword">let</span> p = <span class="hljs-literal">null</span>
-  <span class="hljs-keyword">let</span> v = <span class="hljs-literal">null</span>
-  <span class="hljs-keyword">switch</span> (my) {
-    <span class="hljs-keyword">case</span> <span class="hljs-string">'top-left'</span>:
-      p = { x: <span class="hljs-number">0</span>, y: <span class="hljs-number">0</span> }
-      v = { x: -<span class="hljs-number">1</span>, y: -<span class="hljs-number">1</span> }
-      <span class="hljs-keyword">break</span>
-    <span class="hljs-keyword">case</span> <span class="hljs-string">'top-center'</span>:
-      p = { x: <span class="hljs-number">0.5</span> * innerSize.width, y: <span class="hljs-number">0</span> }
-      v = { x: <span class="hljs-number">0</span>, y: -<span class="hljs-number">1</span> }
-      <span class="hljs-keyword">break</span>
-    <span class="hljs-keyword">case</span> <span class="hljs-string">'top-right'</span>:
-      p = { x: innerSize.width, y: <span class="hljs-number">0</span> }
-      v = { x: <span class="hljs-number">1</span>, y: -<span class="hljs-number">1</span> }
-      <span class="hljs-keyword">break</span>
-    <span class="hljs-keyword">case</span> <span class="hljs-string">'center-left'</span>:
-      p = { x: <span class="hljs-number">0</span>, y: <span class="hljs-number">0.5</span> * innerSize.height }
-      v = { x: -<span class="hljs-number">1</span>, y: <span class="hljs-number">0</span> }
-      <span class="hljs-keyword">break</span>
-    <span class="hljs-keyword">case</span> <span class="hljs-string">'center-right'</span>:
-      p = { x: innerSize.width, y: <span class="hljs-number">0.5</span> * innerSize.height }
-      v = { x: <span class="hljs-number">1</span>, y: <span class="hljs-number">0</span> }
-      <span class="hljs-keyword">break</span>
-    <span class="hljs-keyword">case</span> <span class="hljs-string">'bottom-left'</span>:
-      p = { x: <span class="hljs-number">0</span>, y: innerSize.height }
-      v = { x: -<span class="hljs-number">1</span>, y: <span class="hljs-number">1</span> }
-      <span class="hljs-keyword">break</span>
-    <span class="hljs-keyword">case</span> <span class="hljs-string">'bottom-center'</span>:
-      p = { x: <span class="hljs-number">0.5</span> * innerSize.width, y: innerSize.height }
-      v = { x: <span class="hljs-number">0</span>, y: <span class="hljs-number">1</span> }
-      <span class="hljs-keyword">break</span>
-    <span class="hljs-keyword">default</span>:
-    <span class="hljs-keyword">case</span> <span class="hljs-string">'bottom-right'</span>:
-      p = { x: innerSize.width, y: innerSize.height }
-      v = { x: <span class="hljs-number">1</span>, y: <span class="hljs-number">1</span> }
-      <span class="hljs-keyword">break</span>
+  <span class="hljs-keyword">const</span> delta = (<span class="hljs-number">0.5</span> * length) / folds
+
+  <span class="hljs-keyword">const</span> size = {
+    width: innerSize.width + delta,
+    height: innerSize.height + delta
   }
+  <span class="hljs-keyword">return</span> {
+    size,
+    innerSize,
+    corners: {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Compute the coordinates of the tail tip for
+all possible tail configurations, in local coordinates.
+These coordinates must be passed to the <code>Engine</code> so that
+precise tip placement can be computed.</p></div></div><div class="code"><div class="wrapper">      <span class="hljs-string">'top-left'</span>: {
+        left: -tail.width,
+        top: -tail.height
+      },
+      <span class="hljs-string">'top-center'</span>: {
+        left: <span class="hljs-number">0.5</span> * size.width,
+        top: -tail.height
+      },
+      <span class="hljs-string">'top-right'</span>: {
+        left: size.width + tail.width,
+        top: -tail.height
+      },
+      <span class="hljs-string">'center-left'</span>: {
+        left: -tail.width,
+        top: <span class="hljs-number">0.5</span> * size.height
+      },
+      <span class="hljs-string">'center-right'</span>: {
+        left: size.width + tail.width,
+        top: <span class="hljs-number">0.5</span> * size.height
+      },
+      <span class="hljs-string">'bottom-left'</span>: {
+        left: -tail.width,
+        top: size.height + tail.height
+      },
+      <span class="hljs-string">'bottom-center'</span>: {
+        left: <span class="hljs-number">0.5</span> * size.width,
+        top: size.height + tail.height
+      },
+      <span class="hljs-string">'bottom-right'</span>: {
+        left: size.width + tail.width,
+        top: size.height + tail.height
+      }
+    },
+    tail,
+    folds,
+    delta,
+    style,
+    className
+  }
+}
+
+<span class="hljs-keyword">const</span> areEqual = (prev, next) =&gt; {
   <span class="hljs-keyword">return</span> (
-    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">svg</span>
-      <span class="hljs-attribute">width</span>=<span class="hljs-value">{`${size.width</span> + <span class="hljs-attribute">2</span> * <span class="hljs-attribute">tail.width</span>}<span class="hljs-attribute">px</span>`}
-      <span class="hljs-attribute">height</span>=<span class="hljs-value">{`${size.height</span> + <span class="hljs-attribute">2</span> * <span class="hljs-attribute">tail.height</span>}<span class="hljs-attribute">px</span>`}
-      <span class="hljs-attribute">viewBox</span>=<span class="hljs-value">{`${-tail.width}</span> <span class="hljs-attribute">-</span>${<span class="hljs-attribute">tail.height</span>} ${<span class="hljs-attribute">size.width</span> +
-        <span class="hljs-attribute">2</span> * <span class="hljs-attribute">tail.width</span>} ${<span class="hljs-attribute">size.height</span> + <span class="hljs-attribute">2</span> * <span class="hljs-attribute">tail.height</span>}`}
-      <span class="hljs-attribute">style</span>=<span class="hljs-value">{{</span>
-        <span class="hljs-attribute">position:</span> '<span class="hljs-attribute">absolute</span>',
-        <span class="hljs-attribute">left:</span> `${<span class="hljs-attribute">-tail.width</span>}<span class="hljs-attribute">px</span>`,
-        <span class="hljs-attribute">top:</span> `${<span class="hljs-attribute">-tail.height</span>}<span class="hljs-attribute">px</span>`
-      }}
-    &gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-title">defs</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">filter</span> <span class="hljs-attribute">id</span>=<span class="hljs-value">'shadow'</span> <span class="hljs-attribute">x</span>=<span class="hljs-value">'-10%'</span> <span class="hljs-attribute">y</span>=<span class="hljs-value">'-10%'</span> <span class="hljs-attribute">width</span>=<span class="hljs-value">'120%'</span> <span class="hljs-attribute">height</span>=<span class="hljs-value">'120%'</span>&gt;</span>
-          <span class="hljs-tag">&lt;<span class="hljs-title">feGaussianBlur</span> <span class="hljs-attribute">stdDeviation</span>=<span class="hljs-value">'2 2'</span> <span class="hljs-attribute">result</span>=<span class="hljs-value">'shadow'</span> /&gt;</span>
-          <span class="hljs-tag">&lt;<span class="hljs-title">feOffset</span> <span class="hljs-attribute">dx</span>=<span class="hljs-value">{shadow.dx}</span> <span class="hljs-attribute">dy</span>=<span class="hljs-value">{shadow.dy}</span> /&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-title">filter</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-title">g</span> <span class="hljs-attribute">id</span>=<span class="hljs-value">{id}</span> <span class="hljs-attribute">transform</span>=<span class="hljs-value">{`translate(${0.25</span> * <span class="hljs-attribute">delta</span>},${<span class="hljs-attribute">0.25</span> * <span class="hljs-attribute">delta</span>})`}&gt;</span>
-          {// Draw the cloud tail
-            [...seq(0, 3)].map(i =&gt; {
-              const c = add(p, scale(v, norm(tail_) * (0.25 + (0.5 * i) / 2)))
-              const r = norm(tail_) * 0.15 * Math.pow(0.6, i)
-              return (
-                <span class="hljs-tag">&lt;<span class="hljs-title">circle</span>
-                  <span class="hljs-attribute">key</span>=<span class="hljs-value">{i}</span>
-                  <span class="hljs-attribute">cx</span>=<span class="hljs-value">{c.x}</span>
-                  <span class="hljs-attribute">cy</span>=<span class="hljs-value">{c.y}</span>
-                  <span class="hljs-attribute">r</span>=<span class="hljs-value">{r}</span>
-                  <span class="hljs-attribute">stroke</span>=<span class="hljs-value">{border.color}</span>
-                  <span class="hljs-attribute">strokeWidth</span>=<span class="hljs-value">{border.width}</span>
-                  {<span class="hljs-attribute">...dash</span>}
-                /&gt;</span>
-              )</span>
-            })}
-          &lt;path
-            d={</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Draw the cloud folds</p></div></div><div class="code"><div class="wrapper">              [...seq(<span class="hljs-number">0</span>, folds)]
-                .map(i =&gt; i * delta + coefs.l[i] * delta * <span class="hljs-number">0.2</span>)
-                .reduce((d, l, i, ls) =&gt; {
-                  <span class="hljs-keyword">const</span> p1 = path.getPointAtLength(<span class="hljs-built_in">Math</span>.min(length, l))
-                  <span class="hljs-keyword">const</span> p2 = path.getPointAtLength(
-                    <span class="hljs-built_in">Math</span>.min(length, ls[(i + <span class="hljs-number">1</span>) % folds])
-                  )
-                  <span class="hljs-keyword">const</span> p3 = mid(p1, p2)
-                  <span class="hljs-keyword">const</span> v = subst(p2, p1)
-                  <span class="hljs-keyword">const</span> na = { x: v.y, y: -v.x }
-                  <span class="hljs-keyword">const</span> nb = { x: -v.y, y: v.x }
-                  <span class="hljs-keyword">const</span> n =
-                    norm2(subst(add(p1, na), center)) &gt;
-                    norm2(subst(add(p1, nb), center))
-                      ? na
-                      : nb
-                  <span class="hljs-keyword">const</span> f1 = <span class="hljs-number">0.25</span> + coefs.f1[i] * <span class="hljs-number">0.25</span>
-                  <span class="hljs-keyword">const</span> f2 = f1 * <span class="hljs-number">0.8</span>
-                  <span class="hljs-keyword">const</span> f3 = coefs.f3[i] * <span class="hljs-number">0.1</span>
-                  <span class="hljs-keyword">const</span> p4 = add(p3, scale(n, f1))
-                  <span class="hljs-keyword">const</span> rp4 = subst(p4, p1)
-                  <span class="hljs-keyword">const</span> rp2 = subst(p2, p4)
-                  <span class="hljs-keyword">const</span> n0 = add(scale(n, f2), scale(v, f3))
-                  <span class="hljs-keyword">const</span> n1 = add(rp4, scale({ x: n.y, y: -n.x }, f2))
-                  <span class="hljs-keyword">const</span> n2 = scale({ x: -n.y, y: n.x }, f2)
-                  <span class="hljs-keyword">const</span> n3 = add(rp2, add(scale(n, f2), scale(v, -f3)))
-                  <span class="hljs-keyword">if</span> (i === <span class="hljs-number">0</span>) {
-                    d.push(<span class="hljs-string">`M <span class="hljs-subst">${p1.x}</span> <span class="hljs-subst">${p1.y}</span>`</span>)
-                  }
-                  d.push(<span class="hljs-string">`c <span class="hljs-subst">${n0.x}</span> <span class="hljs-subst">${n0.y}</span> <span class="hljs-subst">${n1.x}</span> <span class="hljs-subst">${n1.y}</span> <span class="hljs-subst">${rp4.x}</span> <span class="hljs-subst">${rp4.y}</span>`</span>)
-                  d.push(<span class="hljs-string">`c <span class="hljs-subst">${n2.x}</span> <span class="hljs-subst">${n2.y}</span> <span class="hljs-subst">${n3.x}</span> <span class="hljs-subst">${n3.y}</span> <span class="hljs-subst">${rp2.x}</span> <span class="hljs-subst">${rp2.y}</span>`</span>)
-                  <span class="hljs-keyword">return</span> d
-                }, [])
-                .join(<span class="hljs-string">' '</span>)
-            }
-            stroke={border.color}
-            strokeWidth={border.width}
-            {...dash}
-          /&gt;
-          <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">rect</span>
-            <span class="hljs-attribute">x</span>=<span class="hljs-value">{-0.25</span> * <span class="hljs-attribute">delta</span>}
-            <span class="hljs-attribute">y</span>=<span class="hljs-value">{-0.25</span> * <span class="hljs-attribute">delta</span>}
-            <span class="hljs-attribute">width</span>=<span class="hljs-value">{innerSize.width</span> + <span class="hljs-attribute">0.5</span> * <span class="hljs-attribute">delta</span>}
-            <span class="hljs-attribute">height</span>=<span class="hljs-value">{innerSize.height</span> + <span class="hljs-attribute">0.5</span> * <span class="hljs-attribute">delta</span>}
-            <span class="hljs-attribute">fill</span>=<span class="hljs-value">'none'</span>
-            <span class="hljs-attribute">stroke</span>=<span class="hljs-value">'none'</span>
-          /&gt;</span>
-        <span class="hljs-tag">&lt;/<span class="hljs-title">g</span>&gt;</span>
-      <span class="hljs-tag">&lt;/<span class="hljs-title">defs</span>&gt;</span>
-      {shadow.color ? (
-        <span class="hljs-tag">&lt;<span class="hljs-title">use</span> <span class="hljs-attribute">href</span>=<span class="hljs-value">{`#${id}`}</span> <span class="hljs-attribute">filter</span>=<span class="hljs-value">'url(#shadow)'</span> <span class="hljs-attribute">fill</span>=<span class="hljs-value">{shadow.color}</span> /&gt;</span>
-      )</span> : <span class="hljs-literal">null</span>}
-      &lt;use href={<span class="hljs-string">`#<span class="hljs-subst">${id}</span>`</span>} fill={backgroundColor} /&gt;
-    <span class="xml"><span class="hljs-tag">&lt;/<span class="hljs-title">svg</span>&gt;</span>
-  )</span>
-}</div></div></div></div></body></html>
+    prev.my === next.my &amp;&amp;
+    prev.tail === next.tail &amp;&amp;
+    prev.folds === next.folds &amp;&amp;
+    prev.style === next.style &amp;&amp;
+    prev.className === next.className &amp;&amp;
+    prev.pinned === next.pinned
+  )
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> React.memo(Cloud, areEqual)</div></div></div></div></body></html>

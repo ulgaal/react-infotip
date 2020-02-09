@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="en"><head><title>src/svg/BalloonTail</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="src/svg/BalloonTail"><meta name="groc-project-path" content="src/svg/BalloonTail.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/svg/BalloonTail.js</div></div><div id="document"><div class="segment"><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> React <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>
+<span class="hljs-keyword">import</span> PropTypes <span class="hljs-keyword">from</span> <span class="hljs-string">'prop-types'</span>
+<span class="hljs-keyword">import</span> { CornerType } <span class="hljs-keyword">from</span> <span class="hljs-string">'../prop-types'</span>
+<span class="hljs-keyword">import</span> { pixelize } <span class="hljs-keyword">from</span> <span class="hljs-string">'../utils'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>BalloonTail</code> is an internal SVG component used to display a tail
+on the <code>Balloon</code></p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> BalloonTail = props =&gt; {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>console.log(&#39;BalloonTail&#39;, props)</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">if</span> (!props.metrics) {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>
+  }
+  <span class="hljs-keyword">const</span> {
+    my,
+    metrics: {
+      size,
+      tail: { width: aw, height: ah }
+    },
+    style: {
+      margin,
+      borderWidth,
+      borderColor,
+      backgroundColor,
+      borderRadius,
+      borderStyle
+    }
+  } = props
+  <span class="hljs-keyword">const</span> dash = {}
+  <span class="hljs-keyword">switch</span> (borderStyle) {
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'dotted'</span>:
+      dash.strokeDasharray = <span class="hljs-string">`<span class="hljs-subst">${borderWidth}</span> <span class="hljs-subst">${borderWidth}</span>`</span>
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'dashed'</span>:
+      dash.strokeDasharray = <span class="hljs-string">`<span class="hljs-subst">${3 * borderWidth}</span> <span class="hljs-subst">${3 * borderWidth}</span>`</span>
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">default</span>:
+  }
+  <span class="hljs-keyword">let</span> d = <span class="hljs-literal">null</span>
+  <span class="hljs-keyword">let</span> pos = <span class="hljs-literal">null</span> <span class="hljs-comment">// coordinate of the tail svg, not the same as the tail tip</span>
+  <span class="hljs-keyword">switch</span> (my) {
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'top-left'</span>:
+      d = <span class="hljs-string">`M 0 <span class="hljs-subst">${ah}</span> V 0 L <span class="hljs-subst">${aw * 0.5}</span> <span class="hljs-subst">${ah}</span>`</span>
+      pos = {
+        left: margin.left + borderWidth + <span class="hljs-built_in">Math</span>.max(borderRadius, <span class="hljs-number">4</span>),
+        top: margin.top - ah + borderWidth
+      }
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'top-center'</span>:
+      d = <span class="hljs-string">`M 0 <span class="hljs-subst">${ah}</span> L <span class="hljs-subst">${aw * 0.5}</span> <span class="hljs-subst">${0}</span> L <span class="hljs-subst">${aw}</span> <span class="hljs-subst">${ah}</span>`</span>
+      pos = {
+        left: margin.left + <span class="hljs-number">0.5</span> * (size.width - aw),
+        top: margin.top - ah + borderWidth
+      }
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'top-right'</span>:
+      d = <span class="hljs-string">`M 0 <span class="hljs-subst">${ah}</span> L <span class="hljs-subst">${aw * 0.5}</span> <span class="hljs-subst">${0}</span> V <span class="hljs-subst">${ah}</span>`</span>
+      pos = {
+        left: margin.left + size.width - <span class="hljs-built_in">Math</span>.max(borderRadius, <span class="hljs-number">4</span>) - aw * <span class="hljs-number">0.5</span>,
+        top: margin.top - ah + borderWidth
+      }
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'center-left'</span>:
+      d = <span class="hljs-string">`M <span class="hljs-subst">${aw}</span> 0 L 0 <span class="hljs-subst">${ah * 0.5}</span> L <span class="hljs-subst">${aw}</span> <span class="hljs-subst">${ah}</span>`</span>
+      pos = {
+        left: margin.left - aw + borderWidth,
+        top: margin.top + <span class="hljs-number">0.5</span> * (size.height - ah)
+      }
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'center-right'</span>:
+      d = <span class="hljs-string">`M 0 0 L <span class="hljs-subst">${aw}</span> <span class="hljs-subst">${ah * 0.5}</span> L 0 <span class="hljs-subst">${ah}</span>`</span>
+      pos = {
+        left: margin.left + size.width - borderWidth,
+        top: margin.top + <span class="hljs-number">0.5</span> * (size.height - ah)
+      }
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'bottom-left'</span>:
+      d = <span class="hljs-string">`M 0 0 V <span class="hljs-subst">${ah}</span> L <span class="hljs-subst">${aw * 0.5}</span> 0`</span>
+      pos = {
+        left: margin.left + borderWidth + <span class="hljs-built_in">Math</span>.max(borderRadius, <span class="hljs-number">4</span>),
+        top: margin.top + size.height - borderWidth
+      }
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'bottom-center'</span>:
+      d = <span class="hljs-string">`M 0 0 L <span class="hljs-subst">${aw * 0.5}</span> <span class="hljs-subst">${ah}</span> L <span class="hljs-subst">${aw}</span> 0`</span>
+      pos = {
+        left: margin.left + <span class="hljs-number">0.5</span> * (size.width - aw),
+        top: margin.top + size.height - borderWidth
+      }
+      <span class="hljs-keyword">break</span>
+    <span class="hljs-keyword">default</span>:
+    <span class="hljs-keyword">case</span> <span class="hljs-string">'bottom-right'</span>:
+      d = <span class="hljs-string">`M 0 0 L <span class="hljs-subst">${aw * 0.5}</span> <span class="hljs-subst">${ah}</span> V 0`</span>
+      pos = {
+        left: margin.left + size.width - <span class="hljs-built_in">Math</span>.max(borderRadius, <span class="hljs-number">4</span>) - aw * <span class="hljs-number">0.5</span>,
+        top: margin.top + size.height - borderWidth
+      }
+      <span class="hljs-keyword">break</span>
+  }
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">svg</span>
+      <span class="hljs-attribute">className</span>=<span class="hljs-value">'rit-svg-tail'</span>
+      <span class="hljs-attribute">width</span>=<span class="hljs-value">{`${aw}px`}</span>
+      <span class="hljs-attribute">height</span>=<span class="hljs-value">{`${ah}px`}</span>
+      <span class="hljs-attribute">style</span>=<span class="hljs-value">{{</span>
+        <span class="hljs-attribute">pointerEvents:</span> '<span class="hljs-attribute">none</span>',
+        <span class="hljs-attribute">position:</span> '<span class="hljs-attribute">absolute</span>',
+        <span class="hljs-attribute">...pixelize</span>(<span class="hljs-attribute">pos</span>)
+      }}
+    &gt;</span>
+      {React.createElement('path', {
+        d,
+        fill: backgroundColor,
+        stroke: borderColor,
+        strokeWidth: borderWidth,
+        ...dash
+      })}
+    <span class="hljs-tag">&lt;/<span class="hljs-title">svg</span>&gt;</span>
+  )</span>
+}
+
+BalloonTail.propTypes = {
+  my: CornerType,
+  metrics: PropTypes.object,
+  style: PropTypes.object
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> areEqual = (prev, next) =&gt; {
+  <span class="hljs-keyword">return</span> (
+    prev.metrics === next.metrics &amp;&amp;
+    prev.my === next.my &amp;&amp;
+    prev.Style === next.style
+  )
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> React.memo(BalloonTail, areEqual)</div></div></div></div></body></html>

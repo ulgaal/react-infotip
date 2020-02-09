@@ -10,48 +10,27 @@ See the License for the specific language governing permissions and
 limitations under the License.</p>
 <h1 id="pinnable">Pinnable</h1></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> React <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>
 <span class="hljs-keyword">import</span> Balloon <span class="hljs-keyword">from</span> <span class="hljs-string">'./Balloon'</span>
+<span class="hljs-keyword">import</span> Pin <span class="hljs-keyword">from</span> <span class="hljs-string">'./svg/Pin'</span>
 <span class="hljs-keyword">import</span> PropTypes <span class="hljs-keyword">from</span> <span class="hljs-string">'prop-types'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Pinnable</code> component adds an inner decorator between
 the wrapper component and the content component. This decorator
-provides the ability to pin down a tip and to drag it around.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Pinnable = ({
-  pinned,
-  wrapper: Wrapper = Balloon,
-  onToggle,
-  onMouseDown,
-  children,
-  ...rest
-}) =&gt; (
-  <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">Wrapper</span> {<span class="hljs-attribute">...rest</span>}&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">'pinnable'</span> <span class="hljs-attribute">onMouseDown</span>=<span class="hljs-value">{onMouseDown}</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-title">Pin</span> <span class="hljs-attribute">pinned</span>=<span class="hljs-value">{pinned}</span> <span class="hljs-attribute">onClick</span>=<span class="hljs-value">{onToggle}</span> /&gt;</span>
-      {children}
-    <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-title">Wrapper</span>&gt;</span>
-)</span>
+provides the ability to pin down a tip and to drag it around.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Pinnable = props =&gt; {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>console.log(&#39;Pinnable&#39;, props)</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> {
+    pinned,
+    wrapper: Wrapper = Balloon,
+    onToggle,
+    onMouseDown,
+    children,
+    ...rest
+  } = props
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">Wrapper</span> <span class="hljs-attribute">pinned</span>=<span class="hljs-value">{pinned}</span> {<span class="hljs-attribute">...rest</span>}&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">'pinnable'</span> <span class="hljs-attribute">onMouseDown</span>=<span class="hljs-value">{onMouseDown}</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-title">Pin</span> <span class="hljs-attribute">pinned</span>=<span class="hljs-value">{pinned}</span> <span class="hljs-attribute">onClick</span>=<span class="hljs-value">{onToggle}</span> /&gt;</span>
+        {children}
+      <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-title">Wrapper</span>&gt;</span>
+  )</span>
+}
 
 Pinnable.propTypes = {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>true</code> to display an pinned push-pin, <code>false</code> otherwise</p></div></div><div class="code"><div class="wrapper">  pinned: PropTypes.bool,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The wrapper component type to use</p></div></div><div class="code"><div class="wrapper">  wrapper: PropTypes.elementType,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A callback function to invoke when the push-pin is clicked (used to toggle the <code>pinned</code> property)</p></div></div><div class="code"><div class="wrapper">  onToggle: PropTypes.func,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A callback function to invoke the component is clicked (used to implement tip dragging)</p></div></div><div class="code"><div class="wrapper">  onMouseDown: PropTypes.func
 }
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> Pinnable</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>Pin</code> is an internal component to draw an SVG pin symbol</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Pin = ({ pinned, onClick }) =&gt; (
-  <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">svg</span>
-    <span class="hljs-attribute">width</span>=<span class="hljs-value">'12px'</span>
-    <span class="hljs-attribute">height</span>=<span class="hljs-value">'12px'</span>
-    <span class="hljs-attribute">viewBox</span>=<span class="hljs-value">'-1000 -850 1000 1000'</span>
-    <span class="hljs-attribute">xmlns</span>=<span class="hljs-value">'http://www.w3.org/2000/svg'</span>
-    <span class="hljs-attribute">onClick</span>=<span class="hljs-value">{onClick}</span>
-  &gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">g</span> <span class="hljs-attribute">transform</span>=<span class="hljs-value">'scale(-1,-1)'</span>&gt;</span>
-      {pinned ? (
-        <span class="hljs-tag">&lt;<span class="hljs-title">path</span>
-          <span class="hljs-attribute">d</span>=<span class="hljs-value">'M966 450q0 -34 -18 -52l-36 -36q-18 -18 -52 -18q-28 0 -65 14l-138 -138q13 -45 13 -90t-14 -84t-44 -69l-28 -28q-22 -22 -62 -22q-41 0 -93 22t-108 63l58 57q45 -32 84 -47t62 -15q0 21 -10.5 49.5t-29 60.5t-44 65.5t-55.5 63.5q-36 36 -71.5 62t-67 43t-57.5 25.5
-      t-43 8.5q0 -30 28 -87.5t85 -121.5l48 49q12 12 29 12t28.5 -11.5t11.5 -28.5t-12 -29l-283 -282q-12 -12 -28 -12q-17 0 -28.5 11.5t-11.5 28.5q0 16 12 28l176 178q-64 71 -99.5 140.5t-35.5 121.5q0 40 22 62l28 28q30 30 69 44.5t84 14.5q42 0 90 -14l138 138
-      q-14 37 -14 66q0 33 18 51l36 36q18 18 52 18q35 0 77 -18t83.5 -48t80.5 -69t69 -80.5t48 -83.5t18 -77zM726 671q-32 24 -60 39l-226 -226q15 -8 30.5 -18t29.5 -21z'</span>
-        /&gt;</span>
-      )</span> : (
-        <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">path</span>
-          <span class="hljs-attribute">d</span>=<span class="hljs-value">'M117 472q21 21 47.5 34.5t56.5 19.5l445 -445q-6 -30 -19.5 -56.5t-34.5 -47.5l-28 -28q-22 -22 -62 -22q-41 0 -93 22t-108 63l58 57q45 -32 84 -47t62 -15q0 21 -10.5 49.5t-29 60.5t-44 65.5t-55.5 63.5q-36 36 -71.5 62t-67 43t-57.5 25.5t-43 8.5q0 -30 28 -87.5
-      t85 -121.5l48 49q12 12 29 12t28.5 -11.5t11.5 -28.5t-12 -29l-283 -282q-12 -12 -28 -12q-17 0 -28.5 11.5t-11.5 28.5q0 16 12 28l176 178q-64 71 -99.5 140.5t-35.5 121.5q0 40 22 62zM698 261l255 -255l-57 -57l-784 784l58 57l231 -232l97 97q-14 37 -14 66q0 33 18 51
-      l36 36q18 18 52 18q35 0 77 -18t83.5 -48t80.5 -69t69 -80.5t48 -83.5t18 -77q0 -34 -18 -52l-36 -36q-18 -18 -52 -18q-28 0 -65 14zM458 502l49 -50l219 219q-32 24 -60 39z'</span>
-        /&gt;</span>
-      )</span>}
-    &lt;<span class="hljs-regexp">/g&gt;
-  &lt;/</span>svg&gt;
-)</div></div></div></div></body></html>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> Pinnable</div></div></div></div></body></html>

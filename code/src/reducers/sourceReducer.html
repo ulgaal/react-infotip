@@ -1,0 +1,294 @@
+<!DOCTYPE html><html lang="en"><head><title>src/reducers/sourceReducer</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="src/reducers/sourceReducer"><meta name="groc-project-path" content="src/reducers/sourceReducer.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/reducers/sourceReducer.js</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><p>Copyright 2019 Ulrich Gaal</p>
+<p>Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at</p>
+<pre><code>http://www.apache.org/licenses/LICENSE-2.0</code></pre>
+<p>Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</p>
+<h1 id="sourcereducer">sourceReducer</h1></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> { toRect, getElement, corner, surface, overlap, LOGS } <span class="hljs-keyword">from</span> <span class="hljs-string">'../utils'</span>
+<span class="hljs-keyword">import</span> isEqual <span class="hljs-keyword">from</span> <span class="hljs-string">'lodash.isequal'</span>
+
+const LEFT = new Set([
+  <span class="hljs-string">'top-left'</span>,
+  <span class="hljs-string">'center-left'</span>,
+  <span class="hljs-string">'bottom-left'</span>,
+  <span class="hljs-string">'top-center'</span>,
+  <span class="hljs-string">'bottom-center'</span>
+])
+const RIGHT = new Set([
+  <span class="hljs-string">'top-right'</span>,
+  <span class="hljs-string">'center-right'</span>,
+  <span class="hljs-string">'bottom-right'</span>,
+  <span class="hljs-string">'top-center'</span>,
+  <span class="hljs-string">'bottom-center'</span>
+])
+const TOP = new Set([
+  <span class="hljs-string">'top-left'</span>,
+  <span class="hljs-string">'top-center'</span>,
+  <span class="hljs-string">'top-right'</span>,
+  <span class="hljs-string">'center-right'</span>,
+  <span class="hljs-string">'center-left'</span>
+])
+const BOTTOM = new Set([
+  <span class="hljs-string">'bottom-left'</span>,
+  <span class="hljs-string">'bottom-center'</span>,
+  <span class="hljs-string">'bottom-right'</span>,
+  <span class="hljs-string">'center-right'</span>,
+  <span class="hljs-string">'center-left'</span>
+])
+
+export const MOUSE_OVER = <span class="hljs-string">'MOUSE_OVER'</span>
+export const MOUSE_MOVE = <span class="hljs-string">'MOUSE_MOVE'</span>
+export const MOUSE_OUT = <span class="hljs-string">'MOUSE_OUT'</span>
+export const TARGET = <span class="hljs-string">'TARGET'</span>
+export const GEOMETRY = <span class="hljs-string">'GEOMETRY'</span>
+export const VISIBILITY = <span class="hljs-string">'VISIBILITY'</span>
+export const RESET = <span class="hljs-string">'RESET'</span>
+export const ATTACH_OBSERVER = <span class="hljs-string">'ATTACH_OBSERVER'</span>
+export const DETACH_OBSERVER = <span class="hljs-string">'DETACH_OBSERVER'</span>
+
+export const sourceInit = props =&gt; {
+  const { config, pinned } = props
+  const {
+    position: {
+      target,
+      adjust: { mouse },
+      container
+    }
+  } = config
+  const containerElt = getElement(container)
+  const state = {
+    my: <span class="hljs-string">'top-left'</span>,
+    ...props,
+    visible: pinned === true,
+    showTimeoutId: undefined,
+    hideTimeoutId: undefined,
+    containerElt
+  }
+
+  if (!mouse &amp;&amp; Array.isArray(target)) {
+    state.target = { left: target[0], top: target[1], width: 1, height: 1 }
+  }
+
+  return state
+}</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A reducer function to transform DOM events into Source state updates</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> sourceReducer = (state, action) =&gt; {
+  <span class="hljs-keyword">if</span> (LOGS.source &gt; <span class="hljs-number">1</span>) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'sourceReducer'</span>, { type: action.type, state, action })
+  }
+  <span class="hljs-keyword">const</span> { type, ...params } = action
+  <span class="hljs-keyword">switch</span> (type) {
+    <span class="hljs-keyword">case</span> MOUSE_OVER: {
+      <span class="hljs-keyword">const</span> { pinned } = state
+      <span class="hljs-keyword">if</span> (pinned) {
+        <span class="hljs-keyword">return</span> state
+      }
+      <span class="hljs-keyword">const</span> { hideTimeoutId } = state
+      <span class="hljs-keyword">if</span> (hideTimeoutId) {
+        clearInterval(hideTimeoutId)
+        <span class="hljs-keyword">return</span> { ...state, hideTimeoutId: <span class="hljs-literal">undefined</span> }
+      }
+      <span class="hljs-keyword">const</span> { config, id } = state
+      <span class="hljs-keyword">const</span> {
+        show: { delay },
+        position: { target }
+      } = config
+      <span class="hljs-keyword">const</span> { dispatch, position } = action
+      <span class="hljs-keyword">const</span> showTimeoutId = setTimeout(() =&gt; {
+        dispatch({
+          type: VISIBILITY,
+          id,
+          visible: <span class="hljs-literal">true</span>,
+          config,
+          showTimeoutId: <span class="hljs-literal">undefined</span>
+        })
+      }, delay)
+      <span class="hljs-keyword">const</span> updates =
+        target === <span class="hljs-string">'mouse'</span>
+          ? layout(state, {
+              target: {
+                left: position.x + <span class="hljs-built_in">window</span>.scrollX,
+                top: position.y + <span class="hljs-built_in">window</span>.scrollY,
+                width: <span class="hljs-number">1</span>,
+                height: <span class="hljs-number">1</span>
+              }
+            })
+          : <span class="hljs-literal">null</span>
+      <span class="hljs-keyword">return</span> {
+        ...state,
+        showTimeoutId,
+        ...updates
+      }
+    }
+
+    <span class="hljs-keyword">case</span> MOUSE_OUT: {
+      <span class="hljs-keyword">const</span> { pinned } = state
+      <span class="hljs-keyword">if</span> (pinned) {
+        <span class="hljs-keyword">return</span> state
+      }
+      <span class="hljs-keyword">const</span> { config, id } = state
+      <span class="hljs-keyword">const</span> {
+        hide: { delay }
+      } = config
+      <span class="hljs-keyword">const</span> { dispatch } = action
+      <span class="hljs-keyword">const</span> hideTimeoutId = setTimeout(() =&gt; {
+        dispatch({
+          type: VISIBILITY,
+          id,
+          visible: <span class="hljs-literal">false</span>,
+          config,
+          hideTimeoutId: <span class="hljs-literal">undefined</span>
+        })
+      }, delay)
+      <span class="hljs-keyword">return</span> { ...state, hideTimeoutId }
+    }
+
+    <span class="hljs-keyword">case</span> MOUSE_MOVE: {
+      <span class="hljs-keyword">const</span> { config } = state
+      <span class="hljs-keyword">const</span> {
+        position: {
+          adjust: { mouse }
+        }
+      } = config
+      <span class="hljs-keyword">const</span> { position } = action
+      <span class="hljs-keyword">const</span> transform =
+        <span class="hljs-keyword">typeof</span> mouse === <span class="hljs-string">'function'</span>
+          ? mouse
+          : event =&gt; ({
+              x: position.x + <span class="hljs-built_in">window</span>.scrollX,
+              y: position.y + <span class="hljs-built_in">window</span>.scrollY
+            })
+      <span class="hljs-keyword">const</span> { x, y } = transform(position)
+      <span class="hljs-keyword">const</span> updates = layout(state, {
+        target: {
+          left: x,
+          top: y,
+          width: <span class="hljs-number">1</span>,
+          height: <span class="hljs-number">1</span>
+        }
+      })
+      <span class="hljs-keyword">return</span> updates ? { ...state, ...updates } : state
+    }
+
+    <span class="hljs-keyword">case</span> TARGET: {
+      <span class="hljs-keyword">const</span> updates = layout(state, { target: action.target })
+      <span class="hljs-keyword">return</span> updates ? { ...state, ...updates } : state
+    }
+
+    <span class="hljs-keyword">case</span> GEOMETRY: {
+      <span class="hljs-keyword">const</span> updates = layout(state, { geometry: action.geometry })
+      <span class="hljs-keyword">return</span> updates ? { ...state, ...updates } : state
+    }
+
+    <span class="hljs-keyword">case</span> VISIBILITY: {
+      <span class="hljs-keyword">return</span> { ...state, ...params }
+    }
+
+    <span class="hljs-keyword">case</span> RESET: {
+      <span class="hljs-keyword">const</span> { showTimeoutId, hideTimeoutId } = state
+      <span class="hljs-keyword">if</span> (showTimeoutId) {
+        clearInterval(showTimeoutId)
+      }
+      <span class="hljs-keyword">if</span> (hideTimeoutId) {
+        clearInterval(hideTimeoutId)
+      }
+      <span class="hljs-keyword">return</span> sourceInit(params)
+    }
+  }
+}</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The layout function computes the actual tip placement, taking into account
+the target shape, the tip shape and the container shape.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> layout = (state, params) =&gt; {
+  <span class="hljs-keyword">const</span> { target, geometry, config, pinned, location } = { ...state, ...params }
+  <span class="hljs-keyword">const</span> updates = {}
+  <span class="hljs-keyword">if</span> (!pinned || !location) {
+    <span class="hljs-keyword">if</span> (!isEqual(target, state.target)) {
+      updates.target = target
+    }
+    <span class="hljs-keyword">if</span> (!isEqual(geometry, state.geometry)) {
+      updates.geometry = geometry
+    }
+    <span class="hljs-keyword">const</span> containerElt =
+      state.containerElt || getElement(config.position.container)
+    <span class="hljs-keyword">if</span> (!state.containerElt) {
+      updates.containerElt = containerElt
+    }
+    <span class="hljs-keyword">const</span> container = state.container || toRect(containerElt)
+    <span class="hljs-keyword">if</span> (!state.container) {
+      updates.container = container
+    }
+    <span class="hljs-keyword">if</span> (target &amp;&amp; geometry) {
+      <span class="hljs-keyword">const</span> {
+        position: {
+          at,
+          my,
+          adjust: { method, x, y }
+        }
+      } = config
+      <span class="hljs-keyword">const</span> { size, corners } = geometry
+      <span class="hljs-keyword">const</span> targetCorner = corner(target, at)
+      <span class="hljs-keyword">const</span> computeRect = my =&gt; {
+        <span class="hljs-keyword">const</span> myCorner = corners[my]
+        <span class="hljs-keyword">return</span> {
+          left: target.left + targetCorner.left - myCorner.left + x,
+          top: target.top + targetCorner.top - myCorner.top + y,
+          ...size
+        }
+      }
+      updates.my = my
+      updates.location = computeRect(my)
+      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> method === <span class="hljs-string">'object'</span>) {
+        <span class="hljs-keyword">let</span> area = surface(overlap(container, updates.location))
+        <span class="hljs-keyword">if</span> (area &lt; surface(updates.location)) {
+          <span class="hljs-keyword">if</span> (method.flip) {
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> my <span class="hljs-keyword">of</span> method.flip) {
+              <span class="hljs-keyword">const</span> location = computeRect(my)
+              <span class="hljs-keyword">const</span> area_ = surface(overlap(container, location))
+              <span class="hljs-keyword">if</span> (area_ &gt; area) {
+                updates.location = location
+                updates.my = my
+                area = area_
+              }
+            }
+          } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (method.shift) {
+            <span class="hljs-keyword">if</span> (method.shift.indexOf(<span class="hljs-string">'horizontal'</span>) !== -<span class="hljs-number">1</span>) {
+              <span class="hljs-keyword">if</span> (LEFT.has(my)) {
+                <span class="hljs-keyword">if</span> (
+                  updates.location.left + updates.location.width &gt;
+                  container.left + container.width
+                ) {
+                  updates.location.left =
+                    container.left + container.width - updates.location.width
+                }
+              }
+              <span class="hljs-keyword">if</span> (RIGHT.has(my)) {
+                <span class="hljs-keyword">if</span> (updates.location.left &lt; container.left) {
+                  updates.location.left = container.left
+                }
+              }
+            }
+            <span class="hljs-keyword">if</span> (method.shift.indexOf(<span class="hljs-string">'vertical'</span>) !== -<span class="hljs-number">1</span>) {
+              <span class="hljs-keyword">if</span> (BOTTOM.has(my)) {
+                <span class="hljs-keyword">if</span> (updates.location.top &lt; container.top) {
+                  updates.location.top = container.top
+                }
+              }
+              <span class="hljs-keyword">if</span> (TOP.has(my)) {
+                <span class="hljs-keyword">if</span> (
+                  updates.location.top + updates.location.height &gt;
+                  container.top + container.height
+                ) {
+                  updates.location.top =
+                    container.top + container.height - updates.location.height
+                }
+              }
+            }
+          }
+        }
+      }
+      updates.location.left -= container.left
+      updates.location.top -= container.top
+    }
+  }
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">Object</span>.keys(updates).length &gt; <span class="hljs-number">0</span> ? updates : <span class="hljs-literal">null</span>
+}</div></div></div></div></body></html>
