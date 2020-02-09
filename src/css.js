@@ -15,14 +15,29 @@ limitations under the License.
 */
 // css.js
 // ========
+const borderExpr = /^\s*((\d*)px\s+)?(none|solid|dotted|dashed)(?:\s+(\S+)\s*)?$/
 export const parseBorder = border => {
-  const [, , width, style, , color] =
-    /^(([1-9]\d*)px\s+)?(none|solid|dotted|dashed)(\s+(.+))?$/.exec(border) ||
-    []
-  return { width, style, color }
+  borderExpr.lastIndex = 0
+  const [, , width, style, color] = borderExpr.exec(border) || []
+  return { width: width !== undefined ? +width : undefined, style, color }
 }
+const shadowExpr = /^\s*((\d*)px\s+)((\d*)px\s+)(\S+)\s*$/
 export const parseBoxShadow = boxShadow => {
-  const [, , dx, , dy, color] =
-    /^(([1-9]\d*)px\s+)(([1-9]\d*)px\s+)(.+)$/.exec(boxShadow) || []
-  return { dx, dy, color }
+  const [, , dx, , dy, color] = shadowExpr.exec(boxShadow) || []
+  return {
+    dx: dx !== undefined ? +dx : undefined,
+    dy: dy !== undefined ? +dy : undefined,
+    color
+  }
+}
+const borderRadiusExpr = /^\s*(?:(\d*)px)(?:\s+(?:(\d*)px)(?:\s+(?:(\d*)px)\s+(?:(\d*)px))?)?\s*$/
+export const parseBorderRadius = borderRadius => {
+  const [, r1, r2, r3, r4] = borderRadiusExpr.exec(borderRadius) || []
+  return r1 === undefined
+    ? { top: undefined, right: undefined, bottom: undefined, left: undefined }
+    : r2 === undefined
+    ? { top: +r1, right: +r1, bottom: +r1, left: +r1 }
+    : r3 === undefined
+    ? { top: +r2, right: +r1, bottom: +r2, left: +r1 }
+    : { top: +r1, right: +r2, bottom: +r3, left: +r4 }
 }

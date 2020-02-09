@@ -15,13 +15,15 @@ limitations under the License.
 */
 // Balloon
 // =======
-import React, { Component } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import PropTypes from 'prop-types'
-import { CornerType } from './prop-types'
+import { CornerType, TailType } from './prop-types'
 import isEqual from 'lodash.isequal'
 import { styles } from './styles'
-import ResizeObserver from 'resize-observer-polyfill'
-import { pixelize } from './utils'
+import BalloonTail from './svg/BalloonTail'
+import useResizeObserver from './hooks/useResizeObserver'
+import useComputedStyle from './hooks/useComputedStyle'
+import { GEOMETRY } from './reducers/sourceReducer'
 
 /**
  * A `Balloon` component wraps another React component in
@@ -40,219 +42,87 @@ import { pixelize } from './utils'
  * </span>
  * ```
  */
-export default class Balloon extends Component {
-  constructor (props) {
-    super(props)
-    // A ResizeObserver is tied to the bubble `<span>` of the
-    // `Balloon` to measure it precisely.
-    this.ref = React.createRef()
-    this.observer = new ResizeObserver(this.measure.bind(this))
+const Balloon = props => {
+  // console.log('Balloon', props)
+  const { children, my, tail, style, className, id, dispatch } = props
 
-    // A `Balloon` keeps track of a `metrics` state variable
-    // which contains info extracted by processing the CSS style of
-    // the `Balloon` and info extracted by measuring its bubble `<span>`.
-    this.state = {
-      metrics: {
-        size: {
-          width: 0,
-          height: 0
-        },
-        margin: {
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 0
-        },
-        borderWidth: 1,
-        borderColor: '#000',
-        backgroundColor: '#000',
-        borderRadius: 0,
-        corners: {
-          'top-left': {
-            left: 0,
-            top: 0
-          },
-          'top-center': {
-            left: 0,
-            top: 0
-          },
-          'top-right': {
-            left: 0,
-            top: 0
-          },
-          'center-left': {
-            left: 0,
-            top: 0
-          },
-          'center-right': {
-            left: 0,
-            top: 0
-          },
-          'bottom-left': {
-            left: 0,
-            top: 0
-          },
-          'bottom-center': {
-            left: 0,
-            top: 0
-          },
-          'bottom-right': {
-            left: 0,
-            top: 0
-          }
-        },
-        tail: {
-          width: 0,
-          height: 0
+  // A ResizeObserver is tied to the bubble `<span>` of the
+  // `Balloon` to measure it precisely.
+  const ref = useRef(null)
+
+  // A `Balloon` keeps track of a `metrics` state variable
+  // which contains info extracted by processing the CSS style of
+  // the `Balloon` and info extracted by measuring its bubble `<span>`.
+  const [metrics, setMetrics] = useState(null)
+
+  // Extract relevant style props from the DOM
+  const computedStyle = useComputedStyle(style, className)
+
+  const measure = useCallback(entry => {
+    const { target } = entry
+    const boundingClientRect = target.getBoundingClientRect()
+    const size = {
+      width: boundingClientRect.width,
+      height: boundingClientRect.height
+    }
+    const newMetrics = computeMetrics(tail, computedStyle, size)
+    if (!isEqual(metrics, newMetrics)) {
+      setMetrics(newMetrics)
+      if (typeof dispatch === 'function') {
+        const { corners, size } = newMetrics
+        dispatch({ type: GEOMETRY, id, geometry: { corners, size } })
+      }
+    }
+  }, [])
+  useResizeObserver(ref, measure)
+
+  // Update the metrics if tail or style change
+  useEffect(() => {
+    if (metrics) {
+      const newMetrics = computeMetrics(tail, computedStyle, metrics.size)
+      if (!isEqual(metrics, newMetrics)) {
+        setMetrics(newMetrics)
+        if (typeof dispatch === 'function') {
+          const { corners, size } = newMetrics
+          dispatch({ type: GEOMETRY, id, geometry: { corners, size } })
         }
       }
     }
-  }
+  }, [tail, computedStyle, metrics])
 
-  componentDidMount () {
-    this.observe(this.ref.current)
-  }
-
-  componentDidUpdate (prevProps) {
-    this.observe(this.ref.current)
-    if (
-      !isEqual(this.props.tail, prevProps.tail) ||
-      !isEqual(this.props.style, prevProps.style)
-    ) {
-      this.measure([{ target: this.ref.current }])
+  let containerStyle
+  if (metrics) {
+    const { size } = metrics
+    const { margin } = computedStyle
+    containerStyle = {
+      display: 'inline-block',
+      position: 'relative',
+      visibility: 'visible',
+      width: `${size.width + margin.left + margin.right}px`,
+      height: `${size.height + margin.top + margin.bottom}px`
+    }
+  } else {
+    containerStyle = {
+      position: 'relative',
+      visibility: 'hidden'
     }
   }
 
-  componentWillUnmount () {
-    this.observer.disconnect()
-  }
-
-  observe (target) {
-    if (target !== this.target) {
-      if (this.target) {
-        this.observer.unobserve(this.target)
-      }
-      this.observer.observe(target)
-      this.target = target
-    }
-  }
-
-  measure (entries) {
-    const { tail } = this.props
-    const { width: aw, height: ah } = tail
-    for (const { target } of entries) {
-      // Retrieve the dimensions of the bubble `<span>`
-      // from the `ResizeObserver`
-      const boundingClientRect = target.getBoundingClientRect()
-      const size = {
-        width: boundingClientRect.width,
-        height: boundingClientRect.height
-      }
-
-      // Extact CSS value from the computed CSS style
-      const styles = window.getComputedStyle(target)
-      const margin = {
-        top: parseInt(styles.marginTop, 10),
-        right: parseInt(styles.marginRight, 10),
-        bottom: parseInt(styles.marginBottom, 10),
-        left: parseInt(styles.marginLeft, 10)
-      }
-      const borderWidth = Math.round(parseFloat(styles.borderTopWidth))
-      const borderRadius = Math.round(parseFloat(styles.borderTopLeftRadius))
-      const metrics = {
-        size,
-        margin,
-        borderWidth,
-        borderRadius,
-        borderStyle: styles.borderTopStyle,
-        borderColor: styles.borderTopColor,
-        backgroundColor: styles.backgroundColor,
-        // Compute the coordinates of the tail tip for
-        // all possible tail configurations, in local coordinates.
-        // These coordinates must be passed to the `Engine` so that
-        // precise tip placement can be computed.
-        corners: {
-          'top-left': {
-            left: margin.left + borderWidth + Math.max(borderRadius, 4),
-            top: margin.top - ah + borderWidth
-          },
-          'top-center': {
-            left: margin.left + 0.5 * size.width,
-            top: margin.top - ah + borderWidth
-          },
-          'top-right': {
-            left: margin.left + size.width - Math.max(borderRadius, 4),
-            top: margin.top - ah + borderWidth
-          },
-          'center-left': {
-            left: margin.left - aw + borderWidth,
-            top: margin.top + 0.5 * size.height
-          },
-          'center-right': {
-            left: margin.left + size.width - borderWidth + aw,
-            top: margin.top + 0.5 * size.height
-          },
-          'bottom-left': {
-            left: margin.left + borderWidth + Math.max(borderRadius, 4),
-            top: margin.top + size.height - borderWidth + ah
-          },
-          'bottom-center': {
-            left: margin.left + 0.5 * size.width,
-            top: margin.top + size.height - borderWidth + ah
-          },
-          'bottom-right': {
-            left: margin.left + size.width - Math.max(borderRadius, 4),
-            top: margin.top + size.height - borderWidth + ah
-          }
-        },
-        tail
-      }
-      if (!isEqual(metrics, this.state.metrics)) {
-        const { onGeometryChange } = this.props
-        this.setState({ metrics })
-        if (typeof onGeometryChange === 'function') {
-          const { corners, size } = metrics
-          onGeometryChange({ corners, size })
-        }
-      }
-    }
-  }
-
-  render () {
-    const { children, my, style, className } = this.props
-    const { metrics } = this.state
-    return (
+  return (
+    <span className='rit-balloon' style={containerStyle} data-rit-id={id}>
       <span
-        className='rit-balloon'
+        ref={ref}
         style={{
-          visibility:
-            metrics.size.width === 0 && metrics.size.height === 0
-              ? 'hidden'
-              : 'visible',
-          position: 'relative',
           display: 'inline-block',
-          ...pixelize({
-            width:
-              metrics.size.width + metrics.margin.left + metrics.margin.right,
-            height:
-              metrics.size.height + metrics.margin.top + metrics.margin.bottom
-          })
+          ...(className ? {} : props.style)
         }}
+        className={className}
       >
-        <span
-          ref={this.ref}
-          style={{
-            display: 'inline-block',
-            ...(className ? {} : style)
-          }}
-          className={className}
-        >
-          {children}
-        </span>
-        <SvgTail my={my} metrics={metrics} />
+        {children}
       </span>
-    )
-  }
+      <BalloonTail my={my} metrics={metrics} style={computedStyle} />
+    </span>
+  )
 }
 
 Balloon.propTypes = {
@@ -263,13 +133,10 @@ Balloon.propTypes = {
   /**
    * The size of the ballon tail
    */
-  tail: PropTypes.shape({
-    width: PropTypes.number,
-    height: PropTypes.number
-  }),
+  tail: TailType,
   /**
-   * A callback function invoked when the geometry of the balloon changes.
-   * The function receives a hash with the following keys:
+   * A dispatch function invoked when the geometry of the balloon changes.
+   * The function receives a GEOMETRY action with the following keys:
    *
    * | Key  | Type            | Description                                                                    |
    * | ---- | --------------- | ------------------------------------------------------------------------------ |
@@ -300,7 +167,7 @@ Balloon.propTypes = {
    * | height  | `<number>` | height of the wrapper. |
    *
    */
-  onGeometryChange: PropTypes.func,
+  dispatch: PropTypes.func,
   /**
    * The CSS style to use to render the balloon
    */
@@ -308,125 +175,81 @@ Balloon.propTypes = {
   /**
    * A CSS class specification to use to render the ballon (if used, will replace `style`)
    */
-  className: PropTypes.string
+  className: PropTypes.string,
+  /**
+   * `true` if the balloon is pinned to the screen
+   */
+  pinned: PropTypes.bool,
+  /**
+   * If the balloon is contained in a `Storage`, an id which uniquely identifies
+   * the `Source` to which this balloon belongs
+   */
+  id: PropTypes.string
 }
 
 Balloon.defaultProps = {
   my: 'top-left',
   tail: { width: 8, height: 8 },
-  onGeometryChange: null,
   style: styles.defaultStyle
 }
 
-/**
- * `SvgTail` is an internal SVG component used to display a tail
- * on the `Balloon`
- */
-const SvgTail = ({ my, metrics }) => {
-  const {
+const computeMetrics = (tail, style, size) => {
+  const { margin, borderWidth, borderRadius } = style
+  const { width: aw, height: ah } = tail
+
+  // Extact CSS value from the computed CSS style
+  return {
     size,
-    margin,
-    borderWidth,
-    borderColor,
-    backgroundColor,
-    borderRadius,
-    borderStyle,
-    tail: { width: aw, height: ah }
-  } = metrics
-  const dash = {}
-  switch (borderStyle) {
-    case 'dotted':
-      dash.strokeDasharray = `${borderWidth} ${borderWidth}`
-      break
-    case 'dashed':
-      dash.strokeDasharray = `${3 * borderWidth} ${3 * borderWidth}`
-      break
-    default:
-  }
-  let d = null
-  let pos = null // coordinate of the tail svg, not the same as the tail tip
-  switch (my) {
-    case 'top-left':
-      d = `M 0 ${ah} V 0 L ${aw * 0.5} ${ah}`
-      pos = {
+    // Compute the coordinates of the tail tip for
+    // all possible tail configurations, in local coordinates.
+    // These coordinates must be passed to the `Engine` so that
+    // precise tip placement can be computed.
+    corners: {
+      'top-left': {
         left: margin.left + borderWidth + Math.max(borderRadius, 4),
         top: margin.top - ah + borderWidth
-      }
-      break
-    case 'top-center':
-      d = `M 0 ${ah} L ${aw * 0.5} ${0} L ${aw} ${ah}`
-      pos = {
-        left: margin.left + 0.5 * (size.width - aw),
+      },
+      'top-center': {
+        left: margin.left + 0.5 * size.width,
         top: margin.top - ah + borderWidth
-      }
-      break
-    case 'top-right':
-      d = `M 0 ${ah} L ${aw * 0.5} ${0} V ${ah}`
-      pos = {
-        left: margin.left + size.width - Math.max(borderRadius, 4) - aw * 0.5,
+      },
+      'top-right': {
+        left: margin.left + size.width - Math.max(borderRadius, 4),
         top: margin.top - ah + borderWidth
-      }
-      break
-    case 'center-left':
-      d = `M ${aw} 0 L 0 ${ah * 0.5} L ${aw} ${ah}`
-      pos = {
+      },
+      'center-left': {
         left: margin.left - aw + borderWidth,
-        top: margin.top + 0.5 * (size.height - ah)
-      }
-      break
-    case 'center-right':
-      d = `M 0 0 L ${aw} ${ah * 0.5} L 0 ${ah}`
-      pos = {
-        left: margin.left + size.width - borderWidth,
-        top: margin.top + 0.5 * (size.height - ah)
-      }
-      break
-    case 'bottom-left':
-      d = `M 0 0 V ${ah} L ${aw * 0.5} 0`
-      pos = {
+        top: margin.top + 0.5 * size.height
+      },
+      'center-right': {
+        left: margin.left + size.width - borderWidth + aw,
+        top: margin.top + 0.5 * size.height
+      },
+      'bottom-left': {
         left: margin.left + borderWidth + Math.max(borderRadius, 4),
-        top: margin.top + size.height - borderWidth
+        top: margin.top + size.height - borderWidth + ah
+      },
+      'bottom-center': {
+        left: margin.left + 0.5 * size.width,
+        top: margin.top + size.height - borderWidth + ah
+      },
+      'bottom-right': {
+        left: margin.left + size.width - Math.max(borderRadius, 4),
+        top: margin.top + size.height - borderWidth + ah
       }
-      break
-    case 'bottom-center':
-      d = `M 0 0 L ${aw * 0.5} ${ah} L ${aw} 0`
-      pos = {
-        left: margin.left + 0.5 * (size.width - aw),
-        top: margin.top + size.height - borderWidth
-      }
-      break
-    default:
-    case 'bottom-right':
-      d = `M 0 0 L ${aw * 0.5} ${ah} V 0`
-      pos = {
-        left: margin.left + size.width - Math.max(borderRadius, 4) - aw * 0.5,
-        top: margin.top + size.height - borderWidth
-      }
-      break
+    },
+    tail
   }
+}
+
+const areEqual = (prev, next) => {
   return (
-    <svg
-      className='rit-svg-tail'
-      width={`${aw}px`}
-      height={`${ah}px`}
-      style={{
-        pointerEvents: 'none',
-        position: 'absolute',
-        ...pixelize(pos)
-      }}
-    >
-      {React.createElement('path', {
-        d,
-        fill: backgroundColor,
-        stroke: borderColor,
-        strokeWidth: borderWidth,
-        ...dash
-      })}
-    </svg>
+    prev.my === next.my &&
+    prev.tail === next.tail &&
+    prev.style === next.style &&
+    prev.className === next.className &&
+    prev.pinned === next.pinned
   )
 }
 
-SvgTail.propTypes = {
-  my: CornerType,
-  metrics: PropTypes.object
-}
+export default React.memo(Balloon, areEqual)

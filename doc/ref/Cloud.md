@@ -21,26 +21,10 @@ It has the following structure:
 Props
 -----
 
-### `folds`
+### `dispatch`
 
-The number of randomly generated cloud folds
-
-type: `number`
-defaultValue: `13`
-
-
-### `my`
-
-The corner of the cloud to which the tail attaches
-
-type: `custom`
-defaultValue: `'top-left'`
-
-
-### `onGeometryChange`
-
-A callback function invoked when the geometry of the cloud changes.
-The function receives a hash with the following keys:
+A dispatch function invoked when the geometry of the cloud changes.
+The function receives a GEOMETRY action with the following keys:
 
 | Key  | Type            | Description                                                                    |
 | ---- | --------------- | ------------------------------------------------------------------------------ |
@@ -71,7 +55,37 @@ CornersType
 | height  | `<number>` | height of the wrapper. |
 
 type: `func`
-defaultValue: `null`
+
+
+### `folds`
+
+The number of randomly generated cloud folds
+
+type: `number`
+defaultValue: `13`
+
+
+### `id`
+
+If the cloud is contained in a `Storage`, an id which uniquely identifies
+the `Source` to which this cloud belongs
+
+type: `string`
+
+
+### `my`
+
+The corner of the cloud to which the tail attaches
+
+type: `custom`
+defaultValue: `'top-left'`
+
+
+### `pinned`
+
+`true` if the cloud is pinned to the screen
+
+type: `bool`
 
 
 ### `style`
@@ -86,7 +100,7 @@ defaultValue: `styles.defaultStyle`
 
 The size of the cloud tail
 
-type: `shape[object Object]`
+type: `custom`
 defaultValue: `{
   width: 25,
   height: 25

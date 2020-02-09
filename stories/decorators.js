@@ -34,7 +34,7 @@ export const POSITION_GROUP = 'Position'
 export const GEOMETRY_GROUP = 'Geometry'
 export const WRAPPER_GROUP = 'Wrapper'
 
-export const WrapperContext = React.createContext('Balloon')
+export const WrapperContext = React.createContext(Balloon)
 
 export const wrapperDecorator = story => {
   const wrappers = {
@@ -59,7 +59,7 @@ export const wrapperDecorator = story => {
 
   return (
     <div>
-      <WrapperContext.Provider value={wrapperName}>
+      <WrapperContext.Provider value={wrappers[wrapperName].wrapper}>
         <MergingConfigProvider
           value={{
             wrapper: wrappers[wrapperName].wrapper
@@ -149,7 +149,7 @@ export const cloudDecorator = story => {
     )
   }
   return (
-    <WrapperContext.Provider value='Cloud'>
+    <WrapperContext.Provider value={Cloud}>
       <MergingConfigProvider
         value={{
           wrapperProps
@@ -199,18 +199,18 @@ export const styleDecorator = story => (
       }}
     >
       <WrapperContext.Consumer>
-        {wrapperName => {
+        {wrapper => {
           return (
             <MergingConfigProvider
               value={{
                 wrapperProps: {
                   style: {
-                    ...(wrapperName === 'Balloon'
+                    ...(wrapper === Balloon
                       ? {
-                        borderRadius: boolean('Rounded', false, STYLE_GROUP)
-                          ? '4px'
-                          : '0'
-                      }
+                          borderRadius: boolean('Rounded', false, STYLE_GROUP)
+                            ? '4px'
+                            : '0'
+                        }
                       : {}),
                     boxShadow: boolean('Shadow', false, STYLE_GROUP)
                       ? '3px 3px #ddd'

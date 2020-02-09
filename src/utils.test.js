@@ -22,8 +22,7 @@ import {
   overlap,
   surface,
   pixelize,
-  seq,
-  autobind
+  seq
 } from './utils'
 import { styles } from './styles'
 import { defaultConfig } from './Contexts'
@@ -193,20 +192,6 @@ describe('utils', () => {
     })
     it('handles degenerate cases', () => {
       expect([...seq(0, 0)]).toEqual([])
-    })
-  })
-
-  describe('autobind', () => {
-    it('binds method names to supplied this', () => {
-      const a = {
-        value: 1,
-        foo () {
-          return this.value
-        }
-      }
-      autobind(['foo'], a)
-      const foo = a.foo
-      expect(foo()).toEqual(1)
     })
   })
 })

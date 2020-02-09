@@ -235,7 +235,7 @@ export const diffSet = (as, bs) => new Set([...as].filter(obj => !bs.has(obj)))
 /**
  * A sequence generator function
  */
-export function* seq(start, end) {
+export function * seq (start, end) {
   if (start < end) {
     for (let current = start; current < end; current++) {
       yield current
@@ -247,10 +247,7 @@ export function* seq(start, end) {
   }
 }
 
-/**
- * Binds a set of methods to the specified target
- */
-export const autobind = (methods, target) =>
-  methods.forEach(method => {
-    target[method] = target[method].bind(target)
-  })
+export const LOGS = {
+  source: 0,
+  storage: 0
+}

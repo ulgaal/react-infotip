@@ -1,3 +1,6 @@
+## Version 0.7.0 (2020/02/09)
+- Major internal redesign: the codebase has been migrated to hooks and the Engine class has been replaced by a useReducer pattern.
+
 ## Version 0.6.1 (2019/12/12)
 - Improved communication between Engine Source and Storage
 - Removed ability to use react refs in container or target definition (not supported any more since deepmerge migration)

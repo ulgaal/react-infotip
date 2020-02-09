@@ -15,259 +15,241 @@ limitations under the License.
 */
 // Source
 // ======
-import React, { Component } from 'react'
+import React, {
+  useRef,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useReducer,
+  useMemo,
+  useContext
+} from 'react'
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 import { SourceConfig } from './prop-types'
-import { autobind, mergeObjects, getElement } from './utils'
+import { mergeObjects, LOGS } from './utils'
 import Location from './Location'
-import Storage from './Storage'
 import { ConfigContext, StorageContext } from './Contexts'
-import Engine from './Engine'
+import {
+  sourceInit,
+  sourceReducer,
+  MOUSE_OVER,
+  MOUSE_MOVE,
+  MOUSE_OUT,
+  TARGET,
+  RESET
+} from './reducers/sourceReducer'
+import { UPDATE_SOURCE, RELEASE } from './reducers/storageReducer'
 import ResizeObserver from 'resize-observer-polyfill'
 
 /**
  * The `Source` component acts as a wrapper for other components and enables them
  * to provide tips.
  */
-class Source extends Component {
-  constructor (props) {
-    super(props)
+const Source = props => {
+  // Merge the context and local configs and extract relevant
+  // properties from it
+  const { id, config: localConfig, pinned } = props
+  const contextConfig = useContext(ConfigContext)
+  const config = useMemo(() => {
+    return mergeObjects(contextConfig, localConfig)
+  }, [contextConfig, localConfig])
 
-    // A `Source` keeps track of three state variables
-    // * `my`: the position which provides optimal placement of the tip as computed by its `Engine`.
-    // * `location`: the actual coordinates of the tip.
-    // * `visible`: whether the tip is currently visible.
-    this.state = {
-      my: 'top-left',
-      location: {
-        left: 0,
-        top: 0
-      },
-      visible: false
-    }
+  // A `Source` can exist either in isolation (in which case it has
+  // its own `Engine`), or within a `Storage` (in which case it shares
+  // an `Engine` with its `Storage`).
+  const useStorageReducer = useContext(StorageContext)
 
-    // Most computations are delegated to an `Engine`.
-    // The source will feed DOM events to the `Engine`, and receive
-    // updates on position, location or visibility from the `Engine`.
-    // A `Source` can exist either in isolation (in which case it has
-    // its own `Engine`), or within a `Storage` (in which case it shares
-    // an `Engine` with its `Storage`).
-    const { id, config, storage } = this.props
-    this.engine = storage
-      ? storage.getEngine({ id, config })
-      : new Engine({ id, config, output: this })
-
-    // A `Source` renders an actual DOM element, which is observed by
-    // a `ResizeObserver`, so that the engine can take the geometry of
-    // the source into consideration to compute tip placement.
-    this.ref = React.createRef()
-    this.observer = new ResizeObserver(this.measure.bind(this))
-
-    autobind(
-      [
-        'handleMouseOut',
-        'handleMouseOver',
-        'handleMouseMove',
-        'handleGeometryChange'
-      ],
-      this
-    )
+  // Most computations are delegated to a reducer.
+  // The source transforms DOM events into actions and the
+  // reducer computes changes to the state of the `Source`
+  // (updates on position, location or visibility)
+  const [state, dispatch] = useStorageReducer
+    ? useStorageReducer({ id, pinned, config })
+    : useReducer(sourceReducer, { pinned, config }, sourceInit)
+  if (LOGS.source > 0) {
+    console.log('Source', props, state)
   }
 
-  // This method is invoked by the source `Engine` when the tip location changes,
-  // unless the source is part of a Storage.
-  onLayoutChange ({ id, my, location }) {
-    this.setState({ my, location })
-  }
-
-  // This method is invoked by the source `Engine` when the tip visibility changes,
-  // unless the source is part of a Storage.
-  onVisibilityChange ({ id, visible }) {
-    this.setState({ visible })
-  }
-
-  componentDidMount () {
-    this.updateTarget()
-    // Force the first measure as resize observer may not fire for some element
-    this.measure()
-    if (this.props.pinned) {
-      this.engine.pin(true)
-    }
-  }
-
-  componentWillUnmount () {
-    const { storage, id } = this.props
-    this.observer.disconnect()
-    if (storage) {
-      storage.release(id)
-    }
-  }
-
-  componentDidUpdate (prevProps) {
-    const { id, config, storage } = this.props
-    if (storage && id !== prevProps.id) {
-      // The source belongs to a `Storage` and its id has changed
-      this.engine = storage.getEngine({ id, config })
-      storage.release(prevProps.id)
-    }
-    this.engine.update({ config })
-  }
-
-  // Keep the target DOM element up to date when the `target` key of the `config` property
-  // changes
-  updateTarget () {
-    const {
-      config: {
-        position: {
-          target: targetConf,
-          adjust: { mouse }
-        }
+  // For sources which belong to a `Storage`
+  // 1. Notify the storage if the source id changes
+  // 2. Notify the storage when the source is unmounted
+  const idRef = useRef(id)
+  idRef.current = id
+  if (useStorageReducer) {
+    const prevIdRef = useRef()
+    useLayoutEffect(() => {
+      prevIdRef.current = id
+    })
+    const prevId = prevIdRef.current
+    useLayoutEffect(() => {
+      if (id !== prevId) {
+        dispatch({ type: UPDATE_SOURCE, id, prevId, config, pinned: false })
       }
-    } = this.props
-    if (!mouse && Array.isArray(targetConf)) {
-      this.engine.update({
-        target: { left: targetConf[0], top: targetConf[1], width: 1, height: 1 }
-      })
-    }
-    let target = this.getTarget()
-    if (target) {
-      if (target instanceof SVGElement) {
-        // In case of an SVG `Source` the `ResizeObserver` is not triggered
-        // by changes to the target `SVGElement`, so we need to observe the englobing
-        // `SVGSVGElement` instead
-        target = target.ownerSVGElement
+    }, [id])
+    useLayoutEffect(() => {
+      // ComponentWillUnmount
+      return () => {
+        dispatch({ type: RELEASE, id })
       }
-      this.observe(target)
-    }
+    }, [])
   }
 
-  // The `target` key of the `config` property enables the tip to appear at a location
-  // different from the source. This method is used to determine the DOM element
-  // used to compute the tip location, unless mouse tracking is enable in which case
-  // the location is the mouse location.
-  getTarget () {
-    const {
-      config: {
-        position: {
-          target: targetConf,
-          adjust: { mouse }
-        }
-      }
-    } = this.props
-    if (!mouse) {
-      if (targetConf === false) {
-        return this.ref.current.firstChild
-      }
-      if (typeof targetConf === 'string' && targetConf !== 'mouse') {
-        return document.querySelector(targetConf)
-      }
-    }
-    return null
-  }
-
-  observe (target) {
-    if (target !== this.target) {
-      if (this.target) {
-        this.observer.unobserve(this.target)
-      }
-      this.observer.observe(target)
-      this.target = target
+  // A `Source` renders an actual DOM element, which is observed by
+  // a `ResizeObserver`, so that the engine can take the geometry of
+  // the source into consideration to compute tip placement.
+  const ref = useRef(null)
+  const resizeObserverRef = useRef(null)
+  if (!resizeObserverRef.current) {
+    resizeObserverRef.current = {
+      observer: new ResizeObserver(entries => {
+        const rect = resizeObserverRef.current.target.getBoundingClientRect()
+        rect.x += window.scrollX
+        rect.y += window.scrollY
+        dispatch({
+          type: TARGET,
+          id: idRef.current,
+          target: rect
+        })
+      }),
+      observed: null,
+      target: null
     }
   }
+  useEffect(() => {
+    const { position } = config
+    // Make the ResizeObserver observe the target (this can only be done
+    // once an actual DOM element is available)
+    if (!position.adjust.mouse) {
+      const target = position.target
+      const resizeObserver = resizeObserverRef.current
+      if (resizeObserver.observed) {
+        resizeObserver.observer.unobserve(resizeObserver.observed)
+      }
+      if (target === false) {
+        resizeObserver.target = ref.current.firstChild
+      }
+      if (typeof target === 'string' && target !== 'mouse') {
+        // The `target` key of the `config` property enables the tip
+        // to appear at a location different from the source
+        resizeObserver.target = document.querySelector(target)
+      }
+      // In case of an SVG `Source` the `ResizeObserver` is not triggered
+      // by changes to the target `SVGElement`, so we need to observe the englobing
+      // `SVGSVGElement` instead
+      resizeObserver.observed =
+        resizeObserver.target instanceof SVGElement
+          ? resizeObserver.target.ownerSVGElement
+          : resizeObserver.target
+      resizeObserver.observer.observe(resizeObserver.observed)
+    }
+    if (config !== state.config || pinned !== state.pinned) {
+      dispatch({ type: RESET, config, pinned })
+    }
+  }, [config, pinned])
+  useEffect(() => {
+    // componentWillUnmount
+    return () => {
+      resizeObserverRef.current.observer.disconnect()
+    }
+  }, [])
 
-  // Delegate all computations triggered by DOM events to the `Engine`
-  // to avoid code duplication between `Source` and `Storage`
-  // * changes to the target caught by the `ResizeObserver`.
+  // Tranform DOM events into reducer actions:
   // * mouseout events.
   // * mouseover events.
   // * mousemove events.
-  measure (entries) {
-    this.engine.update({
-      target: this.getTarget()
-    })
-  }
+  const handleMouseOut = useCallback(
+    event => {
+      event.stopPropagation()
+      dispatch({ type: MOUSE_OUT, dispatch })
+    },
+    [dispatch]
+  )
 
-  handleGeometryChange (geometry) {
-    this.engine.update({ geometry })
-  }
+  const handleMouseOver = useCallback(
+    event => {
+      event.stopPropagation()
+      dispatch({
+        type: MOUSE_OVER,
+        position: { x: event.clientX, y: event.clientY },
+        dispatch
+      })
+    },
+    [dispatch]
+  )
 
-  handleMouseOut (event) {
-    this.engine.handleMouseOut(event)
-  }
+  const handleMouseMove = useCallback(
+    event => {
+      event.stopPropagation()
+      dispatch({
+        type: MOUSE_MOVE,
+        position: { x: event.clientX, y: event.clientY }
+      })
+    },
+    [dispatch]
+  )
 
-  handleMouseOver (event) {
-    this.engine.handleMouseOver(event)
-  }
+  const { tip, children, svg } = props
 
-  handleMouseMove (event) {
-    this.engine.handleMouseMove(event)
-  }
+  // Since a `Source` needs to handle pointer events (notably it needs to
+  // know when the pointer enters or leaves your component so that it
+  // can trigger the tip display), it has an actual HTML tag associated to it
+  // (either a `<span>` if your component renders as HTML, or a `<g>` if your component renders
+  // to SVG).
+  // It also needs to known if the geometry of this element changes, because this
+  // will affect tip placement, hence the `ref` which is tracked by the `ResizeObserver`.
 
-  render () {
+  const tagName = svg ? 'g' : 'span'
+  const tagProps = {
+    className: 'rit-source',
+    ref,
+    // This is mostly transparent (the `<span>` uses the CSS `display: 'contents'` property)
+    // but there may be edge cases where one wants to be aware of this.
+    ...(svg ? {} : { style: { display: 'contents' } })
+  }
+  const tagChildren = [...React.Children.toArray(children)]
+  if (useStorageReducer) {
+    tagProps['data-rit-id'] = id
+  } else {
+    tagProps.onMouseOut = handleMouseOut
+    tagProps.onMouseOver = handleMouseOver
+    tagProps.onMouseMove = config.position.adjust.mouse ? handleMouseMove : null
+
+    // A `Source` keeps track of four state variables
+    // * `my`: the position which provides optimal placement of the tip as computed by its `Engine`.
+    // * `location`: the actual coordinates of the tip.
+    // * `visible`: whether the tip is currently visible.
     const {
-      tip,
-      children,
-      config: {
-        wrapper,
-        wrapperProps,
-        position: {
-          container,
-          adjust: { mouse }
-        }
-      },
-      svg
-    } = this.props
-
-    const { visible, my, location } = this.state
-
-    // The tip itself consists of a wrapper component (`Balloon` by default)
-    // which provides the user-supplied tip component with a tip appearance.
-    const wrappedTip = React.createElement(wrapper, {
-      ...wrapperProps,
       my,
-      onGeometryChange: this.handleGeometryChange,
-      children: tip
-    })
-
-    // Since a `Source` needs to handle pointer events (notably it needs to
-    // know when the pointer enters or leaves your component so that it
-    // can trigger the tip display), it has an actual HTML tag associated to it
-    // (either a `<span>` if your component renders as HTML, or a `<g>` if your component renders
-    // to SVG).
-    // It also needs to known if the geometry of this element changes, because this
-    // will affect tip placement, hence the `ref` which is tracked by the `ResizeObserver`.
-
-    const tagName = svg ? 'g' : 'span'
-    const tagProps = {
-      className: 'rit-source',
-      // This is mostly transparent (the `<span>` uses the CSS `display: 'contents'` property)
-      // but there may be edge cases where one wants to be aware of this.
-      ...(svg ? {} : { style: { display: 'contents' } }),
-      onMouseOut: this.handleMouseOut,
-      onMouseOver: this.handleMouseOver,
-      onMouseMove: mouse ? this.handleMouseMove : null,
-      ref: this.ref
+      location = {
+        left: 0,
+        top: 0
+      },
+      visible
+    } = state
+    if (visible) {
+      // The tip itself consists of a wrapper component (`Balloon` by default)
+      // which provides the user-supplied tip component with a tip appearance.
+      const { wrapper, wrapperProps } = config
+      const wrappedTip = React.createElement(wrapper, {
+        ...wrapperProps,
+        my,
+        dispatch,
+        children: tip
+      })
+      // A portal is used to attach the tip to another DOM parent (so that it
+      // naturally floats above other DOM nodes it the DOM tree). The additional
+      // benefit of the portal is that DOM events are still channeled through
+      // the `Source`, which is required not to break timers used to show and hide tip.
+      tagChildren.push(
+        ReactDOM.createPortal(
+          <Location location={location}>{wrappedTip}</Location>,
+          state.containerElt
+        )
+      )
     }
-
-    const tagChildren = [
-      ...React.Children.toArray(children),
-      // For `Source`s contained in a `Storage`, let the storage take care of the rendering.
-      ...(visible && !this.props.storage
-        ? [
-          // A portal is used to attach the tip to another DOM parent (so that it
-          // naturally floats above other DOM nodes it the DOM tree). The additional
-          // benefit of the portal is that DOM events are still channeled through
-          // the `Source`, which is required not to break timers used to show and hide tip.
-          ReactDOM.createPortal(
-            <Location location={location}>{wrappedTip}</Location>,
-            getElement(container)
-          )
-        ]
-        : [])
-    ]
-    return React.createElement(tagName, tagProps, tagChildren)
   }
+  return React.createElement(tagName, tagProps, tagChildren)
 }
 
 Source.propTypes = {
@@ -344,31 +326,22 @@ Source.propTypes = {
    * If the `Source` is contained in a `Storage`, an id which uniquely identifies
    * this `Source` within its `Storage`
    */
-  id: PropTypes.string,
-  /**
-   * If the `Source` is contained in a `Storage`, a pointer to this `Storage` (this
-   * property will be automatically valued by the englobing `Storage`)
-   */
-  storage: PropTypes.instanceOf(Storage)
+  id: PropTypes.string
 }
 
-// Configure `Source`s which have a `Storage` ancestor in their React
-// component tree so that they have a `storage` property pointing to their `Storage`.
-// Also read the `config` property from the `ConfigContext` React context.
-export default ({ config, ...rest }) => (
-  <StorageContext.Consumer>
-    {storage => {
-      return (
-        <ConfigContext.Consumer>
-          {contextConfig => (
-            <Source
-              config={mergeObjects(contextConfig, config)}
-              storage={storage}
-              {...rest}
-            />
-          )}
-        </ConfigContext.Consumer>
-      )
-    }}
-  </StorageContext.Consumer>
-)
+Source.defaultProps = {
+  pinned: false,
+  svg: false
+}
+
+export const areEqual = (prev, next) => {
+  return (
+    prev.id === next.id &&
+    prev.config === next.config &&
+    prev.tip === next.tip &&
+    prev.pinned === next.pinned &&
+    prev.children === next.children
+  )
+}
+
+export default React.memo(Source, areEqual)

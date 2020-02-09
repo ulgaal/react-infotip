@@ -16,7 +16,6 @@ limitations under the License.
 // Contexts
 // ========
 import React from 'react'
-import { mergeObjects } from './utils'
 import Balloon from './Balloon'
 
 // The default value of the `config` property used by `Source` and  `Storage`
@@ -34,12 +33,10 @@ export const defaultConfig = {
     container: null
   },
   show: {
-    delay: 0,
-    onShow: undefined
+    delay: 0
   },
   hide: {
-    delay: 0,
-    onHide: undefined
+    delay: 0
   },
   wrapper: Balloon,
   wrapperProps: {}
@@ -48,20 +45,6 @@ export const defaultConfig = {
 // The library uses the `ConfigContext` to define configuration
 // globally for a whole range of `Source` elements.
 export const ConfigContext = React.createContext(defaultConfig)
-
-// To avoid redefining the value of the `config` property, use
-// this component instead of a `<ConfigContext.Provider>`. The
-// component will merge the value of its englobing context with
-// the supplied value.
-export const MergingConfigProvider = ({ value, children }) => (
-  <ConfigContext.Consumer>
-    {contextConfig => (
-      <ConfigContext.Provider value={mergeObjects(contextConfig, value)}>
-        {children}
-      </ConfigContext.Provider>
-    )}
-  </ConfigContext.Consumer>
-)
 
 // This context is used internally for communication between
 // `Storage` and its `Source` elements.

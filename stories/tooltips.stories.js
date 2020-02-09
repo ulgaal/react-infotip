@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import React, { Component, useState, useEffect, useRef } from 'react'
+import React, { useMemo, useState, useEffect, useRef } from 'react'
 
 import { storiesOf } from '@storybook/react'
 // import { linkTo } from '@storybook/addon-links'
@@ -457,34 +457,35 @@ storiesOf('Tooltips', module)
       const Graph = () => {
         const ref = useRef()
         const [position, setPosition] = useState({ x: 0, y: 0 })
-        return (
-          <MergingConfigProvider
-            value={{
-              position: {
-                adjust: {
-                  mouse: event => {
-                    const rect = ref.current
-                    const ctm = rect.getScreenCTM()
-                    const pos = rect.ownerSVGElement.createSVGPoint()
-                    const { clientX, clientY } = event
-                    pos.x = clientX
-                    pos.y = clientY
-                    const pos2 = pos.matrixTransform(ctm.inverse())
-                    const x = Math.max(
-                      0,
-                      Math.min(Math.floor((pos2.x * count) / W), count - 1)
-                    )
-                    const y = Math.round(points[x].y)
-                    setPosition({ x, y })
-                    return {
-                      x: clientX + window.scrollX,
-                      y: ctm.f + y
-                    }
+        const config = useMemo(
+          () => ({
+            position: {
+              adjust: {
+                mouse: position => {
+                  const rect = ref.current
+                  const ctm = rect.getScreenCTM()
+                  const pos = rect.ownerSVGElement.createSVGPoint()
+                  pos.x = position.x
+                  pos.y = position.y
+                  const pos2 = pos.matrixTransform(ctm.inverse())
+                  const x = Math.max(
+                    0,
+                    Math.min(Math.floor((pos2.x * count) / W), count - 1)
+                  )
+                  const y = Math.round(points[x].y)
+                  setPosition({ x, y })
+                  return {
+                    x: position.x + window.scrollX,
+                    y: ctm.f + y
                   }
                 }
               }
-            }}
-          >
+            }
+          }),
+          []
+        )
+        return (
+          <MergingConfigProvider value={config}>
             <svg
               width='600px'
               height='200px'

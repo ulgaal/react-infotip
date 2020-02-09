@@ -55,12 +55,10 @@ export const SourceConfig = PropTypes.shape({
     container: PropTypes.oneOfType([PropTypes.object, PropTypes.string])
   }),
   show: PropTypes.shape({
-    delay: PropTypes.number,
-    onShow: PropTypes.func
+    delay: PropTypes.number
   }),
   hide: PropTypes.shape({
-    delay: PropTypes.number,
-    onShow: PropTypes.func
+    delay: PropTypes.number
   }),
   wrapper: PropTypes.func,
   wrapperProps: PropTypes.object
@@ -71,4 +69,9 @@ export const StorageTip = PropTypes.shape({
   my: CornerType,
   location: LocationType,
   config: SourceConfig
+})
+
+export const TailType = PropTypes.shape({
+  width: PropTypes.number,
+  height: PropTypes.number
 })

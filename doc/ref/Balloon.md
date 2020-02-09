@@ -27,18 +27,10 @@ A CSS class specification to use to render the ballon (if used, will replace `st
 type: `string`
 
 
-### `my`
+### `dispatch`
 
-The corner of the balloon to which the tail attaches
-
-type: `custom`
-defaultValue: `'top-left'`
-
-
-### `onGeometryChange`
-
-A callback function invoked when the geometry of the balloon changes.
-The function receives a hash with the following keys:
+A dispatch function invoked when the geometry of the balloon changes.
+The function receives a GEOMETRY action with the following keys:
 
 | Key  | Type            | Description                                                                    |
 | ---- | --------------- | ------------------------------------------------------------------------------ |
@@ -69,7 +61,29 @@ CornersType
 | height  | `<number>` | height of the wrapper. |
 
 type: `func`
-defaultValue: `null`
+
+
+### `id`
+
+If the balloon is contained in a `Storage`, an id which uniquely identifies
+the `Source` to which this balloon belongs
+
+type: `string`
+
+
+### `my`
+
+The corner of the balloon to which the tail attaches
+
+type: `custom`
+defaultValue: `'top-left'`
+
+
+### `pinned`
+
+`true` if the balloon is pinned to the screen
+
+type: `bool`
 
 
 ### `style`
@@ -84,6 +98,6 @@ defaultValue: `styles.defaultStyle`
 
 The size of the ballon tail
 
-type: `shape[object Object]`
+type: `custom`
 defaultValue: `{ width: 8, height: 8 }`
 
