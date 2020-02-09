@@ -70,3 +70,8 @@ export const StorageTip = PropTypes.shape({
   location: LocationType,
   config: SourceConfig
 })
+
+export const TailType = PropTypes.shape({
+  width: PropTypes.number,
+  height: PropTypes.number
+})

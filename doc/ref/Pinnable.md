@@ -34,5 +34,4 @@ type: `bool`
 The wrapper component type to use
 
 type: `elementType`
-defaultValue: `Balloon`
 

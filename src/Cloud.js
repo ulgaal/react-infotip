@@ -17,7 +17,7 @@ limitations under the License.
 // =====
 import React, { useRef, useState, useCallback, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { CornerType } from './prop-types'
+import { CornerType, TailType } from './prop-types'
 import isEqual from 'lodash.isequal'
 import { styles } from './styles'
 import CloudShape from './svg/CloudShape'
@@ -148,10 +148,7 @@ Cloud.propTypes = {
   /**
    * The size of the cloud tail
    */
-  tail: PropTypes.shape({
-    width: PropTypes.number,
-    height: PropTypes.number
-  }),
+  tail: TailType,
   /**
    * The number of randomly generated cloud folds
    */
@@ -162,7 +159,7 @@ Cloud.propTypes = {
   style: PropTypes.object,
   /**
    * A dispatch function invoked when the geometry of the cloud changes.
-   * The function receives a hash with the following keys:
+   * The function receives a GEOMETRY action with the following keys:
    *
    * | Key  | Type            | Description                                                                    |
    * | ---- | --------------- | ------------------------------------------------------------------------------ |

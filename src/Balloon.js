@@ -17,7 +17,7 @@ limitations under the License.
 // =======
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import PropTypes from 'prop-types'
-import { CornerType } from './prop-types'
+import { CornerType, TailType } from './prop-types'
 import isEqual from 'lodash.isequal'
 import { styles } from './styles'
 import BalloonTail from './svg/BalloonTail'
@@ -133,13 +133,10 @@ Balloon.propTypes = {
   /**
    * The size of the ballon tail
    */
-  tail: PropTypes.shape({
-    width: PropTypes.number,
-    height: PropTypes.number
-  }),
+  tail: TailType,
   /**
    * A dispatch function invoked when the geometry of the balloon changes.
-   * The function receives a hash with the following keys:
+   * The function receives a GEOMETRY action with the following keys:
    *
    * | Key  | Type            | Description                                                                    |
    * | ---- | --------------- | ------------------------------------------------------------------------------ |

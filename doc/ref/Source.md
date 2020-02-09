@@ -80,14 +80,7 @@ type: `string`
 `true` to make the tip always visible, `false` otherwise
 
 type: `bool`
-
-
-### `storage`
-
-If the `Source` is contained in a `Storage`, a pointer to this `Storage` (this
-property will be automatically valued by the englobing `Storage`)
-
-type: `instanceOfStorage`
+defaultValue: `false`
 
 
 ### `svg`
@@ -95,6 +88,7 @@ type: `instanceOfStorage`
 Must to set to `true` if the source wraps an SVG element, `false` otherwise
 
 type: `bool`
+defaultValue: `false`
 
 
 ### `tip`
