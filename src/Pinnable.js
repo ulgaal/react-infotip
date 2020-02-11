@@ -30,7 +30,7 @@ const Pinnable = props => {
   const {
     pinned,
     wrapper: Wrapper = Balloon,
-    onToggle,
+    onPin,
     onMouseDown,
     children,
     ...rest
@@ -38,7 +38,7 @@ const Pinnable = props => {
   return (
     <Wrapper pinned={pinned} {...rest}>
       <div className='pinnable' onMouseDown={onMouseDown}>
-        <Pin pinned={pinned} onClick={onToggle} />
+        <Pin pinned={pinned} onClick={onPin} />
         {children}
       </div>
     </Wrapper>
@@ -57,7 +57,7 @@ Pinnable.propTypes = {
   /**
    * A callback function to invoke when the push-pin is clicked (used to toggle the `pinned` property)
    */
-  onToggle: PropTypes.func,
+  onPin: PropTypes.func,
   /**
    * A callback function to invoke the component is clicked (used to implement tip dragging)
    */

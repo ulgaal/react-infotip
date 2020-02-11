@@ -282,7 +282,6 @@ const stories = storiesOf('Wrappers', module)
     () => (
       <ConfigContext.Consumer>
         {({ wrapper, wrapperProps }) => {
-          console.log('Pinnable wrapper', wrapper, wrapperProps)
           return (
             <span style={{ display: 'inline-block', position: 'relative' }}>
               <Pinnable

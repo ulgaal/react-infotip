@@ -252,7 +252,7 @@ storiesOf('Sticky-notes', module)
                   setTips(tips)
                 }}
               >
-                <ReactTable data={models} columns={columns} pageSize={25} />
+                <ReactTable data={models} columns={columns} pageSize={5} />
               </Storage>
             </div>
           </MergingConfigProvider>

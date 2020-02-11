@@ -26,10 +26,9 @@ import {
   storageInit,
   storageReducer,
   UPDATE_PINNED,
-  MOVE,
-  TOGGLE
+  MOVE
 } from './reducers/storageReducer'
-import { MOUSE_OVER, MOUSE_OUT } from './reducers/sourceReducer'
+import { MOUSE_OVER, MOUSE_OUT, PIN } from './reducers/sourceReducer'
 
 /**
  * The `Storage` component is in charge of persisting tips for all the
@@ -69,10 +68,7 @@ const Storage = props => {
   })
   const prevStoredTips = prevStoredTipsRef.current
   useEffect(() => {
-    // Do not dispatch on componentDidMount
-    if (prevStoredTips) {
-      dispatch({ type: UPDATE_PINNED, storedTips, prevStoredTips })
-    }
+    dispatch({ type: UPDATE_PINNED, storedTips, prevStoredTips })
   }, [storedTips])
 
   // This callback is passed to sources so that they
@@ -89,13 +85,13 @@ const Storage = props => {
   // * mouseover events.
   // * mousemove events.
 
-  const handleToggle = useCallback(event => {
+  const handlePin = useCallback(event => {
     const target = event.target.closest('[data-rit-id]')
     if (target) {
       const id = target.dataset.ritId
       event.stopPropagation()
       event.preventDefault()
-      dispatch({ type: TOGGLE, id })
+      dispatch({ type: PIN, id, ref: target })
     }
   }, [])
 
@@ -163,7 +159,8 @@ const Storage = props => {
           type: MOUSE_OVER,
           id,
           position: { x: event.clientX, y: event.clientY },
-          dispatch
+          dispatch,
+          ref: target
         })
       }
     },
@@ -209,7 +206,7 @@ const Storage = props => {
               pinned,
               id,
               dispatch,
-              onToggle: handleToggle,
+              onPin: handlePin,
               onMouseDown: handleMouseDown,
               children: [tipContent]
             })

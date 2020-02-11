@@ -16,7 +16,6 @@ limitations under the License.
 // sourceReducer
 // =============
 import { toRect, getElement, corner, surface, overlap, LOGS } from '../utils'
-import isEqual from 'lodash.isequal'
 
 const LEFT = new Set([
   'top-left',
@@ -50,36 +49,20 @@ const BOTTOM = new Set([
 export const MOUSE_OVER = 'MOUSE_OVER'
 export const MOUSE_MOVE = 'MOUSE_MOVE'
 export const MOUSE_OUT = 'MOUSE_OUT'
-export const TARGET = 'TARGET'
 export const GEOMETRY = 'GEOMETRY'
 export const VISIBILITY = 'VISIBILITY'
+export const PIN = 'PIN'
 export const RESET = 'RESET'
 export const ATTACH_OBSERVER = 'ATTACH_OBSERVER'
 export const DETACH_OBSERVER = 'DETACH_OBSERVER'
 
-export const sourceInit = props => {
-  const { config, pinned } = props
-  const {
-    position: {
-      target,
-      adjust: { mouse },
-      container
-    }
-  } = config
-  const containerElt = getElement(container)
+export const sourceInit = params => {
   const state = {
     my: 'top-left',
-    ...props,
-    visible: pinned === true,
+    ...params,
     showTimeoutId: undefined,
-    hideTimeoutId: undefined,
-    containerElt
+    hideTimeoutId: undefined
   }
-
-  if (!mouse && Array.isArray(target)) {
-    state.target = { left: target[0], top: target[1], width: 1, height: 1 }
-  }
-
   return state
 }
 
@@ -107,7 +90,7 @@ export const sourceReducer = (state, action) => {
         show: { delay },
         position: { target }
       } = config
-      const { dispatch, position } = action
+      const { dispatch, position, ref } = action
       const showTimeoutId = setTimeout(() => {
         dispatch({
           type: VISIBILITY,
@@ -119,17 +102,18 @@ export const sourceReducer = (state, action) => {
       }, delay)
       const updates =
         target === 'mouse'
-          ? layout(state, {
-              target: {
+          ? {
+              mouse: {
                 left: position.x + window.scrollX,
                 top: position.y + window.scrollY,
                 width: 1,
                 height: 1
               }
-            })
+            }
           : null
       return {
         ...state,
+        ref,
         showTimeoutId,
         ...updates
       }
@@ -174,7 +158,7 @@ export const sourceReducer = (state, action) => {
             })
       const { x, y } = transform(position)
       const updates = layout(state, {
-        target: {
+        mouse: {
           left: x,
           top: y,
           width: 1,
@@ -184,18 +168,30 @@ export const sourceReducer = (state, action) => {
       return updates ? { ...state, ...updates } : state
     }
 
-    case TARGET: {
-      const updates = layout(state, { target: action.target })
-      return updates ? { ...state, ...updates } : state
-    }
-
     case GEOMETRY: {
       const updates = layout(state, { geometry: action.geometry })
       return updates ? { ...state, ...updates } : state
     }
 
     case VISIBILITY: {
-      return { ...state, ...params }
+      let { containerElt } = state
+      if (action.visible && !containerElt) {
+        containerElt = getElement(state.config.position.container)
+      }
+      return { ...state, ...params, containerElt }
+    }
+
+    case PIN: {
+      const { pinned } = action
+      const { visible, containerElt, config } = state
+      const updates = {}
+      if (pinned && !visible) {
+        updates.visible = true
+        if (!containerElt) {
+          updates.containerElt = getElement(config.position.container)
+        }
+      }
+      return { ...state, ...params, ...updates }
     }
 
     case RESET: {
@@ -206,40 +202,62 @@ export const sourceReducer = (state, action) => {
       if (hideTimeoutId) {
         clearInterval(hideTimeoutId)
       }
-      return sourceInit(params)
+      return { ...state, config: action.config }
     }
   }
 }
 
 // The layout function computes the actual tip placement, taking into account
-// the target shape, the tip shape and the container shape.
+// the target, tip and container rects.
 const layout = (state, params) => {
-  const { target, geometry, config, pinned, location } = { ...state, ...params }
+  if (LOGS.source > 2) {
+    console.log('layout', { state, params })
+  }
+  const { config, ref, containerElt } = state
+  let { target, geometry, container } = state
   const updates = {}
-  if (!pinned || !location) {
-    if (!isEqual(target, state.target)) {
-      updates.target = target
+  const {
+    position: {
+      target: targetConf,
+      at,
+      my,
+      adjust: { method, x, y }
     }
-    if (!isEqual(geometry, state.geometry)) {
-      updates.geometry = geometry
+  } = config
+
+  if (params.mouse) {
+    updates.target = target = params.mouse
+  }
+  if (!target) {
+    let targetElt = null
+    if (targetConf === false) {
+      targetElt = ref.firstChild
     }
-    const containerElt =
-      state.containerElt || getElement(config.position.container)
-    if (!state.containerElt) {
-      updates.containerElt = containerElt
+    if (typeof targetConf === 'string') {
+      // The `target` key of the `config` property enables the tip
+      // to appear at a location different from the source
+      targetElt = document.querySelector(targetConf)
     }
-    const container = state.container || toRect(containerElt)
-    if (!state.container) {
-      updates.container = container
+    if (Array.isArray(targetConf)) {
+      updates.target = target = {
+        left: targetConf[0],
+        top: targetConf[1],
+        width: 1,
+        height: 1
+      }
+    } else {
+      updates.target = target = toRect(targetElt)
+    }
+  }
+  if (params.geometry) {
+    updates.geometry = geometry = params.geometry
+  }
+
+  if (containerElt) {
+    if (!container) {
+      updates.container = container = toRect(containerElt)
     }
     if (target && geometry) {
-      const {
-        position: {
-          at,
-          my,
-          adjust: { method, x, y }
-        }
-      } = config
       const { size, corners } = geometry
       const targetCorner = corner(target, at)
       const computeRect = my => {
