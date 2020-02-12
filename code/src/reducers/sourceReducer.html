@@ -9,7 +9,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.</p>
 <h1 id="sourcereducer">sourceReducer</h1></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> { toRect, getElement, corner, surface, overlap, LOGS } <span class="hljs-keyword">from</span> <span class="hljs-string">'../utils'</span>
-<span class="hljs-keyword">import</span> isEqual <span class="hljs-keyword">from</span> <span class="hljs-string">'lodash.isequal'</span>
 
 const LEFT = new Set([
   <span class="hljs-string">'top-left'</span>,
@@ -43,36 +42,20 @@ const BOTTOM = new Set([
 export const MOUSE_OVER = <span class="hljs-string">'MOUSE_OVER'</span>
 export const MOUSE_MOVE = <span class="hljs-string">'MOUSE_MOVE'</span>
 export const MOUSE_OUT = <span class="hljs-string">'MOUSE_OUT'</span>
-export const TARGET = <span class="hljs-string">'TARGET'</span>
 export const GEOMETRY = <span class="hljs-string">'GEOMETRY'</span>
 export const VISIBILITY = <span class="hljs-string">'VISIBILITY'</span>
+export const PIN = <span class="hljs-string">'PIN'</span>
 export const RESET = <span class="hljs-string">'RESET'</span>
 export const ATTACH_OBSERVER = <span class="hljs-string">'ATTACH_OBSERVER'</span>
 export const DETACH_OBSERVER = <span class="hljs-string">'DETACH_OBSERVER'</span>
 
-export const sourceInit = props =&gt; {
-  const { config, pinned } = props
-  const {
-    position: {
-      target,
-      adjust: { mouse },
-      container
-    }
-  } = config
-  const containerElt = getElement(container)
+export const sourceInit = params =&gt; {
   const state = {
     my: <span class="hljs-string">'top-left'</span>,
-    ...props,
-    visible: pinned === true,
+    ...params,
     showTimeoutId: undefined,
-    hideTimeoutId: undefined,
-    containerElt
+    hideTimeoutId: undefined
   }
-
-  if (!mouse &amp;&amp; Array.isArray(target)) {
-    state.target = { left: target[0], top: target[1], width: 1, height: 1 }
-  }
-
   return state
 }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A reducer function to transform DOM events into Source state updates</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> sourceReducer = (state, action) =&gt; {
   <span class="hljs-keyword">if</span> (LOGS.source &gt; <span class="hljs-number">1</span>) {
@@ -88,14 +71,13 @@ export const sourceInit = props =&gt; {
       <span class="hljs-keyword">const</span> { hideTimeoutId } = state
       <span class="hljs-keyword">if</span> (hideTimeoutId) {
         clearInterval(hideTimeoutId)
-        <span class="hljs-keyword">return</span> { ...state, hideTimeoutId: <span class="hljs-literal">undefined</span> }
       }
       <span class="hljs-keyword">const</span> { config, id } = state
       <span class="hljs-keyword">const</span> {
         show: { delay },
         position: { target }
       } = config
-      <span class="hljs-keyword">const</span> { dispatch, position } = action
+      <span class="hljs-keyword">const</span> { dispatch, position, ref } = action
       <span class="hljs-keyword">const</span> showTimeoutId = setTimeout(() =&gt; {
         dispatch({
           type: VISIBILITY,
@@ -107,18 +89,20 @@ export const sourceInit = props =&gt; {
       }, delay)
       <span class="hljs-keyword">const</span> updates =
         target === <span class="hljs-string">'mouse'</span>
-          ? layout(state, {
-              target: {
+          ? {
+              mouse: {
                 left: position.x + <span class="hljs-built_in">window</span>.scrollX,
                 top: position.y + <span class="hljs-built_in">window</span>.scrollY,
                 width: <span class="hljs-number">1</span>,
                 height: <span class="hljs-number">1</span>
               }
-            })
+            }
           : <span class="hljs-literal">null</span>
       <span class="hljs-keyword">return</span> {
         ...state,
+        ref,
         showTimeoutId,
+        hideTimeoutId: <span class="hljs-literal">undefined</span>,
         ...updates
       }
     }
@@ -127,6 +111,10 @@ export const sourceInit = props =&gt; {
       <span class="hljs-keyword">const</span> { pinned } = state
       <span class="hljs-keyword">if</span> (pinned) {
         <span class="hljs-keyword">return</span> state
+      }
+      <span class="hljs-keyword">const</span> { showTimeoutId } = state
+      <span class="hljs-keyword">if</span> (showTimeoutId) {
+        clearInterval(showTimeoutId)
       }
       <span class="hljs-keyword">const</span> { config, id } = state
       <span class="hljs-keyword">const</span> {
@@ -142,7 +130,7 @@ export const sourceInit = props =&gt; {
           hideTimeoutId: <span class="hljs-literal">undefined</span>
         })
       }, delay)
-      <span class="hljs-keyword">return</span> { ...state, hideTimeoutId }
+      <span class="hljs-keyword">return</span> { ...state, hideTimeoutId, showTimeoutId: <span class="hljs-literal">undefined</span> }
     }
 
     <span class="hljs-keyword">case</span> MOUSE_MOVE: {
@@ -162,7 +150,7 @@ export const sourceInit = props =&gt; {
             })
       <span class="hljs-keyword">const</span> { x, y } = transform(position)
       <span class="hljs-keyword">const</span> updates = layout(state, {
-        target: {
+        mouse: {
           left: x,
           top: y,
           width: <span class="hljs-number">1</span>,
@@ -172,18 +160,30 @@ export const sourceInit = props =&gt; {
       <span class="hljs-keyword">return</span> updates ? { ...state, ...updates } : state
     }
 
-    <span class="hljs-keyword">case</span> TARGET: {
-      <span class="hljs-keyword">const</span> updates = layout(state, { target: action.target })
-      <span class="hljs-keyword">return</span> updates ? { ...state, ...updates } : state
-    }
-
     <span class="hljs-keyword">case</span> GEOMETRY: {
       <span class="hljs-keyword">const</span> updates = layout(state, { geometry: action.geometry })
       <span class="hljs-keyword">return</span> updates ? { ...state, ...updates } : state
     }
 
     <span class="hljs-keyword">case</span> VISIBILITY: {
-      <span class="hljs-keyword">return</span> { ...state, ...params }
+      <span class="hljs-keyword">let</span> { containerElt } = state
+      <span class="hljs-keyword">if</span> (action.visible &amp;&amp; !containerElt) {
+        containerElt = getElement(state.config.position.container)
+      }
+      <span class="hljs-keyword">return</span> { ...state, ...params, containerElt }
+    }
+
+    <span class="hljs-keyword">case</span> PIN: {
+      <span class="hljs-keyword">const</span> { pinned } = action
+      <span class="hljs-keyword">const</span> { visible, containerElt, config } = state
+      <span class="hljs-keyword">const</span> updates = {}
+      <span class="hljs-keyword">if</span> (pinned &amp;&amp; !visible) {
+        updates.visible = <span class="hljs-literal">true</span>
+        <span class="hljs-keyword">if</span> (!containerElt) {
+          updates.containerElt = getElement(config.position.container)
+        }
+      }
+      <span class="hljs-keyword">return</span> { ...state, ...params, ...updates }
     }
 
     <span class="hljs-keyword">case</span> RESET: {
@@ -194,37 +194,57 @@ export const sourceInit = props =&gt; {
       <span class="hljs-keyword">if</span> (hideTimeoutId) {
         clearInterval(hideTimeoutId)
       }
-      <span class="hljs-keyword">return</span> sourceInit(params)
+      <span class="hljs-keyword">return</span> { ...state, config: action.config }
     }
   }
 }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The layout function computes the actual tip placement, taking into account
-the target shape, the tip shape and the container shape.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> layout = (state, params) =&gt; {
-  <span class="hljs-keyword">const</span> { target, geometry, config, pinned, location } = { ...state, ...params }
+the target, tip and container rects.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> layout = (state, params) =&gt; {
+  <span class="hljs-keyword">if</span> (LOGS.source &gt; <span class="hljs-number">2</span>) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'layout'</span>, { state, params })
+  }
+  <span class="hljs-keyword">const</span> { config, ref, containerElt } = state
+  <span class="hljs-keyword">let</span> { target, geometry, container } = state
   <span class="hljs-keyword">const</span> updates = {}
-  <span class="hljs-keyword">if</span> (!pinned || !location) {
-    <span class="hljs-keyword">if</span> (!isEqual(target, state.target)) {
-      updates.target = target
+  <span class="hljs-keyword">const</span> {
+    position: {
+      target: targetConf,
+      at,
+      my,
+      adjust: { method, x, y }
     }
-    <span class="hljs-keyword">if</span> (!isEqual(geometry, state.geometry)) {
-      updates.geometry = geometry
+  } = config
+
+  <span class="hljs-keyword">if</span> (params.mouse) {
+    updates.target = target = params.mouse
+  }
+  <span class="hljs-keyword">if</span> (!target) {
+    <span class="hljs-keyword">let</span> targetElt = <span class="hljs-literal">null</span>
+    <span class="hljs-keyword">if</span> (targetConf === <span class="hljs-literal">false</span>) {
+      targetElt = ref.firstChild
     }
-    <span class="hljs-keyword">const</span> containerElt =
-      state.containerElt || getElement(config.position.container)
-    <span class="hljs-keyword">if</span> (!state.containerElt) {
-      updates.containerElt = containerElt
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> targetConf === <span class="hljs-string">'string'</span>) {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The <code>target</code> key of the <code>config</code> property enables the tip
+to appear at a location different from the source</p></div></div><div class="code"><div class="wrapper">      targetElt = <span class="hljs-built_in">document</span>.querySelector(targetConf)
     }
-    <span class="hljs-keyword">const</span> container = state.container || toRect(containerElt)
-    <span class="hljs-keyword">if</span> (!state.container) {
-      updates.container = container
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Array</span>.isArray(targetConf)) {
+      updates.target = target = {
+        left: targetConf[<span class="hljs-number">0</span>],
+        top: targetConf[<span class="hljs-number">1</span>],
+        width: <span class="hljs-number">1</span>,
+        height: <span class="hljs-number">1</span>
+      }
+    } <span class="hljs-keyword">else</span> {
+      updates.target = target = toRect(targetElt)
+    }
+  }
+  <span class="hljs-keyword">if</span> (params.geometry) {
+    updates.geometry = geometry = params.geometry
+  }
+
+  <span class="hljs-keyword">if</span> (containerElt) {
+    <span class="hljs-keyword">if</span> (!container) {
+      updates.container = container = toRect(containerElt)
     }
     <span class="hljs-keyword">if</span> (target &amp;&amp; geometry) {
-      <span class="hljs-keyword">const</span> {
-        position: {
-          at,
-          my,
-          adjust: { method, x, y }
-        }
-      } = config
       <span class="hljs-keyword">const</span> { size, corners } = geometry
       <span class="hljs-keyword">const</span> targetCorner = corner(target, at)
       <span class="hljs-keyword">const</span> computeRect = my =&gt; {
