@@ -1,20 +1,19 @@
 import isEqual from 'lodash.isequal'
-import { eqSet, diffSet, LOGS } from '../utils'
+import { getElement, eqSet, diffSet, LOGS } from '../utils'
 
 import {
   sourceInit,
   sourceReducer,
   MOUSE_OVER,
   MOUSE_OUT,
-  TARGET,
   GEOMETRY,
-  VISIBILITY
+  VISIBILITY,
+  PIN
 } from './sourceReducer'
 
 export const UPDATE_SOURCE = 'UPDATE_SOURCE'
 export const UPDATE_PINNED = 'UPDATE_PINNED'
 export const RELEASE = 'RELEASE'
-export const TOGGLE = 'TOGGLE'
 export const MOVE = 'MOVE'
 
 const updateSource = (sources, id, source) => {
@@ -41,14 +40,7 @@ export const storageInit = props => {
   return {
     storedTips,
     onTipChange,
-    sources: storedTips.reduce((sources, storedTip) => {
-      const { id } = storedTip
-      sources[id] = {
-        refCount: 1,
-        source: sourceInit({ ...storedTip, pinned: true })
-      }
-      return sources
-    }, {})
+    sources: {}
   }
 }
 
@@ -67,12 +59,26 @@ export const storageReducer = (state, action) => {
     case UPDATE_PINNED: {
       const { storedTips, prevStoredTips } = action
       const ids = new Set(storedTips.map(({ id }) => id))
-      const prevIds = new Set(prevStoredTips.map(({ id }) => id))
+      const prevIds = new Set((prevStoredTips || []).map(({ id }) => id))
       if (!eqSet(ids, prevIds)) {
         const newSources = { ...sources }
         // Increase refcount for newly pinned tips
         for (const id of diffSet(ids, prevIds)) {
-          const newEntry = { ...newSources[id] }
+          const storedTip = storedTips.find(tip => tip.id === id)
+          const newEntry = newSources[id]
+            ? { ...newSources[id] }
+            : {
+                refCount: 0,
+                source: sourceInit({
+                  ...storedTip
+                })
+              }
+          newEntry.source = {
+            ...storedTip,
+            pinned: true,
+            visible: true,
+            containerElt: getElement(storedTip.config.position.container)
+          }
           newEntry.refCount++
           newSources[id] = newEntry
         }
@@ -115,6 +121,12 @@ export const storageReducer = (state, action) => {
       const { id } = action
       const newSources = { ...sources }
       const entry = newSources[id]
+      if (!entry) {
+        if (LOGS.storage > 2) {
+          console.log('storageReducer.RELEASE missing id', id)
+        }
+        return state
+      }
       if (entry.refCount === 1) {
         delete newSources[id]
       } else {
@@ -151,13 +163,14 @@ export const storageReducer = (state, action) => {
           }
         : state
     }
-    case TOGGLE: {
+    case PIN: {
       const { id } = action
       const source = sources[id].source
-      const newSources = updateSource(sources, id, {
-        ...source,
-        pinned: !source.pinned
-      })
+      const newSources = updateSource(
+        sources,
+        id,
+        sourceReducer(source, { ...action, pinned: !source.pinned })
+      )
       const storedTips = toStoredTips(newSources, state.storedTips)
       if (storedTips && typeof onTipChange === 'function') {
         onTipChange(storedTips)
@@ -172,15 +185,6 @@ export const storageReducer = (state, action) => {
     }
     case GEOMETRY:
     case VISIBILITY:
-    case TARGET: {
-      const { id } = action
-      const newSources = updateSource(
-        sources,
-        id,
-        sourceReducer(sources[id].source, action)
-      )
-      return sources === newSources ? state : { ...state, sources: newSources }
-    }
     case MOUSE_OVER:
     case MOUSE_OUT: {
       const { id } = action

@@ -1,3 +1,9 @@
+## Version 0.8.0 (2020/02/12)
+- More internal redesign: use a lazy approach to minimize the amount of DOM measurements
+- Removed dependency on resize-observer-polyfill
+- Fixed reg in mouseover/mouseout timer cancelation
+- Fixed proptype warning
+
 ## Version 0.7.0 (2020/02/09)
 - Major internal redesign: the codebase has been migrated to hooks and the Engine class has been replaced by a useReducer pattern.
 

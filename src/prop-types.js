@@ -60,7 +60,7 @@ export const SourceConfig = PropTypes.shape({
   hide: PropTypes.shape({
     delay: PropTypes.number
   }),
-  wrapper: PropTypes.func,
+  wrapper: PropTypes.elementType,
   wrapperProps: PropTypes.object
 })
 

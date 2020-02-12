@@ -36,11 +36,10 @@ import {
   MOUSE_OVER,
   MOUSE_MOVE,
   MOUSE_OUT,
-  TARGET,
+  PIN,
   RESET
 } from './reducers/sourceReducer'
 import { UPDATE_SOURCE, RELEASE } from './reducers/storageReducer'
-import ResizeObserver from 'resize-observer-polyfill'
 
 /**
  * The `Source` component acts as a wrapper for other components and enables them
@@ -65,8 +64,8 @@ const Source = props => {
   // reducer computes changes to the state of the `Source`
   // (updates on position, location or visibility)
   const [state, dispatch] = useStorageReducer
-    ? useStorageReducer({ id, pinned, config })
-    : useReducer(sourceReducer, { pinned, config }, sourceInit)
+    ? useStorageReducer({ id, config })
+    : useReducer(sourceReducer, { config }, sourceInit)
   if (LOGS.source > 0) {
     console.log('Source', props, state)
   }
@@ -95,64 +94,28 @@ const Source = props => {
     }, [])
   }
 
-  // A `Source` renders an actual DOM element, which is observed by
-  // a `ResizeObserver`, so that the engine can take the geometry of
-  // the source into consideration to compute tip placement.
+  // Keep a reference to the actual `Source` DOM element,
+  // used for tip positionning when target === false
   const ref = useRef(null)
-  const resizeObserverRef = useRef(null)
-  if (!resizeObserverRef.current) {
-    resizeObserverRef.current = {
-      observer: new ResizeObserver(entries => {
-        const rect = resizeObserverRef.current.target.getBoundingClientRect()
-        rect.x += window.scrollX
-        rect.y += window.scrollY
-        dispatch({
-          type: TARGET,
-          id: idRef.current,
-          target: rect
-        })
-      }),
-      observed: null,
-      target: null
-    }
-  }
+
+  // Reinitialize the source if the config changes
   useEffect(() => {
-    const { position } = config
-    // Make the ResizeObserver observe the target (this can only be done
-    // once an actual DOM element is available)
-    if (!position.adjust.mouse) {
-      const target = position.target
-      const resizeObserver = resizeObserverRef.current
-      if (resizeObserver.observed) {
-        resizeObserver.observer.unobserve(resizeObserver.observed)
-      }
-      if (target === false) {
-        resizeObserver.target = ref.current.firstChild
-      }
-      if (typeof target === 'string' && target !== 'mouse') {
-        // The `target` key of the `config` property enables the tip
-        // to appear at a location different from the source
-        resizeObserver.target = document.querySelector(target)
-      }
-      // In case of an SVG `Source` the `ResizeObserver` is not triggered
-      // by changes to the target `SVGElement`, so we need to observe the englobing
-      // `SVGSVGElement` instead
-      resizeObserver.observed =
-        resizeObserver.target instanceof SVGElement
-          ? resizeObserver.target.ownerSVGElement
-          : resizeObserver.target
-      resizeObserver.observer.observe(resizeObserver.observed)
+    if (config !== state.config) {
+      dispatch({ type: RESET, config })
     }
-    if (config !== state.config || pinned !== state.pinned) {
-      dispatch({ type: RESET, config, pinned })
-    }
-  }, [config, pinned])
+  }, [config])
+
+  // Make the source visible if the pinned property is set
   useEffect(() => {
-    // componentWillUnmount
-    return () => {
-      resizeObserverRef.current.observer.disconnect()
+    if (state.pinned !== undefined || pinned) {
+      dispatch({
+        type: PIN,
+        id,
+        pinned,
+        ref: ref.current
+      })
     }
-  }, [])
+  }, [pinned])
 
   // Tranform DOM events into reducer actions:
   // * mouseout events.
@@ -172,7 +135,8 @@ const Source = props => {
       dispatch({
         type: MOUSE_OVER,
         position: { x: event.clientX, y: event.clientY },
-        dispatch
+        dispatch,
+        ref: ref.current
       })
     },
     [dispatch]

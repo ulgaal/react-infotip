@@ -1,6 +1,6 @@
 {
   "name": "@ulgaal/react-infotip",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "A library to provide tooltips and sticky-notes to React apps",
   "keywords": [
     "react",
@@ -40,8 +40,7 @@
   "dependencies": {
     "deepmerge": "^4.2.2",
     "lodash.isequal": "^4.5.0",
-    "lodash.pick": "^4.4.0",
-    "resize-observer-polyfill": "^1.5.1"
+    "lodash.pick": "^4.4.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.6.4",

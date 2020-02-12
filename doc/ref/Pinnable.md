@@ -15,7 +15,7 @@ A callback function to invoke the component is clicked (used to implement tip dr
 type: `func`
 
 
-### `onToggle`
+### `onPin`
 
 A callback function to invoke when the push-pin is clicked (used to toggle the `pinned` property)
 
