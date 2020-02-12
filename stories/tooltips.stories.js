@@ -19,6 +19,7 @@ import { storiesOf } from '@storybook/react'
 // import { linkTo } from '@storybook/addon-links'
 // import { Welcome } from '@storybook/react/demo'
 import { withKnobs } from '@storybook/addon-knobs'
+import { addReadme } from 'storybook-readme'
 
 import Rocket from './rocket.svg'
 
@@ -53,6 +54,8 @@ import { generateMarkdown } from './generateMarkdown'
 const SourceReadme = generateMarkdown('Source', docgen['src/Source.js'][0])
 
 storiesOf('Tooltips', module)
+  .addDecorator(addReadme)
+  .addParameters({ options: { theme: {} } })
   .addDecorator(withKnobs)
   .addDecorator(styleDecorator)
   .addDecorator(wrapperDecorator)
@@ -139,7 +142,7 @@ storiesOf('Tooltips', module)
     'Custom wrapper',
     () => (
       <Source tip='This is a cloud tip' config={{ wrapper: Cloud }}>
-        <span className='default-rect'>I have a cloud tip</span>
+        <span className='default-rect centered-rect'>I have a cloud tip</span>
       </Source>
     ),
     {

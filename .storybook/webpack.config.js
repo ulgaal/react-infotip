@@ -15,13 +15,6 @@ module.exports = async ({ config, mode }) => {
     loader: 'svg-react-loader'
   })
 
-  // Enable storysource addon to load source code
-  config.module.rules.push({
-    test: /\.stories\.jsx?$/,
-    loaders: [require.resolve('@storybook/source-loader')],
-    enforce: 'pre'
-  })
-
   // Return the altered config
   return config
 }

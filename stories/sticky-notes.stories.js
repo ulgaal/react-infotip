@@ -16,6 +16,7 @@ limitations under the License.
 import React, { useState, useContext } from 'react'
 import { storiesOf } from '@storybook/react'
 import { withKnobs } from '@storybook/addon-knobs'
+import { addReadme } from 'storybook-readme'
 
 import {
   Source,
@@ -46,6 +47,8 @@ import 'react-table/react-table.css'
 const StorageReadme = generateMarkdown('Storage', docgen['src/Storage.js'][0])
 
 storiesOf('Sticky-notes', module)
+  .addDecorator(addReadme)
+  .addParameters({ options: { theme: {} } })
   .addDecorator(withKnobs)
   .addDecorator(styleDecorator)
   .addDecorator(wrapperDecorator)

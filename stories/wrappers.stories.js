@@ -19,6 +19,7 @@ import { storiesOf } from '@storybook/react'
 // import { linkTo } from '@storybook/addon-links'
 // import { Welcome } from '@storybook/react/demo'
 import { withKnobs } from '@storybook/addon-knobs'
+import { addReadme } from 'storybook-readme'
 
 import {
   Balloon,
@@ -62,6 +63,8 @@ const PinnableRefReadme = generateMarkdown(
 )
 
 const stories = storiesOf('Wrappers', module)
+  .addDecorator(addReadme)
+  .addParameters({ options: { theme: {} } })
   .addDecorator(withKnobs)
   .add(
     'Balloon wrapper',
@@ -309,5 +312,3 @@ const stories = storiesOf('Wrappers', module)
       ]
     }
   )
-
-export default stories
