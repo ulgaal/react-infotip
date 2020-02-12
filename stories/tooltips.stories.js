@@ -19,6 +19,7 @@ import { storiesOf } from '@storybook/react'
 // import { linkTo } from '@storybook/addon-links'
 // import { Welcome } from '@storybook/react/demo'
 import { withKnobs } from '@storybook/addon-knobs'
+import { addReadme } from 'storybook-readme'
 
 import Rocket from './rocket.svg'
 
@@ -39,6 +40,7 @@ import WrapperReadme from './md/source/cloud.md'
 import AsyncReadme from './md/source/async.md'
 import ContainersReadme from './md/source/containers.md'
 import TargetReadme from './md/source/target.md'
+import MouseTargetReadme from './md/source/mouse-target.md'
 import SvgReadme from './md/source/svg.md'
 import ConfigReadme from './md/source/config.md'
 import ConfigContextReadme from './md/source/config-context.md'
@@ -52,6 +54,8 @@ import { generateMarkdown } from './generateMarkdown'
 const SourceReadme = generateMarkdown('Source', docgen['src/Source.js'][0])
 
 storiesOf('Tooltips', module)
+  .addDecorator(addReadme)
+  .addParameters({ options: { theme: {} } })
   .addDecorator(withKnobs)
   .addDecorator(styleDecorator)
   .addDecorator(wrapperDecorator)
@@ -138,7 +142,7 @@ storiesOf('Tooltips', module)
     'Custom wrapper',
     () => (
       <Source tip='This is a cloud tip' config={{ wrapper: Cloud }}>
-        <span className='default-rect'>I have a cloud tip</span>
+        <span className='default-rect centered-rect'>I have a cloud tip</span>
       </Source>
     ),
     {
@@ -304,6 +308,33 @@ storiesOf('Tooltips', module)
     {
       readme: {
         content: TargetReadme,
+        sidebar: SourceReadme
+      }
+    }
+  )
+  .add(
+    'Mouse target',
+    () => (
+      <MergingConfigProvider
+        value={{
+          position: {
+            target: 'mouse'
+          }
+        }}
+      >
+        <Source tip='Ouch !'>
+          <span
+            className='default-rect'
+            style={{ width: '300px', height: '200px' }}
+          >
+            Hit me with a mouse
+          </span>
+        </Source>
+      </MergingConfigProvider>
+    ),
+    {
+      readme: {
+        content: MouseTargetReadme,
         sidebar: SourceReadme
       }
     }
