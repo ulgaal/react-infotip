@@ -15,13 +15,12 @@ limitations under the License.
 */
 // Balloon
 // =======
-import React, { useEffect, useState, useRef, useCallback } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { CornerType, TailType } from './prop-types'
 import isEqual from 'lodash.isequal'
 import { styles } from './styles'
 import BalloonTail from './svg/BalloonTail'
-import useResizeObserver from './hooks/useResizeObserver'
 import useComputedStyle from './hooks/useComputedStyle'
 import { GEOMETRY } from './reducers/sourceReducer'
 
@@ -58,23 +57,19 @@ const Balloon = props => {
   // Extract relevant style props from the DOM
   const computedStyle = useComputedStyle(style, className)
 
-  const measure = useCallback(entry => {
-    const { target } = entry
-    const boundingClientRect = target.getBoundingClientRect()
+  useEffect(() => {
+    const boundingClientRect = ref.current.getBoundingClientRect()
     const size = {
       width: boundingClientRect.width,
       height: boundingClientRect.height
     }
     const newMetrics = computeMetrics(tail, computedStyle, size)
-    if (!isEqual(metrics, newMetrics)) {
-      setMetrics(newMetrics)
-      if (typeof dispatch === 'function') {
-        const { corners, size } = newMetrics
-        dispatch({ type: GEOMETRY, id, geometry: { corners, size } })
-      }
+    setMetrics(newMetrics)
+    if (typeof dispatch === 'function') {
+      const { corners, size } = newMetrics
+      dispatch({ type: GEOMETRY, id, geometry: { corners, size } })
     }
   }, [])
-  useResizeObserver(ref, measure)
 
   // Update the metrics if tail or style change
   useEffect(() => {
