@@ -23,7 +23,7 @@ import Storage from './Storage'
 import Balloon from './Balloon'
 import Pinnable from './Pinnable'
 import Cloud from './Cloud'
-import { mergeObjects, seq } from './utils'
+import { mergeObjects, seq, LOGS } from './utils'
 import { positions } from './prop-types'
 import { styles } from './styles'
 
@@ -41,5 +41,6 @@ export {
   Cloud,
   mergeObjects,
   seq,
-  positions
+  positions,
+  LOGS
 }
