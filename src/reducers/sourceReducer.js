@@ -83,7 +83,6 @@ export const sourceReducer = (state, action) => {
       const { hideTimeoutId } = state
       if (hideTimeoutId) {
         clearInterval(hideTimeoutId)
-        return { ...state, hideTimeoutId: undefined }
       }
       const { config, id } = state
       const {
@@ -115,6 +114,7 @@ export const sourceReducer = (state, action) => {
         ...state,
         ref,
         showTimeoutId,
+        hideTimeoutId: undefined,
         ...updates
       }
     }
@@ -123,6 +123,10 @@ export const sourceReducer = (state, action) => {
       const { pinned } = state
       if (pinned) {
         return state
+      }
+      const { showTimeoutId } = state
+      if (showTimeoutId) {
+        clearInterval(showTimeoutId)
       }
       const { config, id } = state
       const {
@@ -138,7 +142,7 @@ export const sourceReducer = (state, action) => {
           hideTimeoutId: undefined
         })
       }, delay)
-      return { ...state, hideTimeoutId }
+      return { ...state, hideTimeoutId, showTimeoutId: undefined }
     }
 
     case MOUSE_MOVE: {
