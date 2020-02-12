@@ -39,6 +39,7 @@ import WrapperReadme from './md/source/cloud.md'
 import AsyncReadme from './md/source/async.md'
 import ContainersReadme from './md/source/containers.md'
 import TargetReadme from './md/source/target.md'
+import MouseTargetReadme from './md/source/mouse-target.md'
 import SvgReadme from './md/source/svg.md'
 import ConfigReadme from './md/source/config.md'
 import ConfigContextReadme from './md/source/config-context.md'
@@ -304,6 +305,33 @@ storiesOf('Tooltips', module)
     {
       readme: {
         content: TargetReadme,
+        sidebar: SourceReadme
+      }
+    }
+  )
+  .add(
+    'Mouse target',
+    () => (
+      <MergingConfigProvider
+        value={{
+          position: {
+            target: 'mouse'
+          }
+        }}
+      >
+        <Source tip='Ouch !'>
+          <span
+            className='default-rect'
+            style={{ width: '300px', height: '200px' }}
+          >
+            Hit me with a mouse
+          </span>
+        </Source>
+      </MergingConfigProvider>
+    ),
+    {
+      readme: {
+        content: MouseTargetReadme,
         sidebar: SourceReadme
       }
     }

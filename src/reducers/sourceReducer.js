@@ -102,7 +102,7 @@ export const sourceReducer = (state, action) => {
       const updates =
         target === 'mouse'
           ? {
-              mouse: {
+              target: {
                 left: position.x + window.scrollX,
                 top: position.y + window.scrollY,
                 width: 1,
