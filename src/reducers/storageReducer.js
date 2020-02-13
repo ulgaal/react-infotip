@@ -6,6 +6,7 @@ import {
   sourceReducer,
   MOUSE_OVER,
   MOUSE_OUT,
+  MOUSE_MOVE,
   GEOMETRY,
   VISIBILITY,
   PIN
@@ -190,6 +191,19 @@ export const storageReducer = (state, action) => {
       const { id } = action
       const source = sources[id].source
       if (source.pinned) {
+        return state
+      }
+      const newSources = updateSource(
+        sources,
+        id,
+        sourceReducer(source, action)
+      )
+      return sources === newSources ? state : { ...state, sources: newSources }
+    }
+    case MOUSE_MOVE: {
+      const { id } = action
+      const source = sources[id].source
+      if (!source.config.position.adjust.mouse) {
         return state
       }
       const newSources = updateSource(

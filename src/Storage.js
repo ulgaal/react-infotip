@@ -28,7 +28,12 @@ import {
   UPDATE_PINNED,
   MOVE
 } from './reducers/storageReducer'
-import { MOUSE_OVER, MOUSE_OUT, PIN } from './reducers/sourceReducer'
+import {
+  MOUSE_OVER,
+  MOUSE_MOVE,
+  MOUSE_OUT,
+  PIN
+} from './reducers/sourceReducer'
 
 /**
  * The `Storage` component is in charge of persisting tips for all the
@@ -158,9 +163,30 @@ const Storage = props => {
         dispatch({
           type: MOUSE_OVER,
           id,
-          position: { x: event.clientX, y: event.clientY },
+          position: {
+            x: event.clientX + window.scrollX,
+            y: event.clientY + window.scrollY
+          },
           dispatch,
           ref: target
+        })
+      }
+    },
+    [dispatch]
+  )
+
+  const handleMouseMove = useCallback(
+    event => {
+      const target = event.target.closest('[data-rit-id]')
+      if (target) {
+        const id = target.dataset.ritId
+        dispatch({
+          type: MOUSE_MOVE,
+          id,
+          position: {
+            x: event.clientX + window.scrollX,
+            y: event.clientY + window.scrollY
+          }
         })
       }
     },
@@ -174,6 +200,7 @@ const Storage = props => {
       style={{ display: 'contents' }}
       onMouseOut={handleMouseOut}
       onMouseOver={handleMouseOver}
+      onMouseMove={handleMouseMove}
     >
       <StorageContext.Provider value={storage}>
         {

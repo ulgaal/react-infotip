@@ -103,8 +103,8 @@ export const sourceReducer = (state, action) => {
         target === 'mouse'
           ? {
               target: {
-                left: position.x + window.scrollX,
-                top: position.y + window.scrollY,
+                left: position.x,
+                top: position.y,
                 width: 1,
                 height: 1
               }
@@ -157,8 +157,8 @@ export const sourceReducer = (state, action) => {
         typeof mouse === 'function'
           ? mouse
           : event => ({
-              x: position.x + window.scrollX,
-              y: position.y + window.scrollY
+              x: position.x,
+              y: position.y
             })
       const { x, y } = transform(position)
       const updates = layout(state, {
