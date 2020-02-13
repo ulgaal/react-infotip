@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useRef, useMemo, useReducer } from 'react'
 import { storiesOf } from '@storybook/react'
 import { withKnobs } from '@storybook/addon-knobs'
 import { addReadme } from 'storybook-readme'
@@ -29,6 +29,7 @@ import {
 
 import PersistentReadme from './md/storage/persistent.md'
 import TableReadme from './md/storage/table.md'
+import MultiLineChartReadme from './md/storage/multi-line-chart.md'
 import docgen from './docgen'
 import { generateMarkdown } from './generateMarkdown'
 
@@ -266,6 +267,154 @@ storiesOf('Sticky-notes', module)
     {
       readme: {
         content: TableReadme,
+        sidebar: StorageReadme
+      }
+    }
+  )
+  .add(
+    'Multiline chart sticky notes',
+    () => {
+      const W = 600
+      const H = 200
+      const count = 50
+      const colors = ['red', 'black', 'blue', 'green']
+      const model = colors.map((color, index) => ({
+        id: `line-${index}`,
+        color,
+        points: [...seq(0, count)].map(x => ({
+          x: (W * x) / count,
+          y: H * (0.2 + Math.random() * 0.6)
+        })),
+        coordinates: { x: 0, y: 0 }
+      }))
+      const toIndex = id => {
+        const [, index] = /line-(\d+)/.exec(id) || []
+        return index
+      }
+      const modelReducer = (state, action) => {
+        const { id, coordinates } = action
+        const index = toIndex(id)
+        const newState = [...state]
+        newState[index] = {
+          ...state[index],
+          coordinates
+        }
+        return newState
+      }
+
+      const Graph = props => {
+        const { id, color, points, dispatch } = props
+        const config = useContext(ConfigContext)
+        const ref = useRef(null)
+        const graphConfig = useMemo(
+          () => ({
+            position: {
+              container: '.multi-line-chart',
+              adjust: {
+                mouse: position => {
+                  const rect = ref.current
+                  // Compute the coordinates of the point
+                  const ctm = rect.getScreenCTM()
+                  const pos = rect.ownerSVGElement.createSVGPoint()
+                  pos.x = position.x
+                  pos.y = position.y
+                  const pos2 = pos.matrixTransform(ctm.inverse())
+                  const index = Math.max(
+                    0,
+                    Math.min(Math.floor((pos2.x * count) / W), count - 1)
+                  )
+                  const x = points[index].x
+                  const y = Math.round(points[index].y)
+                  dispatch({ id, coordinates: { x, y } })
+
+                  // Compte the x-coordinate of the rect
+                  const { left } = rect.ownerSVGElement.getBoundingClientRect()
+                  return {
+                    x: left + x + window.scrollX,
+                    y: ctm.f + y + window.scrollY
+                  }
+                }
+              }
+            },
+            show: {
+              delay: 105
+            },
+            hide: {
+              delay: 100
+            },
+            wrapper: Pinnable,
+            wrapperProps: { wrapper: config.wrapper }
+          }),
+          []
+        )
+        return (
+          <MergingConfigProvider value={graphConfig}>
+            <svg
+              width='600px'
+              height='200px'
+              style={{ border: '1px dotted black' }}
+            >
+              <Source id={id} svg>
+                <rect
+                  x={0}
+                  y={0}
+                  width={600}
+                  height={200}
+                  style={{ fill: 'white', stroke: 'none' }}
+                  ref={ref}
+                />
+                <path
+                  style={{ stroke: color, fill: 'none' }}
+                  d={points
+                    .map(({ x, y }, index) => `${index ? 'L' : 'M'} ${x},${y}`)
+                    .join(' ')}
+                />
+              </Source>
+            </svg>
+          </MergingConfigProvider>
+        )
+      }
+
+      const MultiLineChart = props => {
+        const [tips, setTips] = useState([])
+        const [state, dispatch] = useReducer(modelReducer, props.model)
+        return (
+          <Storage
+            tips={tips}
+            tip={(id, pinned) => {
+              const index = toIndex(id)
+              const { coordinates } = state[index]
+              return (
+                <div>
+                  x={coordinates.x}
+                  <br />
+                  y={coordinates.y}
+                </div>
+              )
+            }}
+            onTipChange={tips => {
+              setTips(tips)
+            }}
+          >
+            <div className='multi-line-chart'>
+              {state.map(({ id, color, points }, index) => (
+                <Graph
+                  key={index}
+                  id={id}
+                  color={color}
+                  points={points}
+                  dispatch={dispatch}
+                />
+              ))}
+            </div>
+          </Storage>
+        )
+      }
+      return <MultiLineChart model={model} />
+    },
+    {
+      readme: {
+        content: MultiLineChartReadme,
         sidebar: StorageReadme
       }
     }

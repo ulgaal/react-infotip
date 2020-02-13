@@ -1,3 +1,9 @@
+## Version 0.8.2 (2020/02/13)
+
+- Added story to demonstrate sticky nodes on a storage with mouse move handling
+- Added mouse move handling to storage reducer. Translations caused by window.scoll are now handled by event handlers
+- Added children props to equality test of Cloud and Balloon
+
 ## Version 0.8.1 (2020/02/12)
 
 - Migrated to storybook 5.3.13

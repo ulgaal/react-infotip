@@ -134,7 +134,10 @@ const Source = props => {
       event.stopPropagation()
       dispatch({
         type: MOUSE_OVER,
-        position: { x: event.clientX, y: event.clientY },
+        position: {
+          x: event.clientX + window.scrollX,
+          y: event.clientY + window.scrollY
+        },
         dispatch,
         ref: ref.current
       })
@@ -147,7 +150,10 @@ const Source = props => {
       event.stopPropagation()
       dispatch({
         type: MOUSE_MOVE,
-        position: { x: event.clientX, y: event.clientY }
+        position: {
+          x: event.clientX + window.scrollX,
+          y: event.clientY + window.scrollY
+        }
       })
     },
     [dispatch]

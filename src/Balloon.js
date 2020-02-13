@@ -243,7 +243,8 @@ const areEqual = (prev, next) => {
     prev.tail === next.tail &&
     prev.style === next.style &&
     prev.className === next.className &&
-    prev.pinned === next.pinned
+    prev.pinned === next.pinned &&
+    prev.children === next.children
   )
 }
 

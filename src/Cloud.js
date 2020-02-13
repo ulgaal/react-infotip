@@ -272,7 +272,8 @@ const areEqual = (prev, next) => {
     prev.folds === next.folds &&
     prev.style === next.style &&
     prev.className === next.className &&
-    prev.pinned === next.pinned
+    prev.pinned === next.pinned &&
+    prev.children === next.children
   )
 }
 

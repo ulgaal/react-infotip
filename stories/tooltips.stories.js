@@ -507,7 +507,7 @@ storiesOf('Tooltips', module)
                   setPosition({ x, y })
                   return {
                     x: position.x + window.scrollX,
-                    y: ctm.f + y
+                    y: ctm.f + y + window.scrollY
                   }
                 }
               }
