@@ -21,7 +21,12 @@ limitations under the License.</p>
   UPDATE_PINNED,
   MOVE
 } <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/storageReducer'</span>
-<span class="hljs-keyword">import</span> { MOUSE_OVER, MOUSE_OUT, PIN } <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/sourceReducer'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The <code>Storage</code> component is in charge of persisting tips for all the
+<span class="hljs-keyword">import</span> {
+  MOUSE_OVER,
+  MOUSE_MOVE,
+  MOUSE_OUT,
+  PIN
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/sourceReducer'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The <code>Storage</code> component is in charge of persisting tips for all the
 <code>Source</code>s of the React subtree of which it is the root.
 A <code>Storage</code> invokes the handler specified in the <code>onTipChange</code> property
  when its list of persistent tips changes.
@@ -132,9 +137,30 @@ actually come from sources and bubble to the storage):</p>
         dispatch({
           type: MOUSE_OVER,
           id,
-          position: { x: event.clientX, y: event.clientY },
+          position: {
+            x: event.clientX + <span class="hljs-built_in">window</span>.scrollX,
+            y: event.clientY + <span class="hljs-built_in">window</span>.scrollY
+          },
           dispatch,
           ref: target
+        })
+      }
+    },
+    [dispatch]
+  )
+
+  <span class="hljs-keyword">const</span> handleMouseMove = useCallback(
+    event =&gt; {
+      <span class="hljs-keyword">const</span> target = event.target.closest(<span class="hljs-string">'[data-rit-id]'</span>)
+      <span class="hljs-keyword">if</span> (target) {
+        <span class="hljs-keyword">const</span> id = target.dataset.ritId
+        dispatch({
+          type: MOUSE_MOVE,
+          id,
+          position: {
+            x: event.clientX + <span class="hljs-built_in">window</span>.scrollX,
+            y: event.clientY + <span class="hljs-built_in">window</span>.scrollY
+          }
         })
       }
     },
@@ -146,6 +172,7 @@ they have a <code>storage</code> property pointing to the <code>Storage</code>.<
       style={{ display: <span class="hljs-string">'contents'</span> }}
       onMouseOut={handleMouseOut}
       onMouseOver={handleMouseOver}
+      onMouseMove={handleMouseMove}
     &gt;
       <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">StorageContext.Provider</span> <span class="hljs-attribute">value</span>=<span class="hljs-value">{storage}</span>&gt;</span>
         {</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Render the React subtree (which contains the <code>Source</code>s)</p></div></div><div class="code"><div class="wrapper">          children

@@ -6,6 +6,7 @@
   sourceReducer,
   MOUSE_OVER,
   MOUSE_OUT,
+  MOUSE_MOVE,
   GEOMETRY,
   VISIBILITY,
   PIN
@@ -186,6 +187,19 @@ export const storageReducer = (state, action) =&gt; {
       <span class="hljs-keyword">const</span> { id } = action
       <span class="hljs-keyword">const</span> source = sources[id].source
       <span class="hljs-keyword">if</span> (source.pinned) {
+        <span class="hljs-keyword">return</span> state
+      }
+      <span class="hljs-keyword">const</span> newSources = updateSource(
+        sources,
+        id,
+        sourceReducer(source, action)
+      )
+      <span class="hljs-keyword">return</span> sources === newSources ? state : { ...state, sources: newSources }
+    }
+    <span class="hljs-keyword">case</span> MOUSE_MOVE: {
+      <span class="hljs-keyword">const</span> { id } = action
+      <span class="hljs-keyword">const</span> source = sources[id].source
+      <span class="hljs-keyword">if</span> (!source.config.position.adjust.mouse) {
         <span class="hljs-keyword">return</span> state
       }
       <span class="hljs-keyword">const</span> newSources = updateSource(

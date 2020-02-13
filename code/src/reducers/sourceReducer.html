@@ -91,8 +91,8 @@ export const sourceInit = params =&gt; {
         target === <span class="hljs-string">'mouse'</span>
           ? {
               target: {
-                left: position.x + <span class="hljs-built_in">window</span>.scrollX,
-                top: position.y + <span class="hljs-built_in">window</span>.scrollY,
+                left: position.x,
+                top: position.y,
                 width: <span class="hljs-number">1</span>,
                 height: <span class="hljs-number">1</span>
               }
@@ -145,8 +145,8 @@ export const sourceInit = params =&gt; {
         <span class="hljs-keyword">typeof</span> mouse === <span class="hljs-string">'function'</span>
           ? mouse
           : event =&gt; ({
-              x: position.x + <span class="hljs-built_in">window</span>.scrollX,
-              y: position.y + <span class="hljs-built_in">window</span>.scrollY
+              x: position.x,
+              y: position.y
             })
       <span class="hljs-keyword">const</span> { x, y } = transform(position)
       <span class="hljs-keyword">const</span> updates = layout(state, {
