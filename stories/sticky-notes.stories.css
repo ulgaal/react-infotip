@@ -31,3 +31,7 @@
   border: 1px dotted gray;
   margin-left: 10px;
 }
+
+.multi-line-chart {
+  position: relative;
+}
