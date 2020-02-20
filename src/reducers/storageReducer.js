@@ -12,22 +12,20 @@ import {
   PIN
 } from './sourceReducer'
 
-export const UPDATE_SOURCE = 'UPDATE_SOURCE'
 export const UPDATE_PINNED = 'UPDATE_PINNED'
-export const RELEASE = 'RELEASE'
 export const MOVE = 'MOVE'
 
 const updateSource = (sources, id, source) => {
-  if (isEqual(sources[id].source, source)) {
+  if (isEqual(sources[id], source)) {
     return sources
   }
-  return { ...sources, [id]: { ...sources[id], source } }
+  return { ...sources, [id]: source }
 }
 
 const toStoredTips = (sources, storedTips) => {
   const newStoredTips = Object.values(sources)
-    .filter(({ source: { pinned } }) => pinned)
-    .map(({ source: { id, my, location, config } }) => ({
+    .filter(({ pinned }) => pinned)
+    .map(({ id, my, location, config }) => ({
       id,
       my,
       location,
@@ -63,84 +61,27 @@ export const storageReducer = (state, action) => {
       const prevIds = new Set((prevStoredTips || []).map(({ id }) => id))
       if (!eqSet(ids, prevIds)) {
         const newSources = { ...sources }
-        // Increase refcount for newly pinned tips
+        // Create sources for pinned tips if needed
         for (const id of diffSet(ids, prevIds)) {
           const storedTip = storedTips.find(tip => tip.id === id)
-          const newEntry = newSources[id]
-            ? { ...newSources[id] }
-            : {
-                refCount: 0,
-                source: sourceInit({
-                  ...storedTip
-                })
-              }
-          newEntry.source = {
-            ...storedTip,
-            pinned: true,
-            visible: true,
-            containerElt: getElement(storedTip.config.position.container)
-          }
-          newEntry.refCount++
-          newSources[id] = newEntry
-        }
-        // Decrease refcount for newly unpinned tips
-        for (const id of diffSet(prevIds, ids)) {
-          const newEntry = { ...newSources[id] }
-          newEntry.refCount--
-          if (newEntry.refCount > 0) {
-            newSources[id] = newEntry
-          } else {
-            delete newSources[id]
+          if (!sources[id]) {
+            newSources[id] = {
+              ...sourceInit({
+                ...storedTip
+              }),
+              pinned: true,
+              visible: true,
+              containerElt: getElement(storedTip.config.position.container)
+            }
           }
         }
         return { ...state, sources: newSources }
       }
       return state
     }
-    case UPDATE_SOURCE: {
-      const { id, prevId, config, pinned } = action
-      const newSources = { ...sources }
-      if (prevId) {
-        const newEntry = { ...sources[prevId] }
-        newEntry.refCount--
-        if (newEntry.refCount > 0) {
-          newSources[prevId] = newEntry
-        } else {
-          delete newSources[prevId]
-        }
-      }
-      if (id) {
-        const entry = sources[id]
-        const newEntry = entry
-          ? { ...entry, refCount: entry.refCount + 1 }
-          : { source: sourceInit({ id, config, pinned }), refCount: 1 }
-        newSources[id] = newEntry
-      }
-      return { ...state, sources: newSources }
-    }
-    case RELEASE: {
-      const { id } = action
-      const newSources = { ...sources }
-      const entry = newSources[id]
-      if (!entry) {
-        if (LOGS.storage > 2) {
-          console.log('storageReducer.RELEASE missing id', id)
-        }
-        return state
-      }
-      if (entry.refCount === 1) {
-        delete newSources[id]
-      } else {
-        newSources[id] = {
-          ...entry,
-          refCount: entry.refCount - 1
-        }
-      }
-      return { ...state, sources: newSources }
-    }
     case MOVE: {
       const { id, delta, notify = false } = action
-      const source = sources[id].source
+      const source = sources[id]
       const newSource = {
         ...source,
         location: {
@@ -166,7 +107,7 @@ export const storageReducer = (state, action) => {
     }
     case PIN: {
       const { id } = action
-      const source = sources[id].source
+      const source = sources[id]
       const newSources = updateSource(
         sources,
         id,
@@ -184,12 +125,40 @@ export const storageReducer = (state, action) => {
           }
         : state
     }
+    case MOUSE_OVER: {
+      const { id, config } = action
+      const source = sources[id] || sourceInit({ id, config })
+      const newSources = updateSource(
+        sources,
+        id,
+        sourceReducer(source, action)
+      )
+      return sources === newSources ? state : { ...state, sources: newSources }
+    }
+    case VISIBILITY: {
+      const { id, visible } = action
+      const source = sources[id]
+      if (source.pinned) {
+        return state
+      }
+      const newSources = updateSource(
+        sources,
+        id,
+        sourceReducer(source, action)
+      )
+      const newSource = newSources[id]
+      if (!visible && newSource) {
+        const { showTimeoutId, hideTimeoutId } = newSource
+        if (!showTimeoutId && !hideTimeoutId) {
+          delete newSources[id]
+        }
+      }
+      return { ...state, sources: newSources }
+    }
     case GEOMETRY:
-    case VISIBILITY:
-    case MOUSE_OVER:
     case MOUSE_OUT: {
       const { id } = action
-      const source = sources[id].source
+      const source = sources[id]
       if (source.pinned) {
         return state
       }
@@ -202,7 +171,7 @@ export const storageReducer = (state, action) => {
     }
     case MOUSE_MOVE: {
       const { id } = action
-      const source = sources[id].source
+      const source = sources[id]
       if (!source.config.position.adjust.mouse) {
         return state
       }
