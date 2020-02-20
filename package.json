@@ -33,7 +33,7 @@
   "scripts": {
     "build": "babel --out-dir lib --presets=@babel/preset-react,@babel/preset-env src",
     "test": "node config/test.js",
-    "storybook": "start-storybook -p 6006",
+    "storybook": "start-storybook -h 10.0.2.15 -p 6006",
     "build-storybook": "build-storybook",
     "doc": "scripts/doc.sh"
   },
@@ -65,7 +65,7 @@
     "react": "^16.11.0",
     "react-docgen": "^5.2.0",
     "react-dom": "^16.11.0",
-    "react-table": "^6.11.5",
+    "react-reducer-table": "^1.0.1",
     "standard": "^14.3.1",
     "storybook-readme": "^5.0.8",
     "svg-react-loader": "^0.4.6"

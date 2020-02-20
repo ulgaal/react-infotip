@@ -8,28 +8,62 @@
 #company-table {
   position: relative;
   text-align: left;
+  min-height: 400px;
 }
 
-.card-source {
+.seller-tip-source {
   cursor: pointer;
   display: inline-block;
+  padding: 4px 5px 4px 5px;
 }
-.card {
+.seller-tip {
   text-align: left;
   font-size: 0.7em;
 }
-.card-key {
+.seller-tip-key {
   font-weight: bold;
   margin-right: 10px;
   vertical-align: top;
 }
 
-.card-image {
+.seller-tip-image {
   width: 80px;
   height: 80px;
   padding: 5px 5px;
   border: 1px dotted gray;
   margin-left: 10px;
+}
+
+.products {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 3px 3px 3px 3px;
+}
+
+.product {
+  margin-right: 5px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  padding: 2px 5px 2px 5px;
+  border-radius: 4px 4px;
+  border: 1px dotted black;
+  cursor: pointer;
+  user-select: none;
+}
+
+.product-tip td {
+  font-size: 10px;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+.product-tip td:first-child {
+  font-weight: 700;
+}
+
+.product-tip-color div {
+  width: 48px;
+  height: 16px;
+  border-radius: 4px 4px;
+  border: 1px solid black;
 }
 
 .multi-line-chart {
