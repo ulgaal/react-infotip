@@ -248,6 +248,6 @@ export function * seq (start, end) {
 }
 
 export const LOGS = {
-  source: 0,
-  storage: 0
+  source: 2,
+  storage: 2
 }

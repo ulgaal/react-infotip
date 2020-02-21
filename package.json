@@ -1,6 +1,6 @@
 {
   "name": "@ulgaal/react-infotip",
-  "version": "0.8.2",
+  "version": "0.9.0",
   "description": "A library to provide tooltips and sticky-notes to React apps",
   "keywords": [
     "react",
@@ -65,7 +65,7 @@
     "react": "^16.11.0",
     "react-docgen": "^5.2.0",
     "react-dom": "^16.11.0",
-    "react-table": "^6.11.5",
+    "react-reducer-table": "^1.0.1",
     "standard": "^14.3.1",
     "storybook-readme": "^5.0.8",
     "svg-react-loader": "^0.4.6"

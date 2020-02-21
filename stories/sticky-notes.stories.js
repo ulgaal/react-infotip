@@ -13,7 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import React, { useState, useContext, useRef, useMemo, useReducer } from 'react'
+import React, {
+  useState,
+  useContext,
+  useRef,
+  useMemo,
+  useReducer,
+  useEffect
+} from 'react'
 import { storiesOf } from '@storybook/react'
 import { withKnobs } from '@storybook/addon-knobs'
 import { addReadme } from 'storybook-readme'
@@ -42,8 +49,13 @@ import {
 
 import './sticky-notes.stories.css'
 import faker from 'faker'
-import ReactTable from 'react-table'
-import 'react-table/react-table.css'
+import {
+  Table,
+  TableDispatch,
+  COLUMN_REORDERING,
+  COLUMN_RESIZING,
+  PAGING
+} from 'react-reducer-table'
 
 const StorageReadme = generateMarkdown('Storage', docgen['src/Storage.js'][0])
 
@@ -146,33 +158,94 @@ storiesOf('Sticky-notes', module)
   .add(
     'Table sticky-notes',
     () => {
-      const { helpers, internet } = faker
+      const { helpers, internet, commerce } = faker
       const models = [...seq(0, 200)].map(id => ({
         id,
         ...helpers.userCard(),
-        image: internet.avatar()
+        image: internet.avatar(),
+        products: [...seq(0, 1 + Math.floor(20 * Math.random()))].map(
+          productId => ({
+            id: `${id}-${productId}`,
+            color: commerce.color(),
+            department: commerce.department(),
+            productName: commerce.productName(),
+            price: commerce.price(),
+            product: commerce.product()
+          })
+        )
       }))
-      const NameCell = ({ value, original }) => {
+      const tableReducer = (state, action) => {
+        const { columns } = state
+        const { type, pageIndex, pageSize } = action
+        switch (action.type) {
+          case PAGING: {
+            const total = models.length
+            return {
+              ...state,
+              pageSize,
+              pageIndex,
+              pageCount:
+                Math.floor(total / pageSize) + (total % pageSize ? 1 : 0),
+              total,
+              data: models.slice(
+                pageIndex * pageSize,
+                Math.min((pageIndex + 1) * pageSize, total)
+              )
+            }
+          }
+          case COLUMN_REORDERING:
+            return { ...state, columns: action.columns }
+          case COLUMN_RESIZING:
+            return {
+              ...state,
+              columns: columns.map(column =>
+                column.id === action.id
+                  ? { ...column, width: action.width }
+                  : column
+              )
+            }
+          default:
+            throw new Error(`Unknown action: ${type}`)
+        }
+      }
+
+      const NameCell = props => {
+        const {
+          row: { id, name }
+        } = props
         return (
-          <Source id={`${original.id}`}>
-            <div className='card-source'>{value}</div>
+          <Source id={`sel@${id}`}>
+            <div className='seller-tip-source'>{name}</div>
           </Source>
         )
       }
-      const columns = [
-        {
-          id: 'name',
-          accessor: 'name',
-          Header: 'Name',
-          Cell: NameCell
-        },
-        {
-          id: 'phone',
-          accessor: 'phone',
-          Header: 'Phone'
-        }
-      ]
-      const Card = props => {
+      const ProductsCell = props => {
+        const {
+          row: { products }
+        } = props
+        return (
+          <div className='products'>
+            {products.map((product, id) => {
+              return <Product key={id} product={product} />
+            })}
+          </div>
+        )
+      }
+      const Product = props => {
+        // console.log('Product', props)
+        const {
+          product: { id, color, product }
+        } = props
+        return (
+          <Source id={`prd@${id}`}>
+            <div className='product' style={{ backgroundColor: color }}>
+              {product}
+            </div>
+          </Source>
+        )
+      }
+
+      const SellerTip = props => {
         const {
           model: {
             name,
@@ -185,34 +258,34 @@ storiesOf('Sticky-notes', module)
           }
         } = props
         return (
-          <div className='card'>
+          <div className='seller-tip'>
             <table>
               <tbody>
                 <tr>
-                  <td className='card-key'>Name:</td>
+                  <td className='seller-tip-key'>Name:</td>
                   <td>{name}</td>
                   <td rowSpan={5}>
-                    <img className='card-image' src={image} />
+                    <img className='seller-tip-image' src={image} />
                   </td>
                 </tr>
                 <tr>
-                  <td className='card-key'>User Name:</td>
+                  <td className='seller-tip-key'>User Name:</td>
                   <td>{username}</td>
                 </tr>
                 <tr>
-                  <td className='card-key'>Email:</td>
+                  <td className='seller-tip-key'>Email:</td>
                   <td>{email}</td>
                 </tr>
                 <tr>
-                  <td className='card-key'>Phone:</td>
+                  <td className='seller-tip-key'>Phone:</td>
                   <td>{phone}</td>
                 </tr>
                 <tr>
-                  <td className='card-key'>Company:</td>
+                  <td className='seller-tip-key'>Company:</td>
                   <td>{company.name}</td>
                 </tr>
                 <tr>
-                  <td className='card-key'>Address:</td>
+                  <td className='seller-tip-key'>Address:</td>
                   <td colSpan={2}>
                     {suite}
                     <br />
@@ -226,9 +299,87 @@ storiesOf('Sticky-notes', module)
           </div>
         )
       }
+
+      const ProductTip = props => {
+        console.log('ProductTip', props)
+        const {
+          product: { department, price, product, productName, color }
+        } = props
+        return (
+          <div className='product-tip'>
+            <table>
+              <tbody>
+                <tr>
+                  <td>Department:</td>
+                  <td>{department}</td>
+                </tr>
+                <tr>
+                  <td>Product name:</td>
+                  <td>{productName}</td>
+                </tr>
+                <tr>
+                  <td>Product:</td>
+                  <td>{product}</td>
+                </tr>
+                <tr>
+                  <td>Price:</td>
+                  <td>{price} EUR</td>
+                </tr>
+                <tr>
+                  <td>Color:</td>
+                  <td className='product-tip-color'>
+                    <div style={{ backgroundColor: color }} />
+                  </td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>
+                    <button>Buy now</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )
+      }
+
       const TableContainer = () => {
         const [tips, setTips] = useState([])
         const { wrapper } = useContext(ConfigContext)
+        const [state, dispatch] = useReducer(tableReducer, {
+          columns: [
+            {
+              id: 'name',
+              label: 'Name',
+              Cell: NameCell
+            },
+            {
+              id: 'phone',
+              label: 'Phone'
+            },
+            {
+              id: 'products',
+              label: 'Products',
+              Cell: ProductsCell
+            }
+          ],
+          data: [],
+          pageIndex: 0,
+          pageCount: 0,
+          pageSize: 100,
+          loading: false
+        })
+        console.log('STATE', state)
+        const { pageIndex, pageSize } = state
+
+        useEffect(() => {
+          dispatch({
+            type: PAGING,
+            pageIndex,
+            pageSize
+          })
+        }, [pageIndex, pageSize])
+
         return (
           <MergingConfigProvider
             value={{
@@ -239,7 +390,19 @@ storiesOf('Sticky-notes', module)
                 delay: 200
               },
               position: {
-                container: '#company-table'
+                container: '#company-table',
+                target: 'mouse',
+                adjust: {
+                  method: {
+                    flip: [
+                      'top-left',
+                      'center-left',
+                      'bottom-left',
+                      'top-right',
+                      'bottom-right'
+                    ]
+                  }
+                }
               },
               wrapper: Pinnable,
               wrapperProps: { wrapper }
@@ -248,15 +411,23 @@ storiesOf('Sticky-notes', module)
             <div id='company-table'>
               <Storage
                 tips={tips}
-                tip={(id, pinned) => {
-                  const model = models[id]
-                  return <Card key={id} model={model} />
+                tip={tipid => {
+                  const [, kind, id] = /(prd|sel)@(.+)/.exec(tipid) || []
+                  if (kind === 'prd') {
+                    const [, sellerId, productId] = /(\d+)-(\d+)/.exec(id) || []
+                    const product = models[sellerId].products[productId]
+                    return <ProductTip product={product} />
+                  } else if (kind === 'sel') {
+                    return <SellerTip model={models[id]} />
+                  }
                 }}
                 onTipChange={tips => {
                   setTips(tips)
                 }}
               >
-                <ReactTable data={models} columns={columns} pageSize={25} />
+                <TableDispatch.Provider value={dispatch}>
+                  <Table state={state} />
+                </TableDispatch.Provider>
               </Storage>
             </div>
           </MergingConfigProvider>

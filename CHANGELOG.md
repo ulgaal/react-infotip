@@ -1,3 +1,7 @@
+## Version 0.9.0 (2020/02/21)
+- Performance improvement: replaced addref-release with lazy tip creation / destruction in storage
+- Replaced react-table with react-reducer-table in storybook
+
 ## Version 0.8.2 (2020/02/13)
 
 - Added story to demonstrate sticky nodes on a storage with mouse move handling

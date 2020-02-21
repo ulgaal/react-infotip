@@ -19,7 +19,6 @@ import React, {
   useRef,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useReducer,
   useMemo,
   useContext
@@ -39,7 +38,6 @@ import {
   PIN,
   RESET
 } from './reducers/sourceReducer'
-import { UPDATE_SOURCE, RELEASE } from './reducers/storageReducer'
 
 /**
  * The `Source` component acts as a wrapper for other components and enables them
@@ -68,30 +66,6 @@ const Source = props => {
     : useReducer(sourceReducer, { config }, sourceInit)
   if (LOGS.source > 0) {
     console.log('Source', props, state)
-  }
-
-  // For sources which belong to a `Storage`
-  // 1. Notify the storage if the source id changes
-  // 2. Notify the storage when the source is unmounted
-  const idRef = useRef(id)
-  idRef.current = id
-  if (useStorageReducer) {
-    const prevIdRef = useRef()
-    useLayoutEffect(() => {
-      prevIdRef.current = id
-    })
-    const prevId = prevIdRef.current
-    useLayoutEffect(() => {
-      if (id !== prevId) {
-        dispatch({ type: UPDATE_SOURCE, id, prevId, config, pinned: false })
-      }
-    }, [id])
-    useLayoutEffect(() => {
-      // ComponentWillUnmount
-      return () => {
-        dispatch({ type: RELEASE, id })
-      }
-    }, [])
   }
 
   // Keep a reference to the actual `Source` DOM element,
@@ -124,9 +98,9 @@ const Source = props => {
   const handleMouseOut = useCallback(
     event => {
       event.stopPropagation()
-      dispatch({ type: MOUSE_OUT, dispatch })
+      dispatch({ type: MOUSE_OUT, id, dispatch })
     },
-    [dispatch]
+    [dispatch, id]
   )
 
   const handleMouseOver = useCallback(
@@ -134,6 +108,8 @@ const Source = props => {
       event.stopPropagation()
       dispatch({
         type: MOUSE_OVER,
+        id,
+        config,
         position: {
           x: event.clientX + window.scrollX,
           y: event.clientY + window.scrollY
@@ -142,7 +118,7 @@ const Source = props => {
         ref: ref.current
       })
     },
-    [dispatch]
+    [dispatch, id, config]
   )
 
   const handleMouseMove = useCallback(
@@ -150,13 +126,14 @@ const Source = props => {
       event.stopPropagation()
       dispatch({
         type: MOUSE_MOVE,
+        id,
         position: {
           x: event.clientX + window.scrollX,
           y: event.clientY + window.scrollY
         }
       })
     },
-    [dispatch]
+    [dispatch, id]
   )
 
   const { tip, children, svg } = props
@@ -173,6 +150,9 @@ const Source = props => {
   const tagProps = {
     className: 'rit-source',
     ref,
+    onMouseOut: handleMouseOut,
+    onMouseOver: handleMouseOver,
+    onMouseMove: config.position.adjust.mouse ? handleMouseMove : null,
     // This is mostly transparent (the `<span>` uses the CSS `display: 'contents'` property)
     // but there may be edge cases where one wants to be aware of this.
     ...(svg ? {} : { style: { display: 'contents' } })
@@ -181,10 +161,6 @@ const Source = props => {
   if (useStorageReducer) {
     tagProps['data-rit-id'] = id
   } else {
-    tagProps.onMouseOut = handleMouseOut
-    tagProps.onMouseOver = handleMouseOver
-    tagProps.onMouseMove = config.position.adjust.mouse ? handleMouseMove : null
-
     // A `Source` keeps track of four state variables
     // * `my`: the position which provides optimal placement of the tip as computed by its `Engine`.
     // * `location`: the actual coordinates of the tip.

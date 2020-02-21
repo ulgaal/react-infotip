@@ -209,8 +209,8 @@ const Storage = props => {
         }
       </StorageContext.Provider>
       {Object.values(state.sources)
-        .filter(({ source: { visible } }) => visible)
-        .map(({ source }) => {
+        .filter(({ visible }) => visible)
+        .map(source => {
           const {
             id,
             my,
