@@ -1,6 +1,6 @@
 {
   "name": "@ulgaal/react-infotip",
-  "version": "0.8.2",
+  "version": "0.9.0",
   "description": "A library to provide tooltips and sticky-notes to React apps",
   "keywords": [
     "react",
@@ -33,7 +33,7 @@
   "scripts": {
     "build": "babel --out-dir lib --presets=@babel/preset-react,@babel/preset-env src",
     "test": "node config/test.js",
-    "storybook": "start-storybook -h 10.0.2.15 -p 6006",
+    "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "doc": "scripts/doc.sh"
   },
