@@ -152,7 +152,10 @@ const Source = props => {
     ref,
     onMouseOut: handleMouseOut,
     onMouseOver: handleMouseOver,
-    onMouseMove: config.position.adjust.mouse ? handleMouseMove : null,
+    onMouseMove:
+      config.position.adjust.mouse && !useStorageReducer
+        ? handleMouseMove
+        : null,
     // This is mostly transparent (the `<span>` uses the CSS `display: 'contents'` property)
     // but there may be edge cases where one wants to be aware of this.
     ...(svg ? {} : { style: { display: 'contents' } })
