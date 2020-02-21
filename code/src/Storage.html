@@ -179,8 +179,8 @@ they have a <code>storage</code> property pointing to the <code>Storage</code>.<
         }
       &lt;<span class="hljs-regexp">/StorageContext.Provider&gt;
       {Object.values(state.sources)
-        .filter(({ source: { visible } }) =&gt; visible)
-        .map(({ source }) =&gt; {
+        .filter(({ visible }) =&gt; visible)
+        .map(source =&gt; {
           const {
             id,
             my,

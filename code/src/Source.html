@@ -12,7 +12,6 @@ limitations under the License.</p>
   useRef,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useReducer,
   useMemo,
   useContext
@@ -31,8 +30,7 @@ limitations under the License.</p>
   MOUSE_OUT,
   PIN,
   RESET
-} <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/sourceReducer'</span>
-<span class="hljs-keyword">import</span> { UPDATE_SOURCE, RELEASE } <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/storageReducer'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The <code>Source</code> component acts as a wrapper for other components and enables them
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/sourceReducer'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The <code>Source</code> component acts as a wrapper for other components and enables them
 to provide tips.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Source = props =&gt; {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Merge the context and local configs and extract relevant
 properties from it</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> { id, config: localConfig, pinned } = props
   <span class="hljs-keyword">const</span> contextConfig = useContext(ConfigContext)
@@ -48,27 +46,6 @@ reducer computes changes to the state of the <code>Source</code>
     : useReducer(sourceReducer, { config }, sourceInit)
   <span class="hljs-keyword">if</span> (LOGS.source &gt; <span class="hljs-number">0</span>) {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Source'</span>, props, state)
-  }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>For sources which belong to a <code>Storage</code></p>
-<ol>
-<li>Notify the storage if the source id changes</li>
-<li>Notify the storage when the source is unmounted</li>
-</ol></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> idRef = useRef(id)
-  idRef.current = id
-  <span class="hljs-keyword">if</span> (useStorageReducer) {
-    <span class="hljs-keyword">const</span> prevIdRef = useRef()
-    useLayoutEffect(() =&gt; {
-      prevIdRef.current = id
-    })
-    <span class="hljs-keyword">const</span> prevId = prevIdRef.current
-    useLayoutEffect(() =&gt; {
-      <span class="hljs-keyword">if</span> (id !== prevId) {
-        dispatch({ type: UPDATE_SOURCE, id, prevId, config, pinned: <span class="hljs-literal">false</span> })
-      }
-    }, [id])
-    useLayoutEffect(() =&gt; {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>ComponentWillUnmount</p></div></div><div class="code"><div class="wrapper">      <span class="hljs-keyword">return</span> () =&gt; {
-        dispatch({ type: RELEASE, id })
-      }
-    }, [])
   }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Keep a reference to the actual <code>Source</code> DOM element,
 used for tip positionning when target === false</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> ref = useRef(<span class="hljs-literal">null</span>)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Reinitialize the source if the config changes</p></div></div><div class="code"><div class="wrapper">  useEffect(() =&gt; {
     <span class="hljs-keyword">if</span> (config !== state.config) {
@@ -91,9 +68,9 @@ used for tip positionning when target === false</p></div></div><div class="code"
 </ul></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> handleMouseOut = useCallback(
     event =&gt; {
       event.stopPropagation()
-      dispatch({ type: MOUSE_OUT, dispatch })
+      dispatch({ type: MOUSE_OUT, id, dispatch })
     },
-    [dispatch]
+    [dispatch, id]
   )
 
   <span class="hljs-keyword">const</span> handleMouseOver = useCallback(
@@ -101,6 +78,8 @@ used for tip positionning when target === false</p></div></div><div class="code"
       event.stopPropagation()
       dispatch({
         type: MOUSE_OVER,
+        id,
+        config,
         position: {
           x: event.clientX + <span class="hljs-built_in">window</span>.scrollX,
           y: event.clientY + <span class="hljs-built_in">window</span>.scrollY
@@ -109,7 +88,7 @@ used for tip positionning when target === false</p></div></div><div class="code"
         ref: ref.current
       })
     },
-    [dispatch]
+    [dispatch, id, config]
   )
 
   <span class="hljs-keyword">const</span> handleMouseMove = useCallback(
@@ -117,13 +96,14 @@ used for tip positionning when target === false</p></div></div><div class="code"
       event.stopPropagation()
       dispatch({
         type: MOUSE_MOVE,
+        id,
         position: {
           x: event.clientX + <span class="hljs-built_in">window</span>.scrollX,
           y: event.clientY + <span class="hljs-built_in">window</span>.scrollY
         }
       })
     },
-    [dispatch]
+    [dispatch, id]
   )
 
   <span class="hljs-keyword">const</span> { tip, children, svg } = props</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Since a <code>Source</code> needs to handle pointer events (notably it needs to
@@ -135,16 +115,16 @@ It also needs to known if the geometry of this element changes, because this
 will affect tip placement, hence the <code>ref</code> which is tracked by the <code>ResizeObserver</code>.</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> tagName = svg ? <span class="hljs-string">'g'</span> : <span class="hljs-string">'span'</span>
   <span class="hljs-keyword">const</span> tagProps = {
     className: <span class="hljs-string">'rit-source'</span>,
-    ref,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>This is mostly transparent (the <code>&lt;span&gt;</code> uses the CSS <code>display: &#39;contents&#39;</code> property)
+    ref,
+    onMouseOut: handleMouseOut,
+    onMouseOver: handleMouseOver,
+    onMouseMove: config.position.adjust.mouse ? handleMouseMove : <span class="hljs-literal">null</span>,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>This is mostly transparent (the <code>&lt;span&gt;</code> uses the CSS <code>display: &#39;contents&#39;</code> property)
 but there may be edge cases where one wants to be aware of this.</p></div></div><div class="code"><div class="wrapper">    ...(svg ? {} : { style: { display: <span class="hljs-string">'contents'</span> } })
   }
   <span class="hljs-keyword">const</span> tagChildren = [...React.Children.toArray(children)]
   <span class="hljs-keyword">if</span> (useStorageReducer) {
     tagProps[<span class="hljs-string">'data-rit-id'</span>] = id
-  } <span class="hljs-keyword">else</span> {
-    tagProps.onMouseOut = handleMouseOut
-    tagProps.onMouseOver = handleMouseOver
-    tagProps.onMouseMove = config.position.adjust.mouse ? handleMouseMove : <span class="hljs-literal">null</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Source</code> keeps track of four state variables</p>
+  } <span class="hljs-keyword">else</span> {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Source</code> keeps track of four state variables</p>
 <ul>
 <li><code>my</code>: the position which provides optimal placement of the tip as computed by its <code>Engine</code>.</li>
 <li><code>location</code>: the actual coordinates of the tip.</li>

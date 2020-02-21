@@ -12,22 +12,20 @@
   PIN
 } <span class="hljs-keyword">from</span> <span class="hljs-string">'./sourceReducer'</span>
 
-export const UPDATE_SOURCE = <span class="hljs-string">'UPDATE_SOURCE'</span>
 export const UPDATE_PINNED = <span class="hljs-string">'UPDATE_PINNED'</span>
-export const RELEASE = <span class="hljs-string">'RELEASE'</span>
 export const MOVE = <span class="hljs-string">'MOVE'</span>
 
 const updateSource = (sources, id, source) =&gt; {
-  if (isEqual(sources[id].source, source)) {
+  if (isEqual(sources[id], source)) {
     return sources
   }
-  return { ...sources, [id]: { ...sources[id], source } }
+  return { ...sources, [id]: source }
 }
 
 const toStoredTips = (sources, storedTips) =&gt; {
   const newStoredTips = Object.values(sources)
-    .filter(({ source: { pinned } }) =&gt; pinned)
-    .map(({ source: { id, my, location, config } }) =&gt; ({
+    .filter(({ pinned }) =&gt; pinned)
+    .map(({ id, my, location, config }) =&gt; ({
       id,
       my,
       location,
@@ -62,81 +60,26 @@ export const storageReducer = (state, action) =&gt; {
       const ids = new Set(storedTips.map(({ id }) =&gt; id))
       const prevIds = new Set((prevStoredTips || []).map(({ id }) =&gt; id))
       if (!eqSet(ids, prevIds)) {
-        const newSources = { ...sources }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Increase refcount for newly pinned tips</p></div></div><div class="code"><div class="wrapper">        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> id <span class="hljs-keyword">of</span> diffSet(ids, prevIds)) {
+        const newSources = { ...sources }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Create sources for pinned tips if needed</p></div></div><div class="code"><div class="wrapper">        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> id <span class="hljs-keyword">of</span> diffSet(ids, prevIds)) {
           <span class="hljs-keyword">const</span> storedTip = storedTips.find(tip =&gt; tip.id === id)
-          <span class="hljs-keyword">const</span> newEntry = newSources[id]
-            ? { ...newSources[id] }
-            : {
-                refCount: <span class="hljs-number">0</span>,
-                source: sourceInit({
-                  ...storedTip
-                })
-              }
-          newEntry.source = {
-            ...storedTip,
-            pinned: <span class="hljs-literal">true</span>,
-            visible: <span class="hljs-literal">true</span>,
-            containerElt: getElement(storedTip.config.position.container)
-          }
-          newEntry.refCount++
-          newSources[id] = newEntry
-        }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Decrease refcount for newly unpinned tips</p></div></div><div class="code"><div class="wrapper">        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> id <span class="hljs-keyword">of</span> diffSet(prevIds, ids)) {
-          <span class="hljs-keyword">const</span> newEntry = { ...newSources[id] }
-          newEntry.refCount--
-          <span class="hljs-keyword">if</span> (newEntry.refCount &gt; <span class="hljs-number">0</span>) {
-            newSources[id] = newEntry
-          } <span class="hljs-keyword">else</span> {
-            <span class="hljs-keyword">delete</span> newSources[id]
+          <span class="hljs-keyword">if</span> (!sources[id]) {
+            newSources[id] = {
+              ...sourceInit({
+                ...storedTip
+              }),
+              pinned: <span class="hljs-literal">true</span>,
+              visible: <span class="hljs-literal">true</span>,
+              containerElt: getElement(storedTip.config.position.container)
+            }
           }
         }
         <span class="hljs-keyword">return</span> { ...state, sources: newSources }
       }
       <span class="hljs-keyword">return</span> state
     }
-    <span class="hljs-keyword">case</span> UPDATE_SOURCE: {
-      <span class="hljs-keyword">const</span> { id, prevId, config, pinned } = action
-      <span class="hljs-keyword">const</span> newSources = { ...sources }
-      <span class="hljs-keyword">if</span> (prevId) {
-        <span class="hljs-keyword">const</span> newEntry = { ...sources[prevId] }
-        newEntry.refCount--
-        <span class="hljs-keyword">if</span> (newEntry.refCount &gt; <span class="hljs-number">0</span>) {
-          newSources[prevId] = newEntry
-        } <span class="hljs-keyword">else</span> {
-          <span class="hljs-keyword">delete</span> newSources[prevId]
-        }
-      }
-      <span class="hljs-keyword">if</span> (id) {
-        <span class="hljs-keyword">const</span> entry = sources[id]
-        <span class="hljs-keyword">const</span> newEntry = entry
-          ? { ...entry, refCount: entry.refCount + <span class="hljs-number">1</span> }
-          : { source: sourceInit({ id, config, pinned }), refCount: <span class="hljs-number">1</span> }
-        newSources[id] = newEntry
-      }
-      <span class="hljs-keyword">return</span> { ...state, sources: newSources }
-    }
-    <span class="hljs-keyword">case</span> RELEASE: {
-      <span class="hljs-keyword">const</span> { id } = action
-      <span class="hljs-keyword">const</span> newSources = { ...sources }
-      <span class="hljs-keyword">const</span> entry = newSources[id]
-      <span class="hljs-keyword">if</span> (!entry) {
-        <span class="hljs-keyword">if</span> (LOGS.storage &gt; <span class="hljs-number">2</span>) {
-          <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'storageReducer.RELEASE missing id'</span>, id)
-        }
-        <span class="hljs-keyword">return</span> state
-      }
-      <span class="hljs-keyword">if</span> (entry.refCount === <span class="hljs-number">1</span>) {
-        <span class="hljs-keyword">delete</span> newSources[id]
-      } <span class="hljs-keyword">else</span> {
-        newSources[id] = {
-          ...entry,
-          refCount: entry.refCount - <span class="hljs-number">1</span>
-        }
-      }
-      <span class="hljs-keyword">return</span> { ...state, sources: newSources }
-    }
     <span class="hljs-keyword">case</span> MOVE: {
       <span class="hljs-keyword">const</span> { id, delta, notify = <span class="hljs-literal">false</span> } = action
-      <span class="hljs-keyword">const</span> source = sources[id].source
+      <span class="hljs-keyword">const</span> source = sources[id]
       <span class="hljs-keyword">const</span> newSource = {
         ...source,
         location: {
@@ -162,7 +105,7 @@ export const storageReducer = (state, action) =&gt; {
     }
     <span class="hljs-keyword">case</span> PIN: {
       <span class="hljs-keyword">const</span> { id } = action
-      <span class="hljs-keyword">const</span> source = sources[id].source
+      <span class="hljs-keyword">const</span> source = sources[id]
       <span class="hljs-keyword">const</span> newSources = updateSource(
         sources,
         id,
@@ -180,12 +123,40 @@ export const storageReducer = (state, action) =&gt; {
           }
         : state
     }
+    <span class="hljs-keyword">case</span> MOUSE_OVER: {
+      <span class="hljs-keyword">const</span> { id, config } = action
+      <span class="hljs-keyword">const</span> source = sources[id] || sourceInit({ id, config })
+      <span class="hljs-keyword">const</span> newSources = updateSource(
+        sources,
+        id,
+        sourceReducer(source, action)
+      )
+      <span class="hljs-keyword">return</span> sources === newSources ? state : { ...state, sources: newSources }
+    }
+    <span class="hljs-keyword">case</span> VISIBILITY: {
+      <span class="hljs-keyword">const</span> { id, visible } = action
+      <span class="hljs-keyword">const</span> source = sources[id]
+      <span class="hljs-keyword">if</span> (source.pinned) {
+        <span class="hljs-keyword">return</span> state
+      }
+      <span class="hljs-keyword">const</span> newSources = updateSource(
+        sources,
+        id,
+        sourceReducer(source, action)
+      )
+      <span class="hljs-keyword">const</span> newSource = newSources[id]
+      <span class="hljs-keyword">if</span> (!visible &amp;&amp; newSource) {
+        <span class="hljs-keyword">const</span> { showTimeoutId, hideTimeoutId } = newSource
+        <span class="hljs-keyword">if</span> (!showTimeoutId &amp;&amp; !hideTimeoutId) {
+          <span class="hljs-keyword">delete</span> newSources[id]
+        }
+      }
+      <span class="hljs-keyword">return</span> { ...state, sources: newSources }
+    }
     <span class="hljs-keyword">case</span> GEOMETRY:
-    <span class="hljs-keyword">case</span> VISIBILITY:
-    <span class="hljs-keyword">case</span> MOUSE_OVER:
     <span class="hljs-keyword">case</span> MOUSE_OUT: {
       <span class="hljs-keyword">const</span> { id } = action
-      <span class="hljs-keyword">const</span> source = sources[id].source
+      <span class="hljs-keyword">const</span> source = sources[id]
       <span class="hljs-keyword">if</span> (source.pinned) {
         <span class="hljs-keyword">return</span> state
       }
@@ -198,7 +169,7 @@ export const storageReducer = (state, action) =&gt; {
     }
     <span class="hljs-keyword">case</span> MOUSE_MOVE: {
       <span class="hljs-keyword">const</span> { id } = action
-      <span class="hljs-keyword">const</span> source = sources[id].source
+      <span class="hljs-keyword">const</span> source = sources[id]
       <span class="hljs-keyword">if</span> (!source.config.position.adjust.mouse) {
         <span class="hljs-keyword">return</span> state
       }
