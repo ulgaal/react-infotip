@@ -301,6 +301,26 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               },
               "depth": 3,
               "outline": []
+            }, {
+              "type": "file",
+              "data": {
+                "language": {
+                  "nameMatchers": [".js"],
+                  "pygmentsLexer": "javascript",
+                  "multiLineComment": ["/*", "*", "*/"],
+                  "singleLineComment": ["//"],
+                  "ignorePrefix": "}",
+                  "foldPrefix": "^",
+                  "name": "JavaScript"
+                },
+                "sourcePath": "/home/laaglu/git/react-infotip/src/hooks/useResizeObserver.js",
+                "projectPath": "src/hooks/useResizeObserver.js",
+                "targetPath": "src/hooks/useResizeObserver",
+                "pageTitle": "src/hooks/useResizeObserver",
+                "title": "useResizeObserver"
+              },
+              "depth": 3,
+              "outline": []
             }
           ]
         }, {
