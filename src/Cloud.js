@@ -15,12 +15,13 @@ limitations under the License.
 */
 // Cloud
 // =====
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useCallback, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { CornerType, TailType } from './prop-types'
 import isEqual from 'lodash.isequal'
 import { styles } from './styles'
 import CloudShape from './svg/CloudShape'
+import useResizeObserver from './hooks/useResizeObserver'
 import { GEOMETRY } from './reducers/sourceReducer'
 
 /**
@@ -54,10 +55,10 @@ const Cloud = props => {
   // the `Cloud` and info extracted by measuring its content `<span>`.
   const [metrics, setMetrics] = useState(null)
 
-  useEffect(() => {
+  const measure = useCallback(entry => {
     // Retrieve the dimensions of the content `<span>`
     // from the `ResizeObserver`
-    const boundingClientRect = ref.current.getBoundingClientRect()
+    const boundingClientRect = entry.target.getBoundingClientRect()
     const innerSize = {
       width: boundingClientRect.width,
       height: boundingClientRect.height
@@ -69,12 +70,15 @@ const Cloud = props => {
       style,
       className
     })
-    setMetrics(newMetrics)
-    if (typeof dispatch === 'function') {
-      const { corners, size } = newMetrics
-      dispatch({ type: GEOMETRY, id, geometry: { corners, size } })
+    if (!isEqual(newMetrics, metrics)) {
+      setMetrics(newMetrics)
+      if (typeof dispatch === 'function') {
+        const { corners, size } = newMetrics
+        dispatch({ type: GEOMETRY, id, geometry: { corners, size } })
+      }
     }
   }, [])
+  useResizeObserver(ref, measure)
 
   // Update the metrics if tail, fold or innerSize change
   useEffect(() => {
