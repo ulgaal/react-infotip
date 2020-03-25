@@ -281,7 +281,7 @@ const layout = (state, params) => {
             for (const my of method.flip) {
               const location = computeRect(my)
               const area_ = surface(overlap(container, location))
-              if (area_ > area) {
+              if (area_ - area > 0.0001) {
                 updates.location = location
                 updates.my = my
                 area = area_
