@@ -138,7 +138,7 @@ export const storageReducer = (state, action) => {
     case VISIBILITY: {
       const { id, visible } = action
       const source = sources[id]
-      if (source.pinned) {
+      if (!source || source.pinned) {
         return state
       }
       const newSources = updateSource(

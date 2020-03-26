@@ -256,8 +256,9 @@ const Storage = props => {
 
 Storage.propTypes = {
   /**
-   * The list of persisted tips. Each entry of the list is an object with
-   * the following keys:
+   * An array of persisted `<StoredTipType>`.
+   *
+   * `<StoredTipType>` is an object, which contains the following keys:
    *
    * | Key | Type             | Description                                                |
    * | --- | ---------------- | ---------------------------------------------------------- |
@@ -276,12 +277,13 @@ Storage.propTypes = {
   tips: PropTypes.arrayOf(StorageTip),
   /**
    * A function which receives as input a `Source` `id` and outputs the corresponding React tip
-   * element.
+   * element. The returned component should have its `key` property set to uniquely identify
+   * it among the children of the `Storage`.
    */
   tip: PropTypes.func,
   /**
    * A callback function invoked when the list of persistent tip changes.
-   * The function receives an array of
+   * The function receives an array of `<StoredTipType>`
    */
   onTipChange: PropTypes.func
 }

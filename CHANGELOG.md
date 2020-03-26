@@ -1,8 +1,17 @@
+## Version 1.0.0 (2020/02/26)
+
+- Removed unused fromProps and toProps functions
+- Fixed samples for React 'key' warning and documented how to avoid these warnings in Storage 'tip' jsdoc
+- Fixed numeric instability in flip adjust method
+- Fixed NPE when source is removed from DOM before tip
+
 ## Version 0.9.1 (2020/02/28)
+
 - Fixed reg in dynamic tip placement by reintroducing resize-observer-polyfill, but just for tip wrappers
 - Fix reg in mouseMove handling in Storage mode
 
 ## Version 0.9.0 (2020/02/21)
+
 - Performance improvement: replaced addref-release with lazy tip creation / destruction in storage
 - Replaced react-table with react-reducer-table in storybook
 

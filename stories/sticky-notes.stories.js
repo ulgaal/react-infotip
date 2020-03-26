@@ -416,9 +416,9 @@ storiesOf('Sticky-notes', module)
                   if (kind === 'prd') {
                     const [, sellerId, productId] = /(\d+)-(\d+)/.exec(id) || []
                     const product = models[sellerId].products[productId]
-                    return <ProductTip product={product} />
+                    return <ProductTip key={tipid} product={product} />
                   } else if (kind === 'sel') {
-                    return <SellerTip model={models[id]} />
+                    return <SellerTip key={tipid} model={models[id]} />
                   }
                 }}
                 onTipChange={tips => {
@@ -556,7 +556,7 @@ storiesOf('Sticky-notes', module)
               const index = toIndex(id)
               const { coordinates } = state[index]
               return (
-                <div>
+                <div key={id}>
                   x={coordinates.x}
                   <br />
                   y={coordinates.y}
