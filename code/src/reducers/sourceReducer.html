@@ -264,7 +264,7 @@ to appear at a location different from the source</p></div></div><div class="cod
             <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> my <span class="hljs-keyword">of</span> method.flip) {
               <span class="hljs-keyword">const</span> location = computeRect(my)
               <span class="hljs-keyword">const</span> area_ = surface(overlap(container, location))
-              <span class="hljs-keyword">if</span> (area_ &gt; area) {
+              <span class="hljs-keyword">if</span> (area_ - area &gt; <span class="hljs-number">0.0001</span>) {
                 updates.location = location
                 updates.my = my
                 area = area_

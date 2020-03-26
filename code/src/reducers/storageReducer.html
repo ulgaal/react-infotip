@@ -136,7 +136,7 @@ export const storageReducer = (state, action) =&gt; {
     <span class="hljs-keyword">case</span> VISIBILITY: {
       <span class="hljs-keyword">const</span> { id, visible } = action
       <span class="hljs-keyword">const</span> source = sources[id]
-      <span class="hljs-keyword">if</span> (source.pinned) {
+      <span class="hljs-keyword">if</span> (!source || source.pinned) {
         <span class="hljs-keyword">return</span> state
       }
       <span class="hljs-keyword">const</span> newSources = updateSource(

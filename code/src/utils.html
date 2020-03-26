@@ -68,73 +68,16 @@ limitations under the License.</p>
   path
     .split(<span class="hljs-string">'.'</span>)
     .reduce(
-      (obj, prop) =&gt; (obj &amp;&amp; obj.hasOwnProperty(prop) ? obj[prop] : <span class="hljs-literal">null</span>),
+      (obj, prop) =&gt;
+        obj &amp;&amp; <span class="hljs-built_in">Object</span>.prototype.hasOwnProperty.call(obj, prop)
+          ? obj[prop]
+          : <span class="hljs-literal">null</span>,
       obj
     )</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Appends the <code>px</code> suffix to the values of an object</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> pixelize = obj =&gt;
   <span class="hljs-built_in">Object</span>.entries(obj || {}).reduce((obj, [key, value]) =&gt; {
     obj[key] = <span class="hljs-string">`<span class="hljs-subst">${value}</span>px`</span>
     <span class="hljs-keyword">return</span> obj
-  }, {})</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Merge two objects</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> mergeObjects = (obj1, obj2) =&gt; deepmerge(obj1 || {}, obj2 || {})</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Converts a graph into map. The map keys are path to the graph node,
-the map values are the node values</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> toProps = (obj, props = {}, prefix = <span class="hljs-string">''</span>) =&gt; {
-  <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Array</span>.isArray(obj) &amp;&amp; obj.length &gt; <span class="hljs-number">0</span>) {
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> <span class="hljs-built_in">Object</span>.entries(obj)) {
-      toProps(value, props, <span class="hljs-string">`<span class="hljs-subst">${prefix}</span>[<span class="hljs-subst">${key}</span>]`</span>)
-    }
-  } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (
-    obj !== <span class="hljs-literal">null</span> &amp;&amp;
-    <span class="hljs-keyword">typeof</span> obj === <span class="hljs-string">'object'</span> &amp;&amp;
-    !(obj <span class="hljs-keyword">instanceof</span> Element)
-  ) {
-    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Object</span>.keys(obj).length &gt; <span class="hljs-number">0</span>) {
-      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> <span class="hljs-built_in">Object</span>.entries(obj)) {
-        toProps(value, props, prefix ? <span class="hljs-string">`<span class="hljs-subst">${prefix}</span>.<span class="hljs-subst">${key}</span>`</span> : key)
-      }
-    } <span class="hljs-keyword">else</span> {
-      props[prefix] = <span class="hljs-built_in">Array</span>.isArray(obj) ? [] : {}
-    }
-  } <span class="hljs-keyword">else</span> {
-    props[prefix] = obj
-  }
-  <span class="hljs-keyword">return</span> props
-}</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Converts a map into a graph. The map keys are path to the graph node,
-the map values are the node values</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> fromProps = props =&gt; {
-  <span class="hljs-keyword">const</span> consume = ({ fringe, visited }) =&gt;
-    <span class="hljs-built_in">Object</span>.entries(fringe).reduce(
-      ({ fringe, visited }, [key, value]) =&gt; {
-        <span class="hljs-keyword">const</span> arrayMatch = <span class="hljs-regexp">/^(.+)?\[(\d+)]$/</span>.exec(key)
-        <span class="hljs-keyword">if</span> (arrayMatch) {
-          <span class="hljs-keyword">const</span> [, parentKey = <span class="hljs-string">''</span>, index] = arrayMatch
-          <span class="hljs-keyword">let</span> array = visited[parentKey]
-          <span class="hljs-keyword">if</span> (!array) {
-            fringe[parentKey] = visited[parentKey] = array = []
-          }
-          array[index] = value
-        } <span class="hljs-keyword">else</span> {
-          <span class="hljs-keyword">const</span> objMatch = <span class="hljs-regexp">/^(?:(.+)\.)?([^[.]+)$/</span>.exec(key)
-          <span class="hljs-keyword">if</span> (objMatch) {
-            <span class="hljs-keyword">const</span> [, parentKey = <span class="hljs-string">''</span>, prop] = objMatch
-            <span class="hljs-keyword">let</span> object = visited[parentKey]
-            <span class="hljs-keyword">if</span> (!object) {
-              fringe[parentKey] = visited[parentKey] = object = {}
-            }
-            object[prop] = value
-          } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (key === <span class="hljs-string">''</span> &amp;&amp; !visited.hasOwnProperty(key)) {
-            visited[key] = value
-          }
-        }
-        <span class="hljs-keyword">return</span> { fringe, visited }
-      },
-      {
-        fringe: {},
-        visited: { ...visited }
-      }
-    )
-  <span class="hljs-keyword">let</span> step = { fringe: props, visited: {} }
-  <span class="hljs-keyword">while</span> (<span class="hljs-built_in">Object</span>.keys(step.fringe).length &gt; <span class="hljs-number">0</span>) {
-    step = consume(step)
-  }
-  <span class="hljs-keyword">return</span> step.visited[<span class="hljs-string">''</span>]
-}</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Compute the bounding rect of a DOMElement</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> toRect = element =&gt; {
+  }, {})</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Merge two objects</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> mergeObjects = (obj1, obj2) =&gt; deepmerge(obj1 || {}, obj2 || {})</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Compute the bounding rect of a DOMElement</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> toRect = element =&gt; {
   <span class="hljs-keyword">const</span> rect = element
     ? element.getBoundingClientRect()
     : { left: <span class="hljs-number">0</span>, top: <span class="hljs-number">0</span>, width: <span class="hljs-number">0</span>, height: <span class="hljs-number">0</span> }

@@ -220,8 +220,8 @@ the reducer, which is required not to break timers used to show and hide tip.</p
   )</span>
 }
 
-Storage.propTypes = {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The list of persisted tips. Each entry of the list is an object with
-the following keys:</p>
+Storage.propTypes = {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>An array of persisted <code>&lt;StoredTipType&gt;</code>.</p>
+<p><code>&lt;StoredTipType&gt;</code> is an object, which contains the following keys:</p>
 <table>
 <thead>
 <tr>
@@ -275,8 +275,9 @@ the following keys:</p>
 </tr>
 </tbody>
 </table></div></div><div class="code"><div class="wrapper">  tips: PropTypes.arrayOf(StorageTip),</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A function which receives as input a <code>Source</code> <code>id</code> and outputs the corresponding React tip
-element.</p></div></div><div class="code"><div class="wrapper">  tip: PropTypes.func,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A callback function invoked when the list of persistent tip changes.
-The function receives an array of</p></div></div><div class="code"><div class="wrapper">  onTipChange: PropTypes.func
+element. The returned component should have its <code>key</code> property set to uniquely identify
+it among the children of the <code>Storage</code>.</p></div></div><div class="code"><div class="wrapper">  tip: PropTypes.func,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A callback function invoked when the list of persistent tip changes.
+The function receives an array of <code>&lt;StoredTipType&gt;</code></p></div></div><div class="code"><div class="wrapper">  onTipChange: PropTypes.func
 }
 
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> Storage</div></div></div></div></body></html>
