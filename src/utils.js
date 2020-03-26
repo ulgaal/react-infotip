@@ -95,7 +95,10 @@ export const getProperty = (obj, path) =>
   path
     .split('.')
     .reduce(
-      (obj, prop) => (obj && obj.hasOwnProperty(prop) ? obj[prop] : null),
+      (obj, prop) =>
+        obj && Object.prototype.hasOwnProperty.call(obj, prop)
+          ? obj[prop]
+          : null,
       obj
     )
 
@@ -112,76 +115,6 @@ export const pixelize = obj =>
  * Merge two objects
  */
 export const mergeObjects = (obj1, obj2) => deepmerge(obj1 || {}, obj2 || {})
-
-/**
- * Converts a graph into map. The map keys are path to the graph node,
- * the map values are the node values
- */
-export const toProps = (obj, props = {}, prefix = '') => {
-  if (Array.isArray(obj) && obj.length > 0) {
-    for (const [key, value] of Object.entries(obj)) {
-      toProps(value, props, `${prefix}[${key}]`)
-    }
-  } else if (
-    obj !== null &&
-    typeof obj === 'object' &&
-    !(obj instanceof Element)
-  ) {
-    if (Object.keys(obj).length > 0) {
-      for (const [key, value] of Object.entries(obj)) {
-        toProps(value, props, prefix ? `${prefix}.${key}` : key)
-      }
-    } else {
-      props[prefix] = Array.isArray(obj) ? [] : {}
-    }
-  } else {
-    props[prefix] = obj
-  }
-  return props
-}
-
-/**
- * Converts a map into a graph. The map keys are path to the graph node,
- * the map values are the node values
- */
-export const fromProps = props => {
-  const consume = ({ fringe, visited }) =>
-    Object.entries(fringe).reduce(
-      ({ fringe, visited }, [key, value]) => {
-        const arrayMatch = /^(.+)?\[(\d+)]$/.exec(key)
-        if (arrayMatch) {
-          const [, parentKey = '', index] = arrayMatch
-          let array = visited[parentKey]
-          if (!array) {
-            fringe[parentKey] = visited[parentKey] = array = []
-          }
-          array[index] = value
-        } else {
-          const objMatch = /^(?:(.+)\.)?([^[.]+)$/.exec(key)
-          if (objMatch) {
-            const [, parentKey = '', prop] = objMatch
-            let object = visited[parentKey]
-            if (!object) {
-              fringe[parentKey] = visited[parentKey] = object = {}
-            }
-            object[prop] = value
-          } else if (key === '' && !visited.hasOwnProperty(key)) {
-            visited[key] = value
-          }
-        }
-        return { fringe, visited }
-      },
-      {
-        fringe: {},
-        visited: { ...visited }
-      }
-    )
-  let step = { fringe: props, visited: {} }
-  while (Object.keys(step.fringe).length > 0) {
-    step = consume(step)
-  }
-  return step.visited['']
-}
 
 /**
  * Compute the bounding rect of a DOMElement
