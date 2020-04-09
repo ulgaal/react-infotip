@@ -26,17 +26,13 @@ import { LocationType } from './prop-types'
  */
 const Location = props => {
   const {
+    onMouseLeave,
     location: { left, top },
-    children,
-    onMouseDown,
-    onMouseOver,
-    onMouseOut
+    children
   } = props
   return (
     <span
-      onMouseDown={onMouseDown}
-      onMouseOver={onMouseOver}
-      onMouseOut={onMouseOut}
+      onMouseLeave={onMouseLeave}
       className='rit-location'
       style={{
         position: 'absolute',
@@ -54,7 +50,7 @@ const Location = props => {
 
 Location.propTypes = {
   location: LocationType,
-  onMouseDown: PropTypes.func
+  onMouseLeave: PropTypes.func
 }
 
 export default Location

@@ -105,6 +105,9 @@ const Source = props => {
 
   const handleMouseOver = useCallback(
     event => {
+      // This handler is required also for Storage since
+      // the mouseOver handler at the Storage level has no
+      // way to know the config of the source
       event.stopPropagation()
       dispatch({
         type: MOUSE_OVER,
@@ -152,10 +155,6 @@ const Source = props => {
     ref,
     onMouseOut: handleMouseOut,
     onMouseOver: handleMouseOver,
-    onMouseMove:
-      config.position.adjust.mouse && !useStorageReducer
-        ? handleMouseMove
-        : null,
     // This is mostly transparent (the `<span>` uses the CSS `display: 'contents'` property)
     // but there may be edge cases where one wants to be aware of this.
     ...(svg ? {} : { style: { display: 'contents' } })
@@ -164,6 +163,9 @@ const Source = props => {
   if (useStorageReducer) {
     tagProps['data-rit-id'] = id
   } else {
+    if (config.position.adjust.mouse) {
+      tagProps.onMouseMove = handleMouseMove
+    }
     // A `Source` keeps track of four state variables
     // * `my`: the position which provides optimal placement of the tip as computed by its `Engine`.
     // * `location`: the actual coordinates of the tip.

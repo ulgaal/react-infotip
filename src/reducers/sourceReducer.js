@@ -76,13 +76,18 @@ export const sourceReducer = (state, action) => {
   const { type, ...params } = action
   switch (type) {
     case MOUSE_OVER: {
-      const { pinned } = state
+      const { pinned, visible } = state
       if (pinned) {
         return state
       }
       const { hideTimeoutId } = state
       if (hideTimeoutId) {
         clearInterval(hideTimeoutId)
+      }
+      // If the tip is already visible, no need to schedule
+      // an event to show it
+      if (visible) {
+        return { ...state, hideTimeoutId: undefined }
       }
       const { config, id } = state
       const {

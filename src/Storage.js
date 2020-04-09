@@ -51,7 +51,6 @@ import {
  */
 
 const Storage = props => {
-  // console.log('Storage', props)
   const { children, tip, tips: storedTips, onTipChange } = props
 
   // A `Storage` keeps track of one state variable:
@@ -144,11 +143,14 @@ const Storage = props => {
     [dispatch]
   )
 
-  const handleMouseOut = useCallback(
+  const handleMouseLeave = useCallback(
     event => {
       const target = event.target.closest('[data-rit-id]')
       if (target) {
         const id = target.dataset.ritId
+        // This handler is invoked when the user mouses out of
+        // the tooltip (since the tooltip in a storage are
+        // children of Storage and not Source)
         dispatch({ type: MOUSE_OUT, id, dispatch })
       }
     },
@@ -159,6 +161,9 @@ const Storage = props => {
     event => {
       const target = event.target.closest('[data-rit-id]')
       if (target) {
+        // This handler is invoked when the user mouses over
+        // the tooltip (since the tooltip in a storage are
+        // children of Storage and not Source)
         const id = target.dataset.ritId
         dispatch({
           type: MOUSE_OVER,
@@ -198,7 +203,6 @@ const Storage = props => {
     // they have a `storage` property pointing to the `Storage`.
     <div
       style={{ display: 'contents' }}
-      onMouseOut={handleMouseOut}
       onMouseOver={handleMouseOver}
       onMouseMove={handleMouseMove}
     >
@@ -242,7 +246,11 @@ const Storage = props => {
             // benefit of the portal is that DOM events are still channeled through
             // the reducer, which is required not to break timers used to show and hide tip.
             return ReactDOM.createPortal(
-              <Location key={id} location={location}>
+              <Location
+                key={id}
+                location={location}
+                onMouseLeave={handleMouseLeave}
+              >
                 {tip}
               </Location>,
               containerElt
