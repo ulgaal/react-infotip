@@ -58,6 +58,10 @@
 .product-tip td:first-child {
   font-weight: 700;
 }
+.product-tip td:last-child:hover {
+  font-weight: 900;
+  text-decoration: underline;
+}
 
 .product-tip-color div {
   width: 48px;

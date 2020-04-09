@@ -214,11 +214,13 @@ storiesOf('Tooltips', module)
         )
       }
       return (
-        <Source tip={<DynamicTip />}>
-          <span className='default-rect centered-rect'>
-            My tip appears asynchronously
-          </span>
-        </Source>
+        <MergingConfigProvider value={{ hide: { delay: 300 } }}>
+          <Source tip={<DynamicTip />}>
+            <span className='default-rect centered-rect'>
+              My tip appears asynchronously
+            </span>
+          </Source>
+        </MergingConfigProvider>
       )
     },
     {

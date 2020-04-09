@@ -301,7 +301,7 @@ storiesOf('Sticky-notes', module)
       }
 
       const ProductTip = props => {
-        console.log('ProductTip', props)
+        // console.log('ProductTip', props)
         const {
           product: { department, price, product, productName, color }
         } = props
