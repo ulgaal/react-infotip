@@ -1,3 +1,8 @@
+## Version 1.0.1 (2020/04/09)
+- Fixed events causing visibility action to be fired too often and replaced mouseout by mouseleave for better tip stability
+- Altered table sticky notes case so that notes resize on hover
+- Fixed reg: in storage, position.adjust.mouse should be disabled when the tooltip is pinned
+
 ## Version 1.0.0 (2020/02/26)
 
 - Removed unused fromProps and toProps functions
