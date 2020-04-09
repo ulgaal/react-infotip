@@ -74,8 +74,9 @@ used for tip positionning when target === false</p></div></div><div class="code"
   )
 
   <span class="hljs-keyword">const</span> handleMouseOver = useCallback(
-    event =&gt; {
-      event.stopPropagation()
+    event =&gt; {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>This handler is required also for Storage since
+the mouseOver handler at the Storage level has no
+way to know the config of the source</p></div></div><div class="code"><div class="wrapper">      event.stopPropagation()
       dispatch({
         type: MOUSE_OVER,
         id,
@@ -117,17 +118,16 @@ will affect tip placement, hence the <code>ref</code> which is tracked by the <c
     className: <span class="hljs-string">'rit-source'</span>,
     ref,
     onMouseOut: handleMouseOut,
-    onMouseOver: handleMouseOver,
-    onMouseMove:
-      config.position.adjust.mouse &amp;&amp; !useStorageReducer
-        ? handleMouseMove
-        : <span class="hljs-literal">null</span>,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>This is mostly transparent (the <code>&lt;span&gt;</code> uses the CSS <code>display: &#39;contents&#39;</code> property)
+    onMouseOver: handleMouseOver,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>This is mostly transparent (the <code>&lt;span&gt;</code> uses the CSS <code>display: &#39;contents&#39;</code> property)
 but there may be edge cases where one wants to be aware of this.</p></div></div><div class="code"><div class="wrapper">    ...(svg ? {} : { style: { display: <span class="hljs-string">'contents'</span> } })
   }
   <span class="hljs-keyword">const</span> tagChildren = [...React.Children.toArray(children)]
   <span class="hljs-keyword">if</span> (useStorageReducer) {
     tagProps[<span class="hljs-string">'data-rit-id'</span>] = id
-  } <span class="hljs-keyword">else</span> {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Source</code> keeps track of four state variables</p>
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">if</span> (config.position.adjust.mouse) {
+      tagProps.onMouseMove = handleMouseMove
+    }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Source</code> keeps track of four state variables</p>
 <ul>
 <li><code>my</code>: the position which provides optimal placement of the tip as computed by its <code>Engine</code>.</li>
 <li><code>location</code>: the actual coordinates of the tip.</li>
