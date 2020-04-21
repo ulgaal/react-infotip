@@ -1,3 +1,8 @@
+## Version 1.0.2 (2020/04/21)
+- Fixed rendering of Ballon tail when styling using a CSS class
+- Fixed setstate-in-render bugs in stories with function-based position.adjust
+- Changed MOUSE_OUT action of sourceReducer to prevent unnecessary VISIBILITY actions from being dispatched
+
 ## Version 1.0.1 (2020/04/09)
 - Fixed events causing visibility action to be fired too often and replaced mouseout by mouseleave for better tip stability
 - Altered table sticky notes case so that notes resize on hover
