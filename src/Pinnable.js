@@ -35,10 +35,11 @@ const Pinnable = props => {
     children,
     ...rest
   } = props
+  const { className } = props
   return (
     <Wrapper pinned={pinned} {...rest}>
       <div className='pinnable' onMouseDown={onMouseDown}>
-        <Pin pinned={pinned} onClick={onPin} />
+        <Pin className={className} pinned={pinned} onClick={onPin} />
         {children}
       </div>
     </Wrapper>

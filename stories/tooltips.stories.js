@@ -506,7 +506,12 @@ storiesOf('Tooltips', module)
                     Math.min(Math.floor((pos2.x * count) / W), count - 1)
                   )
                   const y = Math.round(points[x].y)
-                  setPosition({ x, y })
+                  Promise.resolve().then(() => {
+                    // Update position asynchonously since one cannot
+                    // update Graph when rendering tooltip
+                    // https://fb.me/setstate-in-render
+                    setPosition({ x, y })
+                  })
                   return {
                     x: position.x + window.scrollX,
                     y: ctm.f + y + window.scrollY

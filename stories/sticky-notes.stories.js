@@ -496,7 +496,12 @@ storiesOf('Sticky-notes', module)
                   )
                   const x = points[index].x
                   const y = Math.round(points[index].y)
-                  dispatch({ id, coordinates: { x, y } })
+                  Promise.resolve().then(() => {
+                    // Update position asynchonously since one cannot
+                    // update Graph when rendering tooltip
+                    // https://fb.me/setstate-in-render
+                    dispatch({ id, coordinates: { x, y } })
+                  })
 
                   // Compte the x-coordinate of the rect
                   const { left } = rect.ownerSVGElement.getBoundingClientRect()
