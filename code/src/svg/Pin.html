@@ -1,28 +1,34 @@
-<!DOCTYPE html><html lang="en"><head><title>src/svg/Pin</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="src/svg/Pin"><meta name="groc-project-path" content="src/svg/Pin.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/svg/Pin.js</div></div><div id="document"><div class="segment"><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> React <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>Pin</code> is an internal component to draw an SVG pin symbol</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Pin = ({ pinned, onClick }) =&gt; (
-  <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">svg</span>
-    <span class="hljs-attribute">width</span>=<span class="hljs-value">'12px'</span>
-    <span class="hljs-attribute">height</span>=<span class="hljs-value">'12px'</span>
-    <span class="hljs-attribute">viewBox</span>=<span class="hljs-value">'-1000 -850 1000 1000'</span>
-    <span class="hljs-attribute">xmlns</span>=<span class="hljs-value">'http://www.w3.org/2000/svg'</span>
-    <span class="hljs-attribute">onClick</span>=<span class="hljs-value">{onClick}</span>
-  &gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-title">g</span> <span class="hljs-attribute">transform</span>=<span class="hljs-value">'scale(-1,-1)'</span>&gt;</span>
-      {pinned ? (
-        <span class="hljs-tag">&lt;<span class="hljs-title">path</span>
-          <span class="hljs-attribute">d</span>=<span class="hljs-value">'M966 450q0 -34 -18 -52l-36 -36q-18 -18 -52 -18q-28 0 -65 14l-138 -138q13 -45 13 -90t-14 -84t-44 -69l-28 -28q-22 -22 -62 -22q-41 0 -93 22t-108 63l58 57q45 -32 84 -47t62 -15q0 21 -10.5 49.5t-29 60.5t-44 65.5t-55.5 63.5q-36 36 -71.5 62t-67 43t-57.5 25.5
+<!DOCTYPE html><html lang="en"><head><title>src/svg/Pin</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="src/svg/Pin"><meta name="groc-project-path" content="src/svg/Pin.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/svg/Pin.js</div></div><div id="document"><div class="segment"><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> React <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>Pin</code> is an internal component to draw an SVG pin symbol</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Pin = props =&gt; {
+  <span class="hljs-keyword">const</span> { pinned, onClick, className } = props
+  <span class="hljs-keyword">const</span> styling = className
+    ? { className: <span class="hljs-string">`<span class="hljs-subst">${className}</span>-pin`</span> }
+    : { style: { stroke: <span class="hljs-string">'none'</span>, fill: <span class="hljs-string">'black'</span> } }
+  <span class="hljs-keyword">return</span> (
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">svg</span>
+      <span class="hljs-attribute">width</span>=<span class="hljs-value">'12px'</span>
+      <span class="hljs-attribute">height</span>=<span class="hljs-value">'12px'</span>
+      <span class="hljs-attribute">viewBox</span>=<span class="hljs-value">'-1000 -850 1000 1000'</span>
+      <span class="hljs-attribute">xmlns</span>=<span class="hljs-value">'http://www.w3.org/2000/svg'</span>
+      <span class="hljs-attribute">onClick</span>=<span class="hljs-value">{onClick}</span>
+    &gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">g</span> <span class="hljs-attribute">transform</span>=<span class="hljs-value">'scale(-1,-1)'</span> {<span class="hljs-attribute">...styling</span>}&gt;</span>
+        {pinned ? (
+          <span class="hljs-tag">&lt;<span class="hljs-title">path</span>
+            <span class="hljs-attribute">d</span>=<span class="hljs-value">'M966 450q0 -34 -18 -52l-36 -36q-18 -18 -52 -18q-28 0 -65 14l-138 -138q13 -45 13 -90t-14 -84t-44 -69l-28 -28q-22 -22 -62 -22q-41 0 -93 22t-108 63l58 57q45 -32 84 -47t62 -15q0 21 -10.5 49.5t-29 60.5t-44 65.5t-55.5 63.5q-36 36 -71.5 62t-67 43t-57.5 25.5
         t-43 8.5q0 -30 28 -87.5t85 -121.5l48 49q12 12 29 12t28.5 -11.5t11.5 -28.5t-12 -29l-283 -282q-12 -12 -28 -12q-17 0 -28.5 11.5t-11.5 28.5q0 16 12 28l176 178q-64 71 -99.5 140.5t-35.5 121.5q0 40 22 62l28 28q30 30 69 44.5t84 14.5q42 0 90 -14l138 138
         q-14 37 -14 66q0 33 18 51l36 36q18 18 52 18q35 0 77 -18t83.5 -48t80.5 -69t69 -80.5t48 -83.5t18 -77zM726 671q-32 24 -60 39l-226 -226q15 -8 30.5 -18t29.5 -21z'</span>
-        /&gt;</span>
-      )</span> : (
-        <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">path</span>
-          <span class="hljs-attribute">d</span>=<span class="hljs-value">'M117 472q21 21 47.5 34.5t56.5 19.5l445 -445q-6 -30 -19.5 -56.5t-34.5 -47.5l-28 -28q-22 -22 -62 -22q-41 0 -93 22t-108 63l58 57q45 -32 84 -47t62 -15q0 21 -10.5 49.5t-29 60.5t-44 65.5t-55.5 63.5q-36 36 -71.5 62t-67 43t-57.5 25.5t-43 8.5q0 -30 28 -87.5
+          /&gt;</span>
+        )</span> : (
+          <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">path</span>
+            <span class="hljs-attribute">d</span>=<span class="hljs-value">'M117 472q21 21 47.5 34.5t56.5 19.5l445 -445q-6 -30 -19.5 -56.5t-34.5 -47.5l-28 -28q-22 -22 -62 -22q-41 0 -93 22t-108 63l58 57q45 -32 84 -47t62 -15q0 21 -10.5 49.5t-29 60.5t-44 65.5t-55.5 63.5q-36 36 -71.5 62t-67 43t-57.5 25.5t-43 8.5q0 -30 28 -87.5
         t85 -121.5l48 49q12 12 29 12t28.5 -11.5t11.5 -28.5t-12 -29l-283 -282q-12 -12 -28 -12q-17 0 -28.5 11.5t-11.5 28.5q0 16 12 28l176 178q-64 71 -99.5 140.5t-35.5 121.5q0 40 22 62zM698 261l255 -255l-57 -57l-784 784l58 57l231 -232l97 97q-14 37 -14 66q0 33 18 51
         l36 36q18 18 52 18q35 0 77 -18t83.5 -48t80.5 -69t69 -80.5t48 -83.5t18 -77q0 -34 -18 -52l-36 -36q-18 -18 -52 -18q-28 0 -65 14zM458 502l49 -50l219 219q-32 24 -60 39z'</span>
-        /&gt;</span>
-      )</span>}
-    &lt;<span class="hljs-regexp">/g&gt;
-  &lt;/</span>svg&gt;
-)
+          /&gt;</span>
+        )</span>}
+      &lt;<span class="hljs-regexp">/g&gt;
+    &lt;/</span>svg&gt;
+  )
+}
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> areEqual = (prev, next) =&gt; {
   <span class="hljs-keyword">return</span> prev.pinned === next.pinned
 }
