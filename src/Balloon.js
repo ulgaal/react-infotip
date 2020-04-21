@@ -120,7 +120,12 @@ const Balloon = props => {
       >
         {children}
       </span>
-      <BalloonTail my={my} metrics={metrics} style={computedStyle} />
+      <BalloonTail
+        my={my}
+        metrics={metrics}
+        style={computedStyle}
+        className={className}
+      />
     </span>
   )
 }

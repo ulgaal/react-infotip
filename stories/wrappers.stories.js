@@ -62,7 +62,7 @@ const PinnableRefReadme = generateMarkdown(
   docgen['src/Pinnable.js'][0]
 )
 
-const stories = storiesOf('Wrappers', module)
+storiesOf('Wrappers', module)
   .addDecorator(addReadme)
   .addParameters({ options: { theme: {} } })
   .addDecorator(withKnobs)
@@ -286,11 +286,19 @@ const stories = storiesOf('Wrappers', module)
       <ConfigContext.Consumer>
         {({ wrapper, wrapperProps }) => {
           return (
-            <span style={{ display: 'inline-block', position: 'relative' }}>
+            <span style={{ display: 'flex', justifyContent: 'space-around' }}>
               <Pinnable
                 wrapper={wrapper}
                 {...wrapperProps}
                 pinned={wrapperProps.pinned}
+              >
+                <div>Pinnable</div>
+              </Pinnable>
+              <Pinnable
+                wrapper={wrapper}
+                {...wrapperProps}
+                pinned={wrapperProps.pinned}
+                className='dark-style'
               >
                 <div>Pinnable</div>
               </Pinnable>

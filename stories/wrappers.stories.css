@@ -16,16 +16,25 @@
   padding: 4px 10px 4px 10px;
   color: #f3f3f3;
   background-color: #505050;
+  fill: #505050;
   border: 1px solid #303030;
+  stroke: #303030;
+  stroke-width: 1px;
   border-radius: 4px;
   box-shadow: 3px 3px #777;
+}
+.dark-style-pin {
+  fill: #f3f3f3;
 }
 
 .green-style {
   padding: 4px 10px 4px 10px;
   color: #3f6219;
   background-color: #caed9e;
+  fill: #caed9e;
   border: 1px solid #90d93f;
+  stroke: #90d93f;
+  stroke-width: 1px;
   border-radius: 4px;
   box-shadow: 3px 3px #ddd;
 }
