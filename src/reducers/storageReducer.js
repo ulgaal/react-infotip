@@ -71,6 +71,7 @@ export const storageReducer = (state, action) => {
               }),
               pinned: true,
               visible: true,
+              moved: true,
               containerElt: getElement(storedTip.config.position.container)
             }
           }
@@ -87,7 +88,8 @@ export const storageReducer = (state, action) => {
         location: {
           left: source.location.left + delta.x,
           top: source.location.top + delta.y
-        }
+        },
+        moved: true
       }
       // Force source reordering
       // This will bring the tip being dragged to the foreground
@@ -158,7 +160,19 @@ export const storageReducer = (state, action) => {
       }
       return { ...state, sources: newSources }
     }
-    case GEOMETRY:
+    case GEOMETRY: {
+      const { id } = action
+      const source = sources[id]
+      if (source.pinned || source.moved) {
+        return state
+      }
+      const newSources = updateSource(
+        sources,
+        id,
+        sourceReducer(source, action)
+      )
+      return sources === newSources ? state : { ...state, sources: newSources }
+    }
     case MOUSE_OUT: {
       const { id } = action
       const source = sources[id]
