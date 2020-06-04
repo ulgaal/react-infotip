@@ -89,7 +89,10 @@ export const storageReducer = (state, action) => {
           top: source.location.top + delta.y
         }
       }
-      const newSources = updateSource(sources, id, newSource)
+      // Force source reordering
+      // This will bring the tip being dragged to the foreground
+      const { [id]: oldSource, ...oldSources } = sources
+      const newSources = { ...oldSources, [id]: newSource }
       const storedTips =
         notify && source.pinned
           ? toStoredTips(newSources, state.storedTips)
