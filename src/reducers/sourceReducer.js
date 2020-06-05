@@ -188,11 +188,16 @@ export const sourceReducer = (state, action) => {
     }
 
     case VISIBILITY: {
-      let { containerElt } = state
+      let { containerElt, location, ...rest } = state
       if (action.visible && !containerElt) {
         containerElt = getElement(state.config.position.container)
       }
-      return { ...state, ...params, containerElt }
+      return {
+        ...rest,
+        ...params,
+        containerElt,
+        ...(action.visible && location ? { location } : {})
+      }
     }
 
     case PIN: {
@@ -209,14 +214,15 @@ export const sourceReducer = (state, action) => {
     }
 
     case RESET: {
-      const { showTimeoutId, hideTimeoutId } = state
+      // Forget previous location
+      const { showTimeoutId, hideTimeoutId, location, ...rest } = state
       if (showTimeoutId) {
         clearInterval(showTimeoutId)
       }
       if (hideTimeoutId) {
         clearInterval(hideTimeoutId)
       }
-      return { ...state, config: action.config }
+      return { ...rest, config: action.config }
     }
   }
 }

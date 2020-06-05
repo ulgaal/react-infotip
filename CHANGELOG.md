@@ -1,3 +1,10 @@
+
+## Version 1.0.3 (2020/06/05)
+- Fixed layout for persistent sticky-notes story
+- Added a new 'moved' state prop to not update the layout on geometry changes when the tooltip has already been dragged or pinned by the user
+- Changed sticky-notes table story to show how layout updates when tip geometry changes
+- Enabled reordering of pinned tips
+
 ## Version 1.0.2 (2020/04/21)
 - Fixed rendering of Ballon tail when styling using a CSS class
 - Fixed setstate-in-render bugs in stories with function-based position.adjust

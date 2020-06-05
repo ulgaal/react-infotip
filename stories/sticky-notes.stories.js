@@ -305,40 +305,50 @@ storiesOf('Sticky-notes', module)
         const {
           product: { department, price, product, productName, color }
         } = props
+        const [loaded, setLoaded] = useState(false)
+        useEffect(() => {
+          setTimeout(() => {
+            setLoaded(true)
+          }, Math.floor(Math.random() * 2000))
+        }, [])
         return (
           <div className='product-tip'>
-            <table>
-              <tbody>
-                <tr>
-                  <td>Department:</td>
-                  <td>{department}</td>
-                </tr>
-                <tr>
-                  <td>Product name:</td>
-                  <td>{productName}</td>
-                </tr>
-                <tr>
-                  <td>Product:</td>
-                  <td>{product}</td>
-                </tr>
-                <tr>
-                  <td>Price:</td>
-                  <td>{price} EUR</td>
-                </tr>
-                <tr>
-                  <td>Color:</td>
-                  <td className='product-tip-color'>
-                    <div style={{ backgroundColor: color }} />
-                  </td>
-                </tr>
-                <tr>
-                  <td></td>
-                  <td>
-                    <button>Buy now</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            {loaded ? (
+              <table>
+                <tbody>
+                  <tr>
+                    <td>Department:</td>
+                    <td>{department}</td>
+                  </tr>
+                  <tr>
+                    <td>Product name:</td>
+                    <td>{productName}</td>
+                  </tr>
+                  <tr>
+                    <td>Product:</td>
+                    <td>{product}</td>
+                  </tr>
+                  <tr>
+                    <td>Price:</td>
+                    <td>{price} EUR</td>
+                  </tr>
+                  <tr>
+                    <td>Color:</td>
+                    <td className='product-tip-color'>
+                      <div style={{ backgroundColor: color }} />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td>
+                      <button>Buy now</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            ) : (
+              <div>Querying database...</div>
+            )}
           </div>
         )
       }
@@ -396,9 +406,10 @@ storiesOf('Sticky-notes', module)
                   method: {
                     flip: [
                       'top-left',
-                      'center-left',
-                      'bottom-left',
                       'top-right',
+                      'center-left',
+                      'center-right',
+                      'bottom-left',
                       'bottom-right'
                     ]
                   }

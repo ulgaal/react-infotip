@@ -1,6 +1,6 @@
 {
   "name": "@ulgaal/react-infotip",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A library to provide tooltips and sticky-notes to React apps",
   "keywords": [
     "react",
