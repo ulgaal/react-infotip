@@ -114,7 +114,21 @@ export const pixelize = obj =>
 /**
  * Merge two objects
  */
-export const mergeObjects = (obj1, obj2) => deepmerge(obj1 || {}, obj2 || {})
+export const mergeObjects = (obj1, obj2) => {
+  if (obj1) {
+    if (obj2) {
+      return deepmerge(obj1, obj2)
+    } else {
+      return obj1
+    }
+  } else {
+    if (obj2) {
+      return obj2
+    } else {
+      return {}
+    }
+  }
+}
 
 /**
  * Compute the bounding rect of a DOMElement
