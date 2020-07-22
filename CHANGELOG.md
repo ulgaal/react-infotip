@@ -1,16 +1,23 @@
+## Version 1.0.4 (2020/07/22)
+
+- Changed build target to current nodejs
+- Improved performance of mergeObjects
 
 ## Version 1.0.3 (2020/06/05)
+
 - Fixed layout for persistent sticky-notes story
 - Added a new 'moved' state prop to not update the layout on geometry changes when the tooltip has already been dragged or pinned by the user
 - Changed sticky-notes table story to show how layout updates when tip geometry changes
 - Enabled reordering of pinned tips
 
 ## Version 1.0.2 (2020/04/21)
+
 - Fixed rendering of Ballon tail when styling using a CSS class
 - Fixed setstate-in-render bugs in stories with function-based position.adjust
 - Changed MOUSE_OUT action of sourceReducer to prevent unnecessary VISIBILITY actions from being dispatched
 
 ## Version 1.0.1 (2020/04/09)
+
 - Fixed events causing visibility action to be fired too often and replaced mouseout by mouseleave for better tip stability
 - Altered table sticky notes case so that notes resize on hover
 - Fixed reg: in storage, position.adjust.mouse should be disabled when the tooltip is pinned
