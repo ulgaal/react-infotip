@@ -1,6 +1,6 @@
 {
   "name": "@ulgaal/react-infotip",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A library to provide tooltips and sticky-notes to React apps",
   "keywords": [
     "react",
@@ -31,7 +31,7 @@
     "url": "https://github.com/ulgaal/react-infotip.git"
   },
   "scripts": {
-    "build": "babel --out-dir lib --presets=@babel/preset-react,@babel/preset-env src",
+    "build": "babel --out-dir lib src",
     "test": "node config/test.js",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
@@ -43,30 +43,30 @@
     "lodash.pick": "^4.4.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.8.4",
+    "@babel/cli": "^7.10.5",
+    "@babel/core": "^7.10.5",
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
-    "@babel/polyfill": "^7.8.3",
-    "@babel/preset-env": "^7.8.4",
-    "@babel/preset-react": "^7.8.3",
-    "@storybook/addon-actions": "^5.3.13",
-    "@storybook/addon-knobs": "^5.3.13",
-    "@storybook/addon-links": "^5.3.13",
-    "@storybook/addon-storysource": "^5.3.13",
-    "@storybook/addons": "^5.3.13",
-    "@storybook/react": "^5.3.13",
+    "@babel/polyfill": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
+    "@babel/preset-react": "^7.10.4",
+    "@storybook/addon-actions": "^5.3.19",
+    "@storybook/addon-knobs": "^5.3.19",
+    "@storybook/addon-links": "^5.3.19",
+    "@storybook/addon-storysource": "^5.3.19",
+    "@storybook/addons": "^5.3.19",
+    "@storybook/react": "^5.3.19",
     "babel-core": "7.0.0-bridge.0",
-    "babel-jest": "^25.1.0",
+    "babel-jest": "^26.1.0",
     "babel-loader": "^8.0.6",
     "faker": "^4.1.0",
-    "jest": "^25.1.0",
+    "jest": "^26.1.0",
     "promisify-node": "^0.5.0",
     "prop-types": "^15.7.2",
-    "react": "^16.11.0",
+    "react": "^16.13.1",
     "react-docgen": "^5.2.0",
-    "react-dom": "^16.11.0",
-    "react-reducer-table": "^1.0.1",
-    "standard": "^14.3.1",
+    "react-dom": "^16.13.1",
+    "react-reducer-table": "^1.0.3",
+    "standard": "^14.3.4",
     "storybook-readme": "^5.0.8",
     "svg-react-loader": "^0.4.6"
   },
@@ -79,6 +79,17 @@
     "globals": [
       "SVGElement",
       "Element"
+    ]
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-react",
+      [
+        "@babel/preset-env",
+        {
+          "targets": "current node"
+        }
+      ]
     ]
   },
   "jest": {
