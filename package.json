@@ -31,7 +31,7 @@
     "url": "https://github.com/ulgaal/react-infotip.git"
   },
   "scripts": {
-    "build": "babel --out-dir lib --presets=@babel/preset-react,@babel/preset-env src",
+    "build": "babel --out-dir lib src",
     "test": "node config/test.js",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
@@ -79,6 +79,17 @@
     "globals": [
       "SVGElement",
       "Element"
+    ]
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-react",
+      [
+        "@babel/preset-env",
+        {
+          "targets": "current node"
+        }
+      ]
     ]
   },
   "jest": {
