@@ -1,5 +1,6 @@
 ## Version 1.0.4 (2020/07/22)
 
+- Upgraded dependencies
 - Changed build target to current nodejs
 - Improved performance of mergeObjects
 
