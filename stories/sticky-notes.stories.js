@@ -54,7 +54,8 @@ import {
   TableDispatch,
   COLUMN_REORDERING,
   COLUMN_RESIZING,
-  PAGING
+  PAGING,
+  VSCROLL
 } from 'react-reducer-table'
 
 const StorageReadme = generateMarkdown('Storage', docgen['src/Storage.js'][0])
@@ -204,6 +205,8 @@ storiesOf('Sticky-notes', module)
                   : column
               )
             }
+          case VSCROLL:
+            return state
           default:
             throw new Error(`Unknown action: ${type}`)
         }
@@ -339,7 +342,7 @@ storiesOf('Sticky-notes', module)
                     </td>
                   </tr>
                   <tr>
-                    <td></td>
+                    <td />
                     <td>
                       <button>Buy now</button>
                     </td>
