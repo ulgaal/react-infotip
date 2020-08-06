@@ -1,0 +1,2 @@
+Sometimes one wants to temporarily disable sticky notes on a `<Storage>`: for instance, when the user is engaging in a modal dragging session, one does not want sticky notes to pop-out and disrupt the session. The `disabled` property can be used to prevent notes from showing or hiding on all the `<Source>s` contained in a `<Storage>`. The property also exists on `<Source>s` to provide fine-grain control at that level.
+Notes which are pinned are not affected by this property.

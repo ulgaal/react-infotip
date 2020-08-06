@@ -36,7 +36,8 @@ import {
   MOUSE_MOVE,
   MOUSE_OUT,
   PIN,
-  RESET
+  RESET,
+  DISABLE
 } from './reducers/sourceReducer'
 
 /**
@@ -46,7 +47,7 @@ import {
 const Source = props => {
   // Merge the context and local configs and extract relevant
   // properties from it
-  const { id, config: localConfig, pinned } = props
+  const { id, config: localConfig, pinned, disabled } = props
   const contextConfig = useContext(ConfigContext)
   const config = useMemo(() => {
     return mergeObjects(contextConfig, localConfig)
@@ -91,6 +92,18 @@ const Source = props => {
     }
   }, [pinned])
 
+  const disabledRef = useRef(disabled)
+  useEffect(() => {
+    if (useStorageReducer && disabledRef.current !== disabled) {
+      dispatch({
+        type: DISABLE,
+        id,
+        disabled
+      })
+    }
+    disabledRef.current = disabled
+  }, [disabled])
+
   // Tranform DOM events into reducer actions:
   // * mouseout events.
   // * mouseover events.
@@ -112,6 +125,7 @@ const Source = props => {
       dispatch({
         type: MOUSE_OVER,
         id,
+        disabled,
         config,
         position: {
           x: event.clientX + window.scrollX,
@@ -121,7 +135,7 @@ const Source = props => {
         ref: ref.current
       })
     },
-    [dispatch, id, config]
+    [dispatch, id, config, disabled]
   )
 
   const handleMouseMove = useCallback(
@@ -192,12 +206,14 @@ const Source = props => {
       // naturally floats above other DOM nodes it the DOM tree). The additional
       // benefit of the portal is that DOM events are still channeled through
       // the `Source`, which is required not to break timers used to show and hide tip.
-      tagChildren.push(
-        ReactDOM.createPortal(
-          <Location location={location}>{wrappedTip}</Location>,
-          state.containerElt
+      if (!disabled) {
+        tagChildren.push(
+          ReactDOM.createPortal(
+            <Location location={location}>{wrappedTip}</Location>,
+            state.containerElt
+          )
         )
-      )
+      }
     }
   }
   return React.createElement(tagName, tagProps, tagChildren)
@@ -277,12 +293,18 @@ Source.propTypes = {
    * If the `Source` is contained in a `Storage`, an id which uniquely identifies
    * this `Source` within its `Storage`
    */
-  id: PropTypes.string
+  id: PropTypes.string,
+  /**
+   * True to make the source ignore DOM events and stop showing
+   * or hiding new tips, false (default) otherwise
+   */
+  disabled: PropTypes.bool
 }
 
 Source.defaultProps = {
   pinned: false,
-  svg: false
+  svg: false,
+  disabled: false
 }
 
 export const areEqual = (prev, next) => {
@@ -291,6 +313,7 @@ export const areEqual = (prev, next) => {
     prev.config === next.config &&
     prev.tip === next.tip &&
     prev.pinned === next.pinned &&
+    prev.disabled === next.disabled &&
     prev.children === next.children
   )
 }

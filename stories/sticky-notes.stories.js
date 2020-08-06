@@ -19,7 +19,8 @@ import React, {
   useRef,
   useMemo,
   useReducer,
-  useEffect
+  useEffect,
+  useCallback
 } from 'react'
 import { storiesOf } from '@storybook/react'
 import { withKnobs } from '@storybook/addon-knobs'
@@ -37,6 +38,7 @@ import {
 import PersistentReadme from './md/storage/persistent.md'
 import TableReadme from './md/storage/table.md'
 import MultiLineChartReadme from './md/storage/multi-line-chart.md'
+import DisablingNotesReadme from './md/storage/disabling-notes.md'
 import docgen from './docgen'
 import { generateMarkdown } from './generateMarkdown'
 
@@ -54,7 +56,8 @@ import {
   TableDispatch,
   COLUMN_REORDERING,
   COLUMN_RESIZING,
-  PAGING
+  PAGING,
+  VSCROLL
 } from 'react-reducer-table'
 
 const StorageReadme = generateMarkdown('Storage', docgen['src/Storage.js'][0])
@@ -204,6 +207,8 @@ storiesOf('Sticky-notes', module)
                   : column
               )
             }
+          case VSCROLL:
+            return state
           default:
             throw new Error(`Unknown action: ${type}`)
         }
@@ -339,7 +344,7 @@ storiesOf('Sticky-notes', module)
                     </td>
                   </tr>
                   <tr>
-                    <td></td>
+                    <td />
                     <td>
                       <button>Buy now</button>
                     </td>
@@ -602,6 +607,155 @@ storiesOf('Sticky-notes', module)
     {
       readme: {
         content: MultiLineChartReadme,
+        sidebar: StorageReadme
+      }
+    }
+  )
+  .add(
+    'Disabling sticky notes',
+    () => {
+      const Disablable = props => {
+        const { label, disabled, dispatch } = props
+        const handleChange = useCallback(event => {
+          dispatch({
+            type: 'LOCAL_DISABLE',
+            which: label,
+            disabled: event.target.checked
+          })
+        }, [])
+        return (
+          <div className='disabable'>
+            <span className='disabable-label'>{label}</span>
+            <span className='disabable-checkbox'>
+              <input
+                type='checkbox'
+                onChange={handleChange}
+                checked={disabled}
+              />{' '}
+              disabled
+            </span>
+          </div>
+        )
+      }
+      const DisablableTip = props => {
+        const { label } = props
+        return <div>{label} tip</div>
+      }
+      const storageReducer = (state, action) => {
+        // console.log('storageReducer', state, action)
+        const { type } = action
+        switch (type) {
+          case 'TIP': {
+            return { ...state, tips: action.tips }
+          }
+          case 'GLOBAL_DISABLE': {
+            return { ...state, globalDisabled: action.disabled }
+          }
+          case 'LOCAL_DISABLE': {
+            return {
+              ...state,
+              localDisabled: {
+                ...state.localDisabled,
+                [action.which]: action.disabled
+              }
+            }
+          }
+          default:
+            throw new Error(`Unknown action: ${type}`)
+        }
+      }
+      const DisablingNotesStory = props => {
+        const config = useContext(ConfigContext)
+        const [state, dispatch] = useReducer(storageReducer, {
+          tips: [],
+          globalDisabled: false,
+          localDisabled: {
+            north: false,
+            west: false,
+            south: false,
+            east: false
+          }
+        })
+        const { tips, globalDisabled, localDisabled } = state
+        const handleGlobalChange = useCallback(event => {
+          dispatch({ type: 'GLOBAL_DISABLE', disabled: event.target.checked })
+        }, [])
+        return (
+          <MergingConfigProvider
+            value={{
+              show: {
+                delay: 105
+              },
+              hide: {
+                delay: 100
+              },
+              wrapper: Pinnable,
+              wrapperProps: { wrapper: config.wrapper }
+            }}
+          >
+            <Storage
+              tips={tips}
+              tip={(id, pinned) => {
+                return <DisablableTip label={id} key={id} />
+              }}
+              onTipChange={tips => {
+                dispatch({ type: 'TIP', tips })
+              }}
+              disabled={globalDisabled}
+            >
+              <div className='disabling-notes'>
+                <div className='disabling-notes-top'>
+                  <Source id='north' disabled={localDisabled.north}>
+                    <Disablable
+                      disabled={localDisabled.north}
+                      dispatch={dispatch}
+                      label='north'
+                    />
+                  </Source>
+                </div>
+                <div className='disabling-notes-middle'>
+                  <Source id='west' disabled={localDisabled.west}>
+                    <Disablable
+                      disabled={localDisabled.west}
+                      dispatch={dispatch}
+                      label='west'
+                    />
+                  </Source>
+                  <Source id='east' disabled={localDisabled.east}>
+                    <Disablable
+                      disabled={localDisabled.east}
+                      dispatch={dispatch}
+                      label='east'
+                    />
+                  </Source>
+                </div>
+                <div className='disabling-notes-bottom'>
+                  <Source id='south' disabled={localDisabled.south}>
+                    <Disablable
+                      disabled={localDisabled.south}
+                      dispatch={dispatch}
+                      label='south'
+                    />
+                  </Source>
+                  <span>
+                    <input
+                      type='checkbox'
+                      onChange={handleGlobalChange}
+                      checked={globalDisabled}
+                    />{' '}
+                    Global disabled
+                  </span>
+                </div>
+              </div>
+            </Storage>
+          </MergingConfigProvider>
+        )
+      }
+      return <DisablingNotesStory />
+    },
+    {
+      readme: {
+        content: DisablingNotesReadme,
         sidebar: StorageReadme
       }
     }

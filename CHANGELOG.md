@@ -1,3 +1,9 @@
+## Version 1.1.0 (2020/08/06)
+
+- Fixed doc generation script
+- Added disable property to Storage and Source and stories to demonstrate the feature
+- Upgraded dependencies
+
 ## Version 1.0.4 (2020/07/22)
 
 - Upgraded dependencies

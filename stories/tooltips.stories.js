@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-import React, { useMemo, useState, useEffect, useRef } from 'react'
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 
 import { storiesOf } from '@storybook/react'
 // import { linkTo } from '@storybook/addon-links'
@@ -47,6 +47,7 @@ import ConfigContextReadme from './md/source/config-context.md'
 import AdjustReadme from './md/source/adjust.md'
 import FunctionAdjustReadme from './md/source/adjust-function.md'
 import BicolorReadme from './md/source/bicolor.md'
+import DisablingTipReadme from './md/source/disabling-tip.md'
 
 import { styleDecorator, layoutDecorator, wrapperDecorator } from './decorators'
 import docgen from './docgen'
@@ -729,6 +730,39 @@ storiesOf('Tooltips', module)
     {
       readme: {
         content: BicolorReadme,
+        sidebar: SourceReadme
+      }
+    }
+  )
+  .add(
+    'Disabling tooltips',
+    () => {
+      const DisablingNotesStory = props => {
+        const [disabled, setDisabled] = useState(false)
+        const handleChange = useCallback(event => {
+          setDisabled(event.target.checked)
+        }, [])
+        return (
+          <Source disabled={disabled} tip='Still enabled !'>
+            <div className='disabable' style={{ width: '200px' }}>
+              <span className='disabable-label'>My tips can be disabled</span>
+              <span className='disabable-checkbox'>
+                <input
+                  type='checkbox'
+                  onChange={handleChange}
+                  checked={disabled}
+                />{' '}
+                disabled
+              </span>
+            </div>
+          </Source>
+        )
+      }
+      return <DisablingNotesStory />
+    },
+    {
+      readme: {
+        content: DisablingTipReadme,
         sidebar: SourceReadme
       }
     }
