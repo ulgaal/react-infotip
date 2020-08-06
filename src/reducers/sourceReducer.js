@@ -53,8 +53,7 @@ export const GEOMETRY = 'GEOMETRY'
 export const VISIBILITY = 'VISIBILITY'
 export const PIN = 'PIN'
 export const RESET = 'RESET'
-export const ATTACH_OBSERVER = 'ATTACH_OBSERVER'
-export const DETACH_OBSERVER = 'DETACH_OBSERVER'
+export const DISABLE = 'DISABLE'
 
 export const sourceInit = params => {
   const state = {

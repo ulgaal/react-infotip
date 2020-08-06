@@ -9,7 +9,8 @@ import {
   MOUSE_MOVE,
   GEOMETRY,
   VISIBILITY,
-  PIN
+  PIN,
+  DISABLE
 } from './sourceReducer'
 
 export const UPDATE_PINNED = 'UPDATE_PINNED'
@@ -131,8 +132,8 @@ export const storageReducer = (state, action) => {
         : state
     }
     case MOUSE_OVER: {
-      const { id, config } = action
-      const source = sources[id] || sourceInit({ id, config })
+      const { id, config, disabled } = action
+      const source = sources[id] || sourceInit({ id, config, disabled })
       const newSources = updateSource(
         sources,
         id,
@@ -198,6 +199,12 @@ export const storageReducer = (state, action) => {
         sourceReducer(source, action)
       )
       return sources === newSources ? state : { ...state, sources: newSources }
+    }
+    case DISABLE: {
+      const { id, disabled } = action
+      const source = sources[id]
+      const newSources = { ...sources, [id]: { ...source, disabled } }
+      return { ...state, sources: newSources }
     }
 
     default:

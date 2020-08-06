@@ -224,37 +224,40 @@ const Storage = props => {
             },
             pinned,
             config,
-            containerElt
+            containerElt,
+            disabled
           } = source
-          const { wrapper, wrapperProps } = config
+          if (pinned || (!props.disabled && !disabled)) {
+            const { wrapper, wrapperProps } = config
 
-          // Retrieve the tip for the specified id.
-          const tipContent = tip(id, pinned)
-          if (tipContent) {
-            const tip = React.createElement(wrapper, {
-              ...wrapperProps,
-              my,
-              pinned,
-              id,
-              dispatch,
-              onPin: handlePin,
-              onMouseDown: handleMouseDown,
-              children: [tipContent]
-            })
-            // A portal is used to attach the tip to another DOM parent (so that it
-            // naturally floats above other DOM nodes it the DOM tree). The additional
-            // benefit of the portal is that DOM events are still channeled through
-            // the reducer, which is required not to break timers used to show and hide tip.
-            return ReactDOM.createPortal(
-              <Location
-                key={id}
-                location={location}
-                onMouseLeave={handleMouseLeave}
-              >
-                {tip}
-              </Location>,
-              containerElt
-            )
+            // Retrieve the tip for the specified id.
+            const tipContent = tip(id, pinned)
+            if (tipContent) {
+              const tip = React.createElement(wrapper, {
+                ...wrapperProps,
+                my,
+                pinned,
+                id,
+                dispatch,
+                onPin: handlePin,
+                onMouseDown: handleMouseDown,
+                children: [tipContent]
+              })
+              // A portal is used to attach the tip to another DOM parent (so that it
+              // naturally floats above other DOM nodes it the DOM tree). The additional
+              // benefit of the portal is that DOM events are still channeled through
+              // the reducer, which is required not to break timers used to show and hide tip.
+              return ReactDOM.createPortal(
+                <Location
+                  key={id}
+                  location={location}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  {tip}
+                </Location>,
+                containerElt
+              )
+            }
           }
           return null
         })}
@@ -293,7 +296,16 @@ Storage.propTypes = {
    * A callback function invoked when the list of persistent tip changes.
    * The function receives an array of `<StoredTipType>`
    */
-  onTipChange: PropTypes.func
+  onTipChange: PropTypes.func,
+  /**
+   * True to make the storage ignore DOM events and stop showing
+   * or hiding new tips, false (default) otherwise
+   */
+  disabled: PropTypes.bool
+}
+
+Storage.defaultProps = {
+  disabled: false
 }
 
 export default Storage

@@ -72,3 +72,33 @@
 .multi-line-chart {
   position: relative;
 }
+
+.disabling-notes {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.disabling-notes-top {
+}
+.disabling-notes-middle {
+  display: flex;
+}
+.disabling-notes-bottom {
+}
+.disabable {
+  border: 1px solid black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px 10px 5px 10px;
+  margin: 5px 10px 5px 10px;
+  background-color: rgb(168, 255, 226);
+}
+.disabable-label {
+  font-size: 18px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.disabable-checkbox {
+}
