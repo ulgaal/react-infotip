@@ -9,7 +9,8 @@
   MOUSE_MOVE,
   GEOMETRY,
   VISIBILITY,
-  PIN
+  PIN,
+  DISABLE
 } <span class="hljs-keyword">from</span> <span class="hljs-string">'./sourceReducer'</span>
 
 export const UPDATE_PINNED = <span class="hljs-string">'UPDATE_PINNED'</span>
@@ -127,8 +128,8 @@ This will bring the tip being dragged to the foreground</p></div></div><div clas
         : state
     }
     <span class="hljs-keyword">case</span> MOUSE_OVER: {
-      <span class="hljs-keyword">const</span> { id, config } = action
-      <span class="hljs-keyword">const</span> source = sources[id] || sourceInit({ id, config })
+      <span class="hljs-keyword">const</span> { id, config, disabled } = action
+      <span class="hljs-keyword">const</span> source = sources[id] || sourceInit({ id, config, disabled })
       <span class="hljs-keyword">const</span> newSources = updateSource(
         sources,
         id,
@@ -194,6 +195,12 @@ This will bring the tip being dragged to the foreground</p></div></div><div clas
         sourceReducer(source, action)
       )
       <span class="hljs-keyword">return</span> sources === newSources ? state : { ...state, sources: newSources }
+    }
+    <span class="hljs-keyword">case</span> DISABLE: {
+      <span class="hljs-keyword">const</span> { id, disabled } = action
+      <span class="hljs-keyword">const</span> source = sources[id]
+      <span class="hljs-keyword">const</span> newSources = { ...sources, [id]: { ...source, disabled } }
+      <span class="hljs-keyword">return</span> { ...state, sources: newSources }
     }
 
     <span class="hljs-keyword">default</span>:
