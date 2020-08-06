@@ -67,6 +67,15 @@ The tip `config`, as an object which contains the following keys:
 type: `custom`
 
 
+### `disabled`
+
+True to make the source ignore DOM events and stop showing
+or hiding new tips, false (default) otherwise
+
+type: `bool`
+defaultValue: `false`
+
+
 ### `id`
 
 If the `Source` is contained in a `Storage`, an id which uniquely identifies

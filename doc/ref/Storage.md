@@ -17,6 +17,15 @@ input a `Source` `id` and outputs the corresponding tip.
 Props
 -----
 
+### `disabled`
+
+True to make the storage ignore DOM events and stop showing
+or hiding new tips, false (default) otherwise
+
+type: `bool`
+defaultValue: `false`
+
+
 ### `onTipChange`
 
 A callback function invoked when the list of persistent tip changes.
