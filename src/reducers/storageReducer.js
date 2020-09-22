@@ -1,5 +1,5 @@
 import isEqual from 'lodash.isequal'
-import { getElement, eqSet, diffSet, LOGS } from '../utils'
+import { getElement, eqSet, diffSet, log } from '../utils'
 
 import {
   sourceInit,
@@ -45,14 +45,12 @@ export const storageInit = props => {
 }
 
 export const storageReducer = (state, action) => {
-  if (LOGS.storage > 1) {
-    console.log('storageReducer', {
-      type: action.type,
-      id: action.id,
-      state,
-      action
-    })
-  }
+  log('storageReducer', 0, {
+    type: action.type,
+    id: action.id,
+    state,
+    action
+  })
   const { type } = action
   const { sources, onTipChange } = state
   switch (type) {

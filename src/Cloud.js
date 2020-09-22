@@ -23,6 +23,7 @@ import { styles } from './styles'
 import CloudShape from './svg/CloudShape'
 import useResizeObserver from './hooks/useResizeObserver'
 import { GEOMETRY } from './reducers/sourceReducer'
+import { log } from './utils'
 
 /**
  * A `Cloud` component wraps another React component in
@@ -43,7 +44,7 @@ import { GEOMETRY } from './reducers/sourceReducer'
  * ```
  */
 const Cloud = props => {
-  // console.log('Cloud', props)
+  log('Cloud', 0, props)
   const { children, my, tail, folds, style, className, id, dispatch } = props
 
   // A ResizeObserver is tied to the content `<span>` of the

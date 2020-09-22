@@ -21,7 +21,7 @@ import Location from './Location'
 import { StorageTip } from './prop-types'
 import PropTypes from 'prop-types'
 import { StorageContext } from './Contexts'
-import { LOGS } from './utils'
+import { log } from './utils'
 import {
   storageInit,
   storageReducer,
@@ -60,9 +60,7 @@ const Storage = props => {
     { storedTips, onTipChange },
     storageInit
   )
-  if (LOGS.storage > 0) {
-    console.log('Storage', props, state)
-  }
+  log('Storage', 0, props, state)
 
   // Notify the reducer if the list of persisted tips
   // changes

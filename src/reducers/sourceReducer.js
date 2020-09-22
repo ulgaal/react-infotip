@@ -15,7 +15,7 @@ limitations under the License.
 */
 // sourceReducer
 // =============
-import { toRect, getElement, corner, surface, overlap, LOGS } from '../utils'
+import { toRect, getElement, corner, surface, overlap, log } from '../utils'
 
 const LEFT = new Set([
   'top-left',
@@ -69,9 +69,7 @@ export const sourceInit = params => {
  * A reducer function to transform DOM events into Source state updates
  */
 export const sourceReducer = (state, action) => {
-  if (LOGS.source > 1) {
-    console.log('sourceReducer', { type: action.type, state, action })
-  }
+  log('sourceReducer', 0, { type: action.type, state, action })
   const { type, ...params } = action
   switch (type) {
     case MOUSE_OVER: {
@@ -229,9 +227,7 @@ export const sourceReducer = (state, action) => {
 // The layout function computes the actual tip placement, taking into account
 // the target, tip and container rects.
 const layout = (state, params) => {
-  if (LOGS.source > 2) {
-    console.log('layout', { state, params })
-  }
+  log('sourceReducer', 1, { state, params })
   const { config, ref, containerElt } = state
   let { target, geometry, container } = state
   const updates = {}

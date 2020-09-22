@@ -26,7 +26,7 @@ import React, {
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 import { SourceConfig } from './prop-types'
-import { mergeObjects, LOGS } from './utils'
+import { mergeObjects, log } from './utils'
 import Location from './Location'
 import { ConfigContext, StorageContext } from './Contexts'
 import {
@@ -65,9 +65,7 @@ const Source = props => {
   const [state, dispatch] = useStorageReducer
     ? useStorageReducer({ id, config })
     : useReducer(sourceReducer, { config }, sourceInit)
-  if (LOGS.source > 0) {
-    console.log('Source', props, state)
-  }
+  log('Source', 0, props, state)
 
   // Keep a reference to the actual `Source` DOM element,
   // used for tip positionning when target === false

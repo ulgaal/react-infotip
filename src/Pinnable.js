@@ -19,6 +19,7 @@ import React from 'react'
 import Balloon from './Balloon'
 import Pin from './svg/Pin'
 import PropTypes from 'prop-types'
+import { log } from './utils'
 
 /**
  * A `Pinnable` component adds an inner decorator between
@@ -26,7 +27,7 @@ import PropTypes from 'prop-types'
  * provides the ability to pin down a tip and to drag it around.
  */
 const Pinnable = props => {
-  // console.log('Pinnable', props)
+  log('Pinnable', 0, props)
   const {
     pinned,
     wrapper: Wrapper = Balloon,

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { parseBorder, parseBoxShadow } from '../css'
-import { seq } from '../utils'
+import { seq, log } from '../utils'
 import { useId } from '../useId'
 
 // Define a few 2D-vector helper functions
@@ -31,7 +31,7 @@ const randomCoefs = folds => ({
  * of the `Cloud` component
  */
 export const CloudShape = props => {
-  // console.log('CloudShape', props)
+  log('CloudShape', 0, props)
   if (!props.metrics) {
     return null
   }
