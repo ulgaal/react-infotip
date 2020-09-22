@@ -149,7 +149,13 @@ const Storage = props => {
         // This handler is invoked when the user mouses out of
         // the tooltip (since the tooltip in a storage are
         // children of Storage and not Source)
-        dispatch({ type: MOUSE_OUT, id, dispatch })
+        dispatch({
+          type: MOUSE_OUT,
+          id,
+          dispatch,
+          from: 'Storage',
+          event: event.nativeEvent
+        })
       }
     },
     [dispatch]
@@ -171,7 +177,9 @@ const Storage = props => {
             y: event.clientY + window.scrollY
           },
           dispatch,
-          ref: target
+          ref: target,
+          from: 'Storage',
+          event: event.nativeEvent
         })
       }
     },
@@ -189,7 +197,9 @@ const Storage = props => {
           position: {
             x: event.clientX + window.scrollX,
             y: event.clientY + window.scrollY
-          }
+          },
+          from: 'Storage',
+          event: event.nativeEvent
         })
       }
     },

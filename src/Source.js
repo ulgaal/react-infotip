@@ -109,7 +109,13 @@ const Source = props => {
   const handleMouseOut = useCallback(
     event => {
       event.stopPropagation()
-      dispatch({ type: MOUSE_OUT, id, dispatch })
+      dispatch({
+        type: MOUSE_OUT,
+        id,
+        dispatch,
+        from: 'Source',
+        event: event.nativeEvent
+      })
     },
     [dispatch, id]
   )
@@ -130,7 +136,9 @@ const Source = props => {
           y: event.clientY + window.scrollY
         },
         dispatch,
-        ref: ref.current
+        ref: ref.current,
+        from: 'Source',
+        event: event.nativeEvent
       })
     },
     [dispatch, id, config, disabled]
@@ -145,7 +153,9 @@ const Source = props => {
         position: {
           x: event.clientX + window.scrollX,
           y: event.clientY + window.scrollY
-        }
+        },
+        from: 'Source',
+        event: event.nativeEvent
       })
     },
     [dispatch, id]
