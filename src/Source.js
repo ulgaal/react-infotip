@@ -39,6 +39,7 @@ import {
   RESET,
   DISABLE
 } from './reducers/sourceReducer'
+import { storageReducer } from './reducers/storageReducer'
 
 /**
  * The `Source` component acts as a wrapper for other components and enables them
@@ -109,6 +110,18 @@ const Source = props => {
   const handleMouseOut = useCallback(
     event => {
       event.stopPropagation()
+      if (useStorageReducer) {
+        // In storage configuration, tips have the container as a parent, not the source
+        // Thus the first mouseover on the tip also causes a mouseout on the source
+        // Inhibit it to avoid tip flickering
+        const relatedTarget = event.relatedTarget
+        if (relatedTarget) {
+          const location = relatedTarget.closest('[data-rit-id]')
+          if (location && location.dataset.ritId === id) {
+            return
+          }
+        }
+      }
       dispatch({
         type: MOUSE_OUT,
         id,
@@ -217,7 +230,9 @@ const Source = props => {
       if (!disabled) {
         tagChildren.push(
           ReactDOM.createPortal(
-            <Location location={location}>{wrappedTip}</Location>,
+            <Location id={id} location={location}>
+              {wrappedTip}
+            </Location>,
             state.containerElt
           )
         )

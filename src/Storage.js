@@ -93,7 +93,7 @@ const Storage = props => {
       const id = target.dataset.ritId
       event.stopPropagation()
       event.preventDefault()
-      dispatch({ type: PIN, id, ref: target })
+      dispatch({ type: PIN, id, ref: target.firstChild })
     }
   }, [])
 
@@ -145,10 +145,21 @@ const Storage = props => {
     event => {
       const target = event.target.closest('[data-rit-id]')
       if (target) {
-        const id = target.dataset.ritId
         // This handler is invoked when the user mouses out of
         // the tooltip (since the tooltip in a storage are
         // children of Storage and not Source)
+        const id = target.dataset.ritId
+
+        // In storage configuration, tips have the container as a parent, not the source
+        // Thus the first mouseover on the tip also causes a mouseout on the source
+        // Inhibit it to avoid tip flickering
+        const relatedTarget = event.relatedTarget
+        if (relatedTarget) {
+          const location = relatedTarget.closest('[data-rit-id]')
+          if (location && location.dataset.ritId === id) {
+            return
+          }
+        }
         dispatch({
           type: MOUSE_OUT,
           id,
@@ -177,7 +188,7 @@ const Storage = props => {
             y: event.clientY + window.scrollY
           },
           dispatch,
-          ref: target,
+          ref: target.firstChild,
           from: 'Storage',
           event: event.nativeEvent
         })
@@ -258,6 +269,7 @@ const Storage = props => {
               return ReactDOM.createPortal(
                 <Location
                   key={id}
+                  id={id}
                   location={location}
                   onMouseLeave={handleMouseLeave}
                 >

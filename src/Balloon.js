@@ -110,7 +110,7 @@ const Balloon = props => {
   }
 
   return (
-    <span className='rit-balloon' style={containerStyle} data-rit-id={id}>
+    <span className='rit-balloon' style={containerStyle}>
       <span
         ref={ref}
         style={{

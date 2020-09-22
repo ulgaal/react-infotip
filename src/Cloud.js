@@ -132,7 +132,7 @@ const Cloud = props => {
     }
   }
   return (
-    <div className='rit-cloud' style={containerStyle} data-rit-id={id}>
+    <div className='rit-cloud' style={containerStyle}>
       <CloudShape my={my} metrics={metrics} />
       <span ref={ref} style={contentStyle}>
         {children}

@@ -26,6 +26,7 @@ import { LocationType } from './prop-types'
  */
 const Location = props => {
   const {
+    id,
     onMouseLeave,
     location: { left, top },
     children
@@ -34,6 +35,7 @@ const Location = props => {
     <span
       onMouseLeave={onMouseLeave}
       className='rit-location'
+      data-rit-id={id}
       style={{
         position: 'absolute',
         display: 'inline-block',
@@ -49,6 +51,7 @@ const Location = props => {
 }
 
 Location.propTypes = {
+  id: PropTypes.string,
   location: LocationType,
   onMouseLeave: PropTypes.func
 }
