@@ -1,14 +1,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { CornerType } from '../prop-types'
-import { pixelize } from '../utils'
+import { pixelize, log } from '../utils'
 
 /**
  * `BalloonTail` is an internal SVG component used to display a tail
  * on the `Balloon`
  */
 export const BalloonTail = props => {
-  // console.log('BalloonTail', props)
+  log('BalloonTail', 0, props)
   if (!props.metrics) {
     return null
   }

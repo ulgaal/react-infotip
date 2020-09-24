@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useMemo, useEffect } from 'react'
-import { mergeObjects } from './utils'
+import { mergeObjects, log } from './utils'
 import { ConfigContext } from './Contexts'
 import isEqual from 'lodash.isequal'
 
@@ -8,7 +8,7 @@ import isEqual from 'lodash.isequal'
 // component will merge the value of its englobing context with
 // the supplied value.
 export const MergingConfigProvider = props => {
-  // console.log('MergingConfigProvider', props)
+  log('MergingConfigProvider', 0, props)
   const { value, children } = props
   const contextConfig = useContext(ConfigContext)
   const prevConfigRef = useRef()

@@ -26,7 +26,7 @@ import React, {
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 import { SourceConfig } from './prop-types'
-import { mergeObjects, LOGS } from './utils'
+import { mergeObjects, log } from './utils'
 import Location from './Location'
 import { ConfigContext, StorageContext } from './Contexts'
 import {
@@ -39,6 +39,7 @@ import {
   RESET,
   DISABLE
 } from './reducers/sourceReducer'
+import { storageReducer } from './reducers/storageReducer'
 
 /**
  * The `Source` component acts as a wrapper for other components and enables them
@@ -65,9 +66,7 @@ const Source = props => {
   const [state, dispatch] = useStorageReducer
     ? useStorageReducer({ id, config })
     : useReducer(sourceReducer, { config }, sourceInit)
-  if (LOGS.source > 0) {
-    console.log('Source', props, state)
-  }
+  log('Source', 0, props, state)
 
   // Keep a reference to the actual `Source` DOM element,
   // used for tip positionning when target === false
@@ -111,7 +110,25 @@ const Source = props => {
   const handleMouseOut = useCallback(
     event => {
       event.stopPropagation()
-      dispatch({ type: MOUSE_OUT, id, dispatch })
+      if (useStorageReducer) {
+        // In storage configuration, tips have the container as a parent, not the source
+        // Thus the first mouseover on the tip also causes a mouseout on the source
+        // Inhibit it to avoid tip flickering
+        const relatedTarget = event.relatedTarget
+        if (relatedTarget) {
+          const location = relatedTarget.closest('[data-rit-id]')
+          if (location && location.dataset.ritId === id) {
+            return
+          }
+        }
+      }
+      dispatch({
+        type: MOUSE_OUT,
+        id,
+        dispatch,
+        from: 'Source',
+        event: event.nativeEvent
+      })
     },
     [dispatch, id]
   )
@@ -132,7 +149,9 @@ const Source = props => {
           y: event.clientY + window.scrollY
         },
         dispatch,
-        ref: ref.current
+        ref: ref.current,
+        from: 'Source',
+        event: event.nativeEvent
       })
     },
     [dispatch, id, config, disabled]
@@ -147,7 +166,9 @@ const Source = props => {
         position: {
           x: event.clientX + window.scrollX,
           y: event.clientY + window.scrollY
-        }
+        },
+        from: 'Source',
+        event: event.nativeEvent
       })
     },
     [dispatch, id]
@@ -209,7 +230,9 @@ const Source = props => {
       if (!disabled) {
         tagChildren.push(
           ReactDOM.createPortal(
-            <Location location={location}>{wrappedTip}</Location>,
+            <Location id={id} location={location}>
+              {wrappedTip}
+            </Location>,
             state.containerElt
           )
         )

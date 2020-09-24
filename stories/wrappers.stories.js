@@ -219,14 +219,10 @@ storiesOf('Wrappers', module)
                 padding: '4px 4px 0px 4px'
               }}
             >
-              <video width={250} loop autoplay=''>
+              <video width={250} loop autoplay='' muted>
                 <source
-                  src='https://interactive-examples.mdn.mozilla.net/media/examples/flower.webm'
+                  src='https://ia800300.us.archive.org/17/items/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4'
                   type='video/webm'
-                />
-                <source
-                  src='https://interactive-examples.mdn.mozilla.net/media/examples/flower.mp4'
-                  type='video/mp4'
                 />
                 Sorry, your browser doesn't support embedded videos.
               </video>

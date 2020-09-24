@@ -24,6 +24,7 @@ import BalloonTail from './svg/BalloonTail'
 import useResizeObserver from './hooks/useResizeObserver'
 import useComputedStyle from './hooks/useComputedStyle'
 import { GEOMETRY } from './reducers/sourceReducer'
+import { log } from './utils'
 
 /**
  * A `Balloon` component wraps another React component in
@@ -43,7 +44,7 @@ import { GEOMETRY } from './reducers/sourceReducer'
  * ```
  */
 const Balloon = props => {
-  // console.log('Balloon', props)
+  log('Balloon', 0, props)
   const { children, my, tail, style, className, id, dispatch } = props
 
   // A ResizeObserver is tied to the bubble `<span>` of the
@@ -109,7 +110,7 @@ const Balloon = props => {
   }
 
   return (
-    <span className='rit-balloon' style={containerStyle} data-rit-id={id}>
+    <span className='rit-balloon' style={containerStyle}>
       <span
         ref={ref}
         style={{

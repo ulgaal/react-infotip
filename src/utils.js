@@ -194,7 +194,11 @@ export function * seq (start, end) {
   }
 }
 
-export const LOGS = {
-  source: 0,
-  storage: 0
+export const LOGS = {}
+
+export const log = (facility, severity, ...args) => {
+  const sev = LOGS[facility]
+  if (typeof sev === 'number' && severity >= sev) {
+    console.log(facility, ...args)
+  }
 }
