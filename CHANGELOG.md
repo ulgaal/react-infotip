@@ -1,3 +1,14 @@
+## Version 1.1.1 (2020/09/24)
+
+- Fixed broken link for story with a wrapper which displays video
+- Remove mouseover/mouseout sourceReducer optimization
+- Upgraded dependencies
+- Fixed sticky notes sometimes flicker.
+- Added from and event props to action to distinguish which events come from Source and which come from Storage during debug
+- Centralized logging in a log function which can be activated externally
+- Added missing copyleft
+- Added missing dependency to resize-observer-polyfill
+
 ## Version 1.1.0 (2020/08/06)
 
 - Fixed doc generation script
