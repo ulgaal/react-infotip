@@ -19,7 +19,7 @@ limitations under the License.</p>
 <span class="hljs-keyword">import</span> ReactDOM <span class="hljs-keyword">from</span> <span class="hljs-string">'react-dom'</span>
 <span class="hljs-keyword">import</span> PropTypes <span class="hljs-keyword">from</span> <span class="hljs-string">'prop-types'</span>
 <span class="hljs-keyword">import</span> { SourceConfig } <span class="hljs-keyword">from</span> <span class="hljs-string">'./prop-types'</span>
-<span class="hljs-keyword">import</span> { mergeObjects, LOGS } <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span>
+<span class="hljs-keyword">import</span> { mergeObjects, log } <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span>
 <span class="hljs-keyword">import</span> Location <span class="hljs-keyword">from</span> <span class="hljs-string">'./Location'</span>
 <span class="hljs-keyword">import</span> { ConfigContext, StorageContext } <span class="hljs-keyword">from</span> <span class="hljs-string">'./Contexts'</span>
 <span class="hljs-keyword">import</span> {
@@ -31,7 +31,8 @@ limitations under the License.</p>
   PIN,
   RESET,
   DISABLE
-} <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/sourceReducer'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The <code>Source</code> component acts as a wrapper for other components and enables them
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/sourceReducer'</span>
+<span class="hljs-keyword">import</span> { storageReducer } <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/storageReducer'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The <code>Source</code> component acts as a wrapper for other components and enables them
 to provide tips.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Source = props =&gt; {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Merge the context and local configs and extract relevant
 properties from it</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> { id, config: localConfig, pinned, disabled } = props
   <span class="hljs-keyword">const</span> contextConfig = useContext(ConfigContext)
@@ -45,9 +46,7 @@ reducer computes changes to the state of the <code>Source</code>
 (updates on position, location or visibility)</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> [state, dispatch] = useStorageReducer
     ? useStorageReducer({ id, config })
     : useReducer(sourceReducer, { config }, sourceInit)
-  <span class="hljs-keyword">if</span> (LOGS.source &gt; <span class="hljs-number">0</span>) {
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Source'</span>, props, state)
-  }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Keep a reference to the actual <code>Source</code> DOM element,
+  log(<span class="hljs-string">'Source'</span>, <span class="hljs-number">0</span>, props, state)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Keep a reference to the actual <code>Source</code> DOM element,
 used for tip positionning when target === false</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> ref = useRef(<span class="hljs-literal">null</span>)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Reinitialize the source if the config changes</p></div></div><div class="code"><div class="wrapper">  useEffect(() =&gt; {
     <span class="hljs-keyword">if</span> (config !== state.config) {
       dispatch({ type: RESET, config })
@@ -81,7 +80,23 @@ used for tip positionning when target === false</p></div></div><div class="code"
 </ul></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> handleMouseOut = useCallback(
     event =&gt; {
       event.stopPropagation()
-      dispatch({ type: MOUSE_OUT, id, dispatch })
+      <span class="hljs-keyword">if</span> (useStorageReducer) {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>In storage configuration, tips have the container as a parent, not the source
+Thus the first mouseover on the tip also causes a mouseout on the source
+Inhibit it to avoid tip flickering</p></div></div><div class="code"><div class="wrapper">        <span class="hljs-keyword">const</span> relatedTarget = event.relatedTarget
+        <span class="hljs-keyword">if</span> (relatedTarget) {
+          <span class="hljs-keyword">const</span> location = relatedTarget.closest(<span class="hljs-string">'[data-rit-id]'</span>)
+          <span class="hljs-keyword">if</span> (location &amp;&amp; location.dataset.ritId === id) {
+            <span class="hljs-keyword">return</span>
+          }
+        }
+      }
+      dispatch({
+        type: MOUSE_OUT,
+        id,
+        dispatch,
+        from: <span class="hljs-string">'Source'</span>,
+        event: event.nativeEvent
+      })
     },
     [dispatch, id]
   )
@@ -100,7 +115,9 @@ way to know the config of the source</p></div></div><div class="code"><div class
           y: event.clientY + <span class="hljs-built_in">window</span>.scrollY
         },
         dispatch,
-        ref: ref.current
+        ref: ref.current,
+        from: <span class="hljs-string">'Source'</span>,
+        event: event.nativeEvent
       })
     },
     [dispatch, id, config, disabled]
@@ -115,7 +132,9 @@ way to know the config of the source</p></div></div><div class="code"><div class
         position: {
           x: event.clientX + <span class="hljs-built_in">window</span>.scrollX,
           y: event.clientY + <span class="hljs-built_in">window</span>.scrollY
-        }
+        },
+        from: <span class="hljs-string">'Source'</span>,
+        event: event.nativeEvent
       })
     },
     [dispatch, id]
@@ -167,7 +186,9 @@ benefit of the portal is that DOM events are still channeled through
 the <code>Source</code>, which is required not to break timers used to show and hide tip.</p></div></div><div class="code"><div class="wrapper">      <span class="hljs-keyword">if</span> (!disabled) {
         tagChildren.push(
           ReactDOM.createPortal(
-            <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">Location</span> <span class="hljs-attribute">location</span>=<span class="hljs-value">{location}</span>&gt;</span>{wrappedTip}<span class="hljs-tag">&lt;/<span class="hljs-title">Location</span>&gt;</span>,
+            <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">Location</span> <span class="hljs-attribute">id</span>=<span class="hljs-value">{id}</span> <span class="hljs-attribute">location</span>=<span class="hljs-value">{location}</span>&gt;</span>
+              {wrappedTip}
+            <span class="hljs-tag">&lt;/<span class="hljs-title">Location</span>&gt;</span>,
             state.containerElt
           )
         )

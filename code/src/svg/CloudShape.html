@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><title>src/svg/CloudShape</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="src/svg/CloudShape"><meta name="groc-project-path" content="src/svg/CloudShape.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/svg/CloudShape.js</div></div><div id="document"><div class="segment"><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> React, { useRef } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>
 <span class="hljs-keyword">import</span> { parseBorder, parseBoxShadow } <span class="hljs-keyword">from</span> <span class="hljs-string">'../css'</span>
-<span class="hljs-keyword">import</span> { seq } <span class="hljs-keyword">from</span> <span class="hljs-string">'../utils'</span>
+<span class="hljs-keyword">import</span> { seq, log } <span class="hljs-keyword">from</span> <span class="hljs-string">'../utils'</span>
 <span class="hljs-keyword">import</span> { useId } <span class="hljs-keyword">from</span> <span class="hljs-string">'../useId'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Define a few 2D-vector helper functions</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> add = (p1, p2) =&gt; ({
   x: p1.x + p2.x,
   y: p1.y + p2.y
@@ -22,7 +22,9 @@
   f1: [...seq(<span class="hljs-number">0</span>, folds)].map(() =&gt; <span class="hljs-built_in">Math</span>.random()),
   f3: [...seq(<span class="hljs-number">0</span>, folds)].map(() =&gt; <span class="hljs-built_in">Math</span>.random())
 })</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>CloudShape</code> is an internal SVG component used to display the outline
-of the <code>Cloud</code> component</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> CloudShape = props =&gt; {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>console.log(&#39;CloudShape&#39;, props)</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">if</span> (!props.metrics) {
+of the <code>Cloud</code> component</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> CloudShape = props =&gt; {
+  log(<span class="hljs-string">'CloudShape'</span>, <span class="hljs-number">0</span>, props)
+  <span class="hljs-keyword">if</span> (!props.metrics) {
     <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>
   }
 

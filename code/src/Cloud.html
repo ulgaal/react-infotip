@@ -15,7 +15,8 @@ limitations under the License.</p>
 <span class="hljs-keyword">import</span> { styles } <span class="hljs-keyword">from</span> <span class="hljs-string">'./styles'</span>
 <span class="hljs-keyword">import</span> CloudShape <span class="hljs-keyword">from</span> <span class="hljs-string">'./svg/CloudShape'</span>
 <span class="hljs-keyword">import</span> useResizeObserver <span class="hljs-keyword">from</span> <span class="hljs-string">'./hooks/useResizeObserver'</span>
-<span class="hljs-keyword">import</span> { GEOMETRY } <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/sourceReducer'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Cloud</code> component wraps another React component in
+<span class="hljs-keyword">import</span> { GEOMETRY } <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/sourceReducer'</span>
+<span class="hljs-keyword">import</span> { log } <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Cloud</code> component wraps another React component in
 a cloud-shaped styleable wrapper.</p>
 <p>Graphically a <code>Cloud</code> is composed of a cloud outline and a content.
 The cloud shape is randomly computed using just a <code>folds</code> parameter
@@ -26,7 +27,9 @@ which indicates the number of folds the cloud <code>Cloud</code> have.</p>
  <span class="hljs-tag">&lt;<span class="hljs-title">span</span>&gt;</span> // Cloud content (overlaps the outline)
   ... tip content
  <span class="hljs-tag">&lt;/<span class="hljs-title">span</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span></code></pre></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Cloud = props =&gt; {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>console.log(&#39;Cloud&#39;, props)</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> { children, my, tail, folds, style, className, id, dispatch } = props</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A ResizeObserver is tied to the content <code>&lt;span&gt;</code> of the
+<span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span></code></pre></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Cloud = props =&gt; {
+  log(<span class="hljs-string">'Cloud'</span>, <span class="hljs-number">0</span>, props)
+  <span class="hljs-keyword">const</span> { children, my, tail, folds, style, className, id, dispatch } = props</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A ResizeObserver is tied to the content <code>&lt;span&gt;</code> of the
 <code>Cloud</code> to measure it precisely.</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> ref = useRef(<span class="hljs-literal">null</span>)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Cloud</code> keeps track of a <code>metrics</code> state variable
 which contains info extracted by processing the CSS style of
 the <code>Cloud</code> and info extracted by measuring its content <code>&lt;span&gt;</code>.</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> [metrics, setMetrics] = useState(<span class="hljs-literal">null</span>)
@@ -102,7 +105,7 @@ from the <code>ResizeObserver</code></p></div></div><div class="code"><div class
     }
   }
   <span class="hljs-keyword">return</span> (
-    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">'rit-cloud'</span> <span class="hljs-attribute">style</span>=<span class="hljs-value">{containerStyle}</span> <span class="hljs-attribute">data-rit-id</span>=<span class="hljs-value">{id}</span>&gt;</span>
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">'rit-cloud'</span> <span class="hljs-attribute">style</span>=<span class="hljs-value">{containerStyle}</span>&gt;</span>
       <span class="hljs-tag">&lt;<span class="hljs-title">CloudShape</span> <span class="hljs-attribute">my</span>=<span class="hljs-value">{my}</span> <span class="hljs-attribute">metrics</span>=<span class="hljs-value">{metrics}</span> /&gt;</span>
       <span class="hljs-tag">&lt;<span class="hljs-title">span</span> <span class="hljs-attribute">ref</span>=<span class="hljs-value">{ref}</span> <span class="hljs-attribute">style</span>=<span class="hljs-value">{contentStyle}</span>&gt;</span>
         {children}

@@ -8,7 +8,7 @@ distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.</p>
-<h1 id="sourcereducer">sourceReducer</h1></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> { toRect, getElement, corner, surface, overlap, LOGS } <span class="hljs-keyword">from</span> <span class="hljs-string">'../utils'</span>
+<h1 id="sourcereducer">sourceReducer</h1></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">import</span> { toRect, getElement, corner, surface, overlap, log } <span class="hljs-keyword">from</span> <span class="hljs-string">'../utils'</span>
 
 const LEFT = new Set([
   <span class="hljs-string">'top-left'</span>,
@@ -57,22 +57,17 @@ export const sourceInit = params =&gt; {
   }
   return state
 }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A reducer function to transform DOM events into Source state updates</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> sourceReducer = (state, action) =&gt; {
-  <span class="hljs-keyword">if</span> (LOGS.source &gt; <span class="hljs-number">1</span>) {
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'sourceReducer'</span>, { type: action.type, state, action })
-  }
+  log(<span class="hljs-string">'sourceReducer'</span>, <span class="hljs-number">0</span>, { type: action.type, state, action })
   <span class="hljs-keyword">const</span> { type, ...params } = action
   <span class="hljs-keyword">switch</span> (type) {
     <span class="hljs-keyword">case</span> MOUSE_OVER: {
-      <span class="hljs-keyword">const</span> { pinned, visible } = state
+      <span class="hljs-keyword">const</span> { pinned } = state
       <span class="hljs-keyword">if</span> (pinned) {
         <span class="hljs-keyword">return</span> state
       }
       <span class="hljs-keyword">const</span> { hideTimeoutId } = state
       <span class="hljs-keyword">if</span> (hideTimeoutId) {
         clearInterval(hideTimeoutId)
-      }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>If the tip is already visible, no need to schedule
-an event to show it</p></div></div><div class="code"><div class="wrapper">      <span class="hljs-keyword">if</span> (visible) {
-        <span class="hljs-keyword">return</span> { ...state, hideTimeoutId: <span class="hljs-literal">undefined</span> }
       }
       <span class="hljs-keyword">const</span> { config, id } = state
       <span class="hljs-keyword">const</span> {
@@ -110,16 +105,13 @@ an event to show it</p></div></div><div class="code"><div class="wrapper">      
     }
 
     <span class="hljs-keyword">case</span> MOUSE_OUT: {
-      <span class="hljs-keyword">const</span> { pinned, visible } = state
+      <span class="hljs-keyword">const</span> { pinned } = state
       <span class="hljs-keyword">if</span> (pinned) {
         <span class="hljs-keyword">return</span> state
       }
       <span class="hljs-keyword">const</span> { showTimeoutId } = state
       <span class="hljs-keyword">if</span> (showTimeoutId) {
         clearInterval(showTimeoutId)
-      }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>If the tip is already not visible, no need to schedule
-an event to hide it</p></div></div><div class="code"><div class="wrapper">      <span class="hljs-keyword">if</span> (!visible) {
-        <span class="hljs-keyword">return</span> { ...state, showTimeoutId: <span class="hljs-literal">undefined</span> }
       }
       <span class="hljs-keyword">const</span> { config, id } = state
       <span class="hljs-keyword">const</span> {
@@ -208,9 +200,7 @@ an event to hide it</p></div></div><div class="code"><div class="wrapper">      
   }
 }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The layout function computes the actual tip placement, taking into account
 the target, tip and container rects.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> layout = (state, params) =&gt; {
-  <span class="hljs-keyword">if</span> (LOGS.source &gt; <span class="hljs-number">2</span>) {
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'layout'</span>, { state, params })
-  }
+  log(<span class="hljs-string">'sourceReducer'</span>, <span class="hljs-number">1</span>, { state, params })
   <span class="hljs-keyword">const</span> { config, ref, containerElt } = state
   <span class="hljs-keyword">let</span> { target, geometry, container } = state
   <span class="hljs-keyword">const</span> updates = {}

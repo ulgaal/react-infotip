@@ -16,7 +16,8 @@ limitations under the License.</p>
 <span class="hljs-keyword">import</span> BalloonTail <span class="hljs-keyword">from</span> <span class="hljs-string">'./svg/BalloonTail'</span>
 <span class="hljs-keyword">import</span> useResizeObserver <span class="hljs-keyword">from</span> <span class="hljs-string">'./hooks/useResizeObserver'</span>
 <span class="hljs-keyword">import</span> useComputedStyle <span class="hljs-keyword">from</span> <span class="hljs-string">'./hooks/useComputedStyle'</span>
-<span class="hljs-keyword">import</span> { GEOMETRY } <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/sourceReducer'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Balloon</code> component wraps another React component in
+<span class="hljs-keyword">import</span> { GEOMETRY } <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/sourceReducer'</span>
+<span class="hljs-keyword">import</span> { log } <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Balloon</code> component wraps another React component in
 a balloon-shaped styleable wrapper.</p>
 <p>Graphically a <code>Balloon</code> is composed of a bubble and a tail which points towards
 the elements from which the balloon originates.</p>
@@ -26,7 +27,9 @@ the elements from which the balloon originates.</p>
   ... tip content
  <span class="hljs-tag">&lt;/<span class="hljs-title">span</span>&gt;</span>
  <span class="hljs-tag">&lt;<span class="hljs-title">SvgTail</span>/&gt;</span> // Tail (overlaps the border of the bubble)
-<span class="hljs-tag">&lt;/<span class="hljs-title">span</span>&gt;</span></code></pre></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Balloon = props =&gt; {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>console.log(&#39;Balloon&#39;, props)</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> { children, my, tail, style, className, id, dispatch } = props</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A ResizeObserver is tied to the bubble <code>&lt;span&gt;</code> of the
+<span class="hljs-tag">&lt;/<span class="hljs-title">span</span>&gt;</span></code></pre></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Balloon = props =&gt; {
+  log(<span class="hljs-string">'Balloon'</span>, <span class="hljs-number">0</span>, props)
+  <span class="hljs-keyword">const</span> { children, my, tail, style, className, id, dispatch } = props</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A ResizeObserver is tied to the bubble <code>&lt;span&gt;</code> of the
 <code>Balloon</code> to measure it precisely.</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> ref = useRef(<span class="hljs-literal">null</span>)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Balloon</code> keeps track of a <code>metrics</code> state variable
 which contains info extracted by processing the CSS style of
 the <code>Balloon</code> and info extracted by measuring its bubble <code>&lt;span&gt;</code>.</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> [metrics, setMetrics] = useState(<span class="hljs-literal">null</span>)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Extract relevant style props from the DOM</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> computedStyle = useComputedStyle(style, className)
@@ -79,7 +82,7 @@ the <code>Balloon</code> and info extracted by measuring its bubble <code>&lt;sp
   }
 
   <span class="hljs-keyword">return</span> (
-    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">span</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">'rit-balloon'</span> <span class="hljs-attribute">style</span>=<span class="hljs-value">{containerStyle}</span> <span class="hljs-attribute">data-rit-id</span>=<span class="hljs-value">{id}</span>&gt;</span>
+    <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">span</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">'rit-balloon'</span> <span class="hljs-attribute">style</span>=<span class="hljs-value">{containerStyle}</span>&gt;</span>
       <span class="hljs-tag">&lt;<span class="hljs-title">span</span>
         <span class="hljs-attribute">ref</span>=<span class="hljs-value">{ref}</span>
         <span class="hljs-attribute">style</span>=<span class="hljs-value">{{</span>
