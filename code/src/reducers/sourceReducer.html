@@ -61,13 +61,16 @@ export const sourceInit = params =&gt; {
   <span class="hljs-keyword">const</span> { type, ...params } = action
   <span class="hljs-keyword">switch</span> (type) {
     <span class="hljs-keyword">case</span> MOUSE_OVER: {
-      <span class="hljs-keyword">const</span> { pinned } = state
+      <span class="hljs-keyword">const</span> { pinned, visible } = state
       <span class="hljs-keyword">if</span> (pinned) {
         <span class="hljs-keyword">return</span> state
       }
       <span class="hljs-keyword">const</span> { hideTimeoutId } = state
       <span class="hljs-keyword">if</span> (hideTimeoutId) {
         clearInterval(hideTimeoutId)
+      }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>If the tip is already visible, no need to schedule
+an event to show it</p></div></div><div class="code"><div class="wrapper">      <span class="hljs-keyword">if</span> (visible) {
+        <span class="hljs-keyword">return</span> { ...state, hideTimeoutId: <span class="hljs-literal">undefined</span> }
       }
       <span class="hljs-keyword">const</span> { config, id } = state
       <span class="hljs-keyword">const</span> {
