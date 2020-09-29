@@ -1,3 +1,7 @@
+## Version 1.1.2 (2020/09/29)
+
+- Reintroduced mouseover sourceReducer optimization
+
 ## Version 1.1.1 (2020/09/24)
 
 - Fixed broken link for story with a wrapper which displays video
