@@ -1,3 +1,8 @@
+## Version 1.1.3 (2020/11/04)
+
+- Replaced mousedown modal loop with pointerEvents/pointerCapture to fix NPEs when dragging outside of tip container
+- Fixed NPE in mouseLeave for Source and Storage when related target is a Window
+
 ## Version 1.1.2 (2020/09/29)
 
 - Reintroduced mouseover sourceReducer optimization
