@@ -98,17 +98,18 @@ const Storage = props => {
     }
   }, [])
 
-  const handleMouseDown = useCallback(
+  const handlePointerDown = useCallback(
     event => {
-      const target = event.target.closest('[data-rit-id]')
-      if (target) {
-        const id = target.dataset.ritId
+      const target = event.nativeEvent.target
+      const source = target.closest('[data-rit-id]')
+      if (source) {
+        const id = source.dataset.ritId
         const p0 = { x: event.clientX, y: event.clientY }
         event.stopPropagation()
         event.preventDefault()
-        const handlers = {}
-        // Position mouse handlers to create a modal drag loop
-        handlers.handleMouseMove = event => {
+        // Position pointer handlers to create a modal drag loop
+        target.setPointerCapture(event.nativeEvent.pointerId)
+        target.onpointermove = event => {
           event.preventDefault()
           event.stopPropagation()
           dispatch({
@@ -119,15 +120,12 @@ const Storage = props => {
           p0.x = event.clientX
           p0.y = event.clientY
         }
-        handlers.handleMouseUp = event => {
+        target.onpointerup = event => {
           event.preventDefault()
           event.stopPropagation()
-          window.removeEventListener(
-            'mousemove',
-            handlers.handleMouseMove,
-            true
-          )
-          window.removeEventListener('mouseup', handlers.handleMouseUp, true)
+          target.releasePointerCapture(event.pointerId)
+          target.onpointerup = null
+          target.onpointermove = null
           dispatch({
             type: MOVE,
             id,
@@ -135,8 +133,6 @@ const Storage = props => {
             notify: true
           })
         }
-        window.addEventListener('mousemove', handlers.handleMouseMove, true)
-        window.addEventListener('mouseup', handlers.handleMouseUp, true)
       }
     },
     [dispatch]
@@ -260,7 +256,7 @@ const Storage = props => {
                 id,
                 dispatch,
                 onPin: handlePin,
-                onMouseDown: handleMouseDown,
+                onPointerDown: handlePointerDown,
                 children: [tipContent]
               })
               // A portal is used to attach the tip to another DOM parent (so that it
