@@ -8,16 +8,16 @@ provides the ability to pin down a tip and to drag it around.
 Props
 -----
 
-### `onMouseDown`
+### `onPin`
 
-A callback function to invoke the component is clicked (used to implement tip dragging)
+A callback function to invoke when the push-pin is clicked (used to toggle the `pinned` property)
 
 type: `func`
 
 
-### `onPin`
+### `onPointerDown`
 
-A callback function to invoke when the push-pin is clicked (used to toggle the `pinned` property)
+A callback function to invoke the component is clicked (used to implement tip dragging)
 
 type: `func`
 
