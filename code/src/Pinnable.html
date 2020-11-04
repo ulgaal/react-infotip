@@ -20,14 +20,14 @@ provides the ability to pin down a tip and to drag it around.</p></div></div><di
     pinned,
     wrapper: Wrapper = Balloon,
     onPin,
-    onMouseDown,
+    onPointerDown,
     children,
     ...rest
   } = props
   <span class="hljs-keyword">const</span> { className } = props
   <span class="hljs-keyword">return</span> (
     <span class="xml"><span class="hljs-tag">&lt;<span class="hljs-title">Wrapper</span> <span class="hljs-attribute">pinned</span>=<span class="hljs-value">{pinned}</span> {<span class="hljs-attribute">...rest</span>}&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">'pinnable'</span> <span class="hljs-attribute">onMouseDown</span>=<span class="hljs-value">{onMouseDown}</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-title">div</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">'pinnable'</span> <span class="hljs-attribute">onPointerDown</span>=<span class="hljs-value">{onPointerDown}</span>&gt;</span>
         <span class="hljs-tag">&lt;<span class="hljs-title">Pin</span> <span class="hljs-attribute">className</span>=<span class="hljs-value">{className}</span> <span class="hljs-attribute">pinned</span>=<span class="hljs-value">{pinned}</span> <span class="hljs-attribute">onClick</span>=<span class="hljs-value">{onPin}</span> /&gt;</span>
         {children}
       <span class="hljs-tag">&lt;/<span class="hljs-title">div</span>&gt;</span>
@@ -35,6 +35,6 @@ provides the ability to pin down a tip and to drag it around.</p></div></div><di
   )</span>
 }
 
-Pinnable.propTypes = {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>true</code> to display an pinned push-pin, <code>false</code> otherwise</p></div></div><div class="code"><div class="wrapper">  pinned: PropTypes.bool,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The wrapper component type to use</p></div></div><div class="code"><div class="wrapper">  wrapper: PropTypes.elementType,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A callback function to invoke when the push-pin is clicked (used to toggle the <code>pinned</code> property)</p></div></div><div class="code"><div class="wrapper">  onPin: PropTypes.func,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A callback function to invoke the component is clicked (used to implement tip dragging)</p></div></div><div class="code"><div class="wrapper">  onMouseDown: PropTypes.func
+Pinnable.propTypes = {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>true</code> to display an pinned push-pin, <code>false</code> otherwise</p></div></div><div class="code"><div class="wrapper">  pinned: PropTypes.bool,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The wrapper component type to use</p></div></div><div class="code"><div class="wrapper">  wrapper: PropTypes.elementType,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A callback function to invoke when the push-pin is clicked (used to toggle the <code>pinned</code> property)</p></div></div><div class="code"><div class="wrapper">  onPin: PropTypes.func,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A callback function to invoke the component is clicked (used to implement tip dragging)</p></div></div><div class="code"><div class="wrapper">  onPointerDown: PropTypes.func
 }
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> Pinnable</div></div></div></div></body></html>
