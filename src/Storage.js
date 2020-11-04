@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+/* global Node */
 // Storage
 // =======
 import React, { useReducer, useCallback, useRef, useEffect } from 'react'
@@ -154,7 +155,7 @@ const Storage = props => {
         // Thus the first mouseover on the tip also causes a mouseout on the source
         // Inhibit it to avoid tip flickering
         const relatedTarget = event.relatedTarget
-        if (relatedTarget) {
+        if (relatedTarget && relatedTarget.nodeType === Node.ELEMENT_NODE) {
           const location = relatedTarget.closest('[data-rit-id]')
           if (location && location.dataset.ritId === id) {
             return
