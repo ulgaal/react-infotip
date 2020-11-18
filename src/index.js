@@ -16,7 +16,7 @@ limitations under the License.
 // index.js
 // ========
 import Source from './Source'
-import { ConfigContext, defaultConfig } from './Contexts'
+import { ConfigContext, defaultConfig, StorageContext } from './Contexts'
 import MergingConfigProvider from './MergingConfigProvider'
 import Location from './Location'
 import Storage from './Storage'
@@ -32,6 +32,7 @@ export {
   Source,
   ConfigContext,
   MergingConfigProvider,
+  StorageContext,
   styles,
   defaultConfig,
   Location,
