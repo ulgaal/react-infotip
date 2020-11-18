@@ -1,3 +1,7 @@
+## Version 1.1.4 (2020/11/16)
+
+- Exported StorageContext
+
 ## Version 1.1.3 (2020/11/04)
 
 - Replaced mousedown modal loop with pointerEvents/pointerCapture to fix NPEs when dragging outside of tip container
