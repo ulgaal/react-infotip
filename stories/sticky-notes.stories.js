@@ -59,6 +59,7 @@ import {
   PAGING,
   VSCROLL
 } from 'react-reducer-table'
+import img from './ai-faces.jpg'
 
 const StorageReadme = generateMarkdown('Storage', docgen['src/Storage.js'][0])
 
@@ -161,11 +162,13 @@ storiesOf('Sticky-notes', module)
   .add(
     'Table sticky-notes',
     () => {
-      const { helpers, internet, commerce } = faker
+      const { helpers, commerce } = faker
       const models = [...seq(0, 200)].map(id => ({
         id,
         ...helpers.userCard(),
-        image: internet.avatar(),
+        // replaced internet.avatar which does not work any more
+        // with a 9x15 mosaic of ai generated people faces
+        image: Math.floor(135 * Math.random()),
         products: [...seq(0, 1 + Math.floor(20 * Math.random()))].map(
           productId => ({
             id: `${id}-${productId}`,
@@ -262,6 +265,8 @@ storiesOf('Sticky-notes', module)
             image
           }
         } = props
+        const x = image % 15
+        const y = Math.floor(image / 15)
         return (
           <div className='seller-tip'>
             <table>
@@ -270,7 +275,15 @@ storiesOf('Sticky-notes', module)
                   <td className='seller-tip-key'>Name:</td>
                   <td>{name}</td>
                   <td rowSpan={5}>
-                    <img className='seller-tip-image' src={image} />
+                    <svg className='seller-tip-image' title={name}>
+                      <image
+                        x={0}
+                        y={0}
+                        href={img}
+                        transform={`scale(1.6, 1.6) translate(-${x * 50}, -${y *
+                          50})`}
+                      />
+                    </svg>
                   </td>
                 </tr>
                 <tr>
