@@ -162,7 +162,7 @@ export const storageReducer = (state, action) => {
     case GEOMETRY: {
       const { id } = action
       const source = sources[id]
-      if (source.pinned || source.moved) {
+      if (!source || source.pinned || source.moved) {
         return state
       }
       const newSources = updateSource(
