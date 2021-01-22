@@ -99,7 +99,9 @@ export const storageReducer = (state, action) => {
           ? toStoredTips(newSources, state.storedTips)
           : null
       if (storedTips && typeof onTipChange === 'function') {
-        onTipChange(storedTips)
+        setTimeout(() => {
+          onTipChange(storedTips)
+        }, 0)
       }
       return storedTips || sources !== newSources
         ? {
@@ -119,7 +121,9 @@ export const storageReducer = (state, action) => {
       )
       const storedTips = toStoredTips(newSources, state.storedTips)
       if (storedTips && typeof onTipChange === 'function') {
-        onTipChange(storedTips)
+        setTimeout(() => {
+          onTipChange(storedTips)
+        }, 0)
       }
       return storedTips || sources !== newSources
         ? {
