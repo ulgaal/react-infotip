@@ -1,3 +1,13 @@
+## Version 1.2.0 (2021/01/21)
+
+- Migration to react-storybook@6.1.14
+- Moved delay loading logic from ProductTip to table reducer
+- onTipChange is now called asynchronously to avoid risks of updating another component while rendering Storage component
+- Fixed NPE in storageReducer (in React 17, GEOMETRY events can get dispatched with 0 size after tip becomes invisible)
+- Fixed call to React.createElement to not pass children among props
+- Upgraded internal dependencies (including React to require React@17.0.1)
+- Replaced faker's internet.avatar() which does not work any more with a 9x15 mosaic of ai generated people faces
+
 ## Version 1.1.4 (2020/11/16)
 
 - Exported StorageContext
