@@ -59,6 +59,9 @@ import {
   PAGING,
   VSCROLL
 } from 'react-reducer-table'
+import img from './ai-faces.jpg'
+
+const LOAD_PRODUCT = 'LOAD_PRODUCT'
 
 const StorageReadme = generateMarkdown('Storage', docgen['src/Storage.js'][0])
 
@@ -126,13 +129,17 @@ storiesOf('Sticky-notes', module)
                       {`Tip for ${models.find(model => model.id === id).label}`}
                     </span>
                     <br />
-                    {pinned ? (
-                      <span>
-                        I persist if you reload page. You can unpin me
-                      </span>
-                    ) : (
-                      <span>You can drag and pin me</span>
-                    )}
+                    {
+                      pinned
+                        ? (
+                          <span>
+                            I persist if you reload page. You can unpin me
+                          </span>
+                          )
+                        : (
+                          <span>You can drag and pin me</span>
+                          )
+                    }
                   </div>
                 )}
                 onTipChange={persistTips}
@@ -161,19 +168,22 @@ storiesOf('Sticky-notes', module)
   .add(
     'Table sticky-notes',
     () => {
-      const { helpers, internet, commerce } = faker
-      const models = [...seq(0, 200)].map(id => ({
-        id,
+      const { helpers, commerce } = faker
+      const models = [...seq(0, 200)].map(sellerId => ({
+        id: sellerId,
         ...helpers.userCard(),
-        image: internet.avatar(),
+        // replaced internet.avatar which does not work any more
+        // with a 9x15 mosaic of ai generated people faces
+        image: Math.floor(135 * Math.random()),
         products: [...seq(0, 1 + Math.floor(20 * Math.random()))].map(
           productId => ({
-            id: `${id}-${productId}`,
+            id: `${sellerId}-${productId}`,
             color: commerce.color(),
             department: commerce.department(),
             productName: commerce.productName(),
             price: commerce.price(),
-            product: commerce.product()
+            product: commerce.product(),
+            loaded: false
           })
         )
       }))
@@ -196,9 +206,12 @@ storiesOf('Sticky-notes', module)
               )
             }
           }
-          case COLUMN_REORDERING:
+
+          case COLUMN_REORDERING: {
             return { ...state, columns: action.columns }
-          case COLUMN_RESIZING:
+          }
+
+          case COLUMN_RESIZING: {
             return {
               ...state,
               columns: columns.map(column =>
@@ -207,10 +220,32 @@ storiesOf('Sticky-notes', module)
                   : column
               )
             }
-          case VSCROLL:
+          }
+
+          case LOAD_PRODUCT: {
+            const { sellerId, productId } = action
+            const { pageSize, pageIndex, data } = state
+            if (sellerId >= pageIndex * pageSize &&
+              sellerId < (pageIndex + 1) * pageSize) {
+              // row is visible, create an updated row model
+              const model = models[sellerId]
+              const newModel = { ...model, products: [...model.products] }
+              newModel.products[productId].loaded = true
+              const rowIndex = sellerId % pageSize
+              const newData = [...data]
+              newData[rowIndex] = newModel
+              return { ...state, data: newData }
+            }
             return state
-          default:
+          }
+
+          case VSCROLL: {
+            return state
+          }
+
+          default: {
             throw new Error(`Unknown action: ${type}`)
+          }
         }
       }
 
@@ -262,6 +297,8 @@ storiesOf('Sticky-notes', module)
             image
           }
         } = props
+        const x = image % 15
+        const y = Math.floor(image / 15)
         return (
           <div className='seller-tip'>
             <table>
@@ -270,7 +307,15 @@ storiesOf('Sticky-notes', module)
                   <td className='seller-tip-key'>Name:</td>
                   <td>{name}</td>
                   <td rowSpan={5}>
-                    <img className='seller-tip-image' src={image} />
+                    <svg className='seller-tip-image' title={name}>
+                      <image
+                        x={0}
+                        y={0}
+                        href={img}
+                        transform={`scale(1.6, 1.6) translate(-${x * 50}, -${y *
+                          50})`}
+                      />
+                    </svg>
                   </td>
                 </tr>
                 <tr>
@@ -308,52 +353,50 @@ storiesOf('Sticky-notes', module)
       const ProductTip = props => {
         // console.log('ProductTip', props)
         const {
-          product: { department, price, product, productName, color }
+          product: { department, price, product, productName, color, loaded }
         } = props
-        const [loaded, setLoaded] = useState(false)
-        useEffect(() => {
-          setTimeout(() => {
-            setLoaded(true)
-          }, Math.floor(Math.random() * 2000))
-        }, [])
         return (
           <div className='product-tip'>
-            {loaded ? (
-              <table>
-                <tbody>
-                  <tr>
-                    <td>Department:</td>
-                    <td>{department}</td>
-                  </tr>
-                  <tr>
-                    <td>Product name:</td>
-                    <td>{productName}</td>
-                  </tr>
-                  <tr>
-                    <td>Product:</td>
-                    <td>{product}</td>
-                  </tr>
-                  <tr>
-                    <td>Price:</td>
-                    <td>{price} EUR</td>
-                  </tr>
-                  <tr>
-                    <td>Color:</td>
-                    <td className='product-tip-color'>
-                      <div style={{ backgroundColor: color }} />
-                    </td>
-                  </tr>
-                  <tr>
-                    <td />
-                    <td>
-                      <button>Buy now</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            ) : (
-              <div>Querying database...</div>
-            )}
+            {
+              loaded
+                ? (
+                  <table>
+                    <tbody>
+                      <tr>
+                        <td>Department:</td>
+                        <td>{department}</td>
+                      </tr>
+                      <tr>
+                        <td>Product name:</td>
+                        <td>{productName}</td>
+                      </tr>
+                      <tr>
+                        <td>Product:</td>
+                        <td>{product}</td>
+                      </tr>
+                      <tr>
+                        <td>Price:</td>
+                        <td>{price} EUR</td>
+                      </tr>
+                      <tr>
+                        <td>Color:</td>
+                        <td className='product-tip-color'>
+                          <div style={{ backgroundColor: color }} />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td />
+                        <td>
+                          <button>Buy now</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  )
+                : (
+                  <div>Querying database...</div>
+                  )
+              }
           </div>
         )
       }
@@ -384,7 +427,6 @@ storiesOf('Sticky-notes', module)
           pageSize: 100,
           loading: false
         })
-        console.log('STATE', state)
         const { pageIndex, pageSize } = state
 
         useEffect(() => {
@@ -432,6 +474,12 @@ storiesOf('Sticky-notes', module)
                   if (kind === 'prd') {
                     const [, sellerId, productId] = /(\d+)-(\d+)/.exec(id) || []
                     const product = models[sellerId].products[productId]
+                    const { loaded } = product
+                    if (!loaded) {
+                      setTimeout(() => {
+                        dispatch({ type: LOAD_PRODUCT, sellerId, productId })
+                      }, Math.floor(Math.random() * 2000))
+                    }
                     return <ProductTip key={tipid} product={product} />
                   } else if (kind === 'sel') {
                     return <SellerTip key={tipid} model={models[id]} />
