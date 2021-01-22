@@ -249,16 +249,19 @@ const Storage = props => {
             // Retrieve the tip for the specified id.
             const tipContent = tip(id, pinned)
             if (tipContent) {
-              const tip = React.createElement(wrapper, {
-                ...wrapperProps,
-                my,
-                pinned,
-                id,
-                dispatch,
-                onPin: handlePin,
-                onPointerDown: handlePointerDown,
-                children: [tipContent]
-              })
+              const tip = React.createElement(
+                wrapper,
+                {
+                  ...wrapperProps,
+                  my,
+                  pinned,
+                  id,
+                  dispatch,
+                  onPin: handlePin,
+                  onPointerDown: handlePointerDown
+                },
+                tipContent
+              )
               // A portal is used to attach the tip to another DOM parent (so that it
               // naturally floats above other DOM nodes it the DOM tree). The additional
               // benefit of the portal is that DOM events are still channeled through
