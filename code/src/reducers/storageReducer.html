@@ -95,7 +95,9 @@ This will bring the tip being dragged to the foreground</p></div></div><div clas
           ? toStoredTips(newSources, state.storedTips)
           : <span class="hljs-literal">null</span>
       <span class="hljs-keyword">if</span> (storedTips &amp;&amp; <span class="hljs-keyword">typeof</span> onTipChange === <span class="hljs-string">'function'</span>) {
-        onTipChange(storedTips)
+        setTimeout(() =&gt; {
+          onTipChange(storedTips)
+        }, <span class="hljs-number">0</span>)
       }
       <span class="hljs-keyword">return</span> storedTips || sources !== newSources
         ? {
@@ -115,7 +117,9 @@ This will bring the tip being dragged to the foreground</p></div></div><div clas
       )
       <span class="hljs-keyword">const</span> storedTips = toStoredTips(newSources, state.storedTips)
       <span class="hljs-keyword">if</span> (storedTips &amp;&amp; <span class="hljs-keyword">typeof</span> onTipChange === <span class="hljs-string">'function'</span>) {
-        onTipChange(storedTips)
+        setTimeout(() =&gt; {
+          onTipChange(storedTips)
+        }, <span class="hljs-number">0</span>)
       }
       <span class="hljs-keyword">return</span> storedTips || sources !== newSources
         ? {
@@ -158,7 +162,7 @@ This will bring the tip being dragged to the foreground</p></div></div><div clas
     <span class="hljs-keyword">case</span> GEOMETRY: {
       <span class="hljs-keyword">const</span> { id } = action
       <span class="hljs-keyword">const</span> source = sources[id]
-      <span class="hljs-keyword">if</span> (source.pinned || source.moved) {
+      <span class="hljs-keyword">if</span> (!source || source.pinned || source.moved) {
         <span class="hljs-keyword">return</span> state
       }
       <span class="hljs-keyword">const</span> newSources = updateSource(
