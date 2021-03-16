@@ -1,3 +1,6 @@
+## Version 1.2.1 (2021/03/16)
+- Fixed peer dependency to target React 17.x
+
 ## Version 1.2.0 (2021/01/21)
 
 - Migration to react-storybook@6.1.14
