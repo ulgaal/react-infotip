@@ -45,7 +45,8 @@ export const SourceConfig = PropTypes.shape({
       y: PropTypes.number,
       method: PropTypes.oneOfType([NoneType, PropTypes.object])
     }),
-    container: PropTypes.oneOfType([PropTypes.object, PropTypes.string])
+    container: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+    viewport: PropTypes.oneOfType([PropTypes.object, PropTypes.string])
   }),
   show: PropTypes.shape({
     delay: PropTypes.number

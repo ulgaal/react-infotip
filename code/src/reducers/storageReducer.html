@@ -62,6 +62,9 @@ export const storageReducer = (state, action) =&gt; {
         const newSources = { ...sources }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Create sources for pinned tips if needed</p></div></div><div class="code"><div class="wrapper">        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> id <span class="hljs-keyword">of</span> diffSet(ids, prevIds)) {
           <span class="hljs-keyword">const</span> storedTip = storedTips.find(tip =&gt; tip.id === id)
           <span class="hljs-keyword">if</span> (!sources[id]) {
+            <span class="hljs-keyword">const</span> { container, viewport } = storedTip.config.position
+            <span class="hljs-keyword">const</span> containerElt = getElement(container)
+            <span class="hljs-keyword">const</span> viewportElt = (viewport === container || !viewport) ? containerElt : getElement(viewport)
             newSources[id] = {
               ...sourceInit({
                 ...storedTip
@@ -69,7 +72,8 @@ export const storageReducer = (state, action) =&gt; {
               pinned: <span class="hljs-literal">true</span>,
               visible: <span class="hljs-literal">true</span>,
               moved: <span class="hljs-literal">true</span>,
-              containerElt: getElement(storedTip.config.position.container)
+              containerElt,
+              viewportElt
             }
           }
         }
