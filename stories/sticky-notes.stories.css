@@ -70,7 +70,22 @@
 }
 
 .multi-line-chart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.multi-line-chart-container {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px dotted black;
+}
+.chart-tip {
+  font-size: 10px;
+}
+
+.chart-tip div:first-child {
+  font-weight: bold;
 }
 
 .disabling-notes {

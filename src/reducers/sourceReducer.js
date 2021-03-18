@@ -180,14 +180,17 @@ export const sourceReducer = (state, action) => {
     }
 
     case VISIBILITY: {
-      let { containerElt, location, ...rest } = state
+      let { containerElt, viewportElt, location, ...rest } = state
       if (action.visible && !containerElt) {
-        containerElt = getElement(state.config.position.container)
+        const { container, viewport } = state.config.position
+        containerElt = getElement(container)
+        viewportElt = (viewport === container || !viewport) ? containerElt : getElement(viewport)
       }
       return {
         ...rest,
         ...params,
         containerElt,
+        viewportElt,
         ...(action.visible && location ? { location } : {})
       }
     }
@@ -199,7 +202,9 @@ export const sourceReducer = (state, action) => {
       if (pinned && !visible) {
         updates.visible = true
         if (!containerElt) {
-          updates.containerElt = getElement(config.position.container)
+          const { container, viewport } = config.position
+          updates.containerElt = getElement(container)
+          updates.viewportElt = (viewport === container || !viewport) ? containerElt : getElement(viewport)
         }
       }
       return { ...state, ...params, ...updates }
@@ -220,11 +225,11 @@ export const sourceReducer = (state, action) => {
 }
 
 // The layout function computes the actual tip placement, taking into account
-// the target, tip and container rects.
+// the target, tip and viewport rects.
 const layout = (state, params) => {
   log('sourceReducer', 1, { state, params })
-  const { config, ref, containerElt } = state
-  let { target, geometry, container } = state
+  const { config, ref, viewportElt, containerElt } = state
+  let { target, geometry, viewport, container } = state
   const updates = {}
   const {
     position: {
@@ -267,6 +272,12 @@ const layout = (state, params) => {
     if (!container) {
       updates.container = container = toRect(containerElt)
     }
+  }
+
+  if (viewportElt) {
+    if (!viewport) {
+      updates.viewport = viewport = toRect(viewportElt)
+    }
     if (target && geometry) {
       const { size, corners } = geometry
       const targetCorner = corner(target, at)
@@ -281,12 +292,12 @@ const layout = (state, params) => {
       updates.my = my
       updates.location = computeRect(my)
       if (typeof method === 'object') {
-        let area = surface(overlap(container, updates.location))
+        let area = surface(overlap(viewport, updates.location))
         if (area < surface(updates.location)) {
           if (method.flip) {
             for (const my of method.flip) {
               const location = computeRect(my)
-              const area_ = surface(overlap(container, location))
+              const area_ = surface(overlap(viewport, location))
               if (area_ - area > 0.0001) {
                 updates.location = location
                 updates.my = my
@@ -298,31 +309,31 @@ const layout = (state, params) => {
               if (LEFT.has(my)) {
                 if (
                   updates.location.left + updates.location.width >
-                  container.left + container.width
+                  viewport.left + viewport.width
                 ) {
                   updates.location.left =
-                    container.left + container.width - updates.location.width
+                    viewport.left + viewport.width - updates.location.width
                 }
               }
               if (RIGHT.has(my)) {
-                if (updates.location.left < container.left) {
-                  updates.location.left = container.left
+                if (updates.location.left < viewport.left) {
+                  updates.location.left = viewport.left
                 }
               }
             }
             if (method.shift.indexOf('vertical') !== -1) {
               if (BOTTOM.has(my)) {
-                if (updates.location.top < container.top) {
-                  updates.location.top = container.top
+                if (updates.location.top < viewport.top) {
+                  updates.location.top = viewport.top
                 }
               }
               if (TOP.has(my)) {
                 if (
                   updates.location.top + updates.location.height >
-                  container.top + container.height
+                  viewport.top + viewport.height
                 ) {
                   updates.location.top =
-                    container.top + container.height - updates.location.height
+                    viewport.top + viewport.height - updates.location.height
                 }
               }
             }
