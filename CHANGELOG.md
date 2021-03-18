@@ -1,3 +1,8 @@
+## Version 1.3.0 (2021/03/18)
+- Upgraded all dependencies
+- Added support for position.viewport config property to fine-tune position adjustment for different kinds of sources
+- Changed peer dependencies to support both react 16.x and react 17.x
+
 ## Version 1.2.1 (2021/03/16)
 - Fixed peer dependency to target React 17.x
 
