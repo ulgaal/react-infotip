@@ -166,7 +166,7 @@ export const eqSet = (as, bs) => {
   if (as.size !== bs.size) {
     return false
   }
-  for (var a of as) {
+  for (const a of as) {
     if (!bs.has(a)) {
       return false
     }

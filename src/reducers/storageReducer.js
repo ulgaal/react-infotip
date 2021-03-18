@@ -64,6 +64,9 @@ export const storageReducer = (state, action) => {
         for (const id of diffSet(ids, prevIds)) {
           const storedTip = storedTips.find(tip => tip.id === id)
           if (!sources[id]) {
+            const { container, viewport } = storedTip.config.position
+            const containerElt = getElement(container)
+            const viewportElt = (viewport === container || !viewport) ? containerElt : getElement(viewport)
             newSources[id] = {
               ...sourceInit({
                 ...storedTip
@@ -71,7 +74,8 @@ export const storageReducer = (state, action) => {
               pinned: true,
               visible: true,
               moved: true,
-              containerElt: getElement(storedTip.config.position.container)
+              containerElt,
+              viewportElt
             }
           }
         }

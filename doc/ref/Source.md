@@ -28,6 +28,7 @@ The tip `config`, as an object which contains the following keys:
    | target        | `<target-spec>`        | The element the tip will be positioned in relation to. Can be one of <dl><dt>false</dt><dd>the source itself (default)</dd><dt>[&lt;number&gt;, &lt;number&gt;]</dt><dd>an array of x, y coordinates</dd><dt>'mouse'</dt><dd>the mouse coordinates for the event which triggered the tip to show</dd><dt>&lt;string&gt;</dt><dd>CSS selector for another DOMElement</dd></dl>   |
   | adjust        | `<AdjustType>`         | sub-configuration describing how the tip position should be adjusted |
   | container     | `<string>` | CSS selector to the DOMElement under which tips will attached.      |
+  | viewport     | `<string>` | CSS selector to the DOMElement used to constrain tip placement (defaults to container if unspecified).      |
 
 `<CornerType>` is one of the following enumeration value:
 * top-left

@@ -32,7 +32,8 @@ import {
   Pinnable,
   MergingConfigProvider,
   ConfigContext,
-  seq
+  seq,
+  styles
 } from '../src'
 
 import PersistentReadme from './md/storage/persistent.md'
@@ -513,15 +514,34 @@ storiesOf('Sticky-notes', module)
       const H = 200
       const count = 50
       const colors = ['red', 'black', 'blue', 'green']
-      const model = colors.map((color, index) => ({
-        id: `line-${index}`,
-        color,
-        points: [...seq(0, count)].map(x => ({
+      const model = colors.map((color, index) => {
+        const points = [...seq(0, count)].map(x => ({
           x: (W * x) / count,
-          y: H * (0.2 + Math.random() * 0.6)
-        })),
-        coordinates: { x: 0, y: 0 }
-      }))
+          y: H * (0.1 + Math.random() * 0.8)
+        }))
+        return {
+          id: `line-${index}`,
+          color,
+          points,
+          extremum: points.reduce(
+            (acc, pt) => {
+              const { y } = pt
+              if (y < acc.ymin) {
+                acc.ymin = y
+              }
+              if (y > acc.ymax) {
+                acc.ymax = y
+              }
+              return acc
+            },
+            {
+              ymin: Number.POSITIVE_INFINITY,
+              ymax: Number.NEGATIVE_INFINITY
+            }
+          ),
+          coordinates: { x: 0, y: 0 }
+        }
+      })
       const toIndex = id => {
         const [, index] = /line-(\d+)/.exec(id) || []
         return index
@@ -541,16 +561,46 @@ storiesOf('Sticky-notes', module)
         const { id, color, points, dispatch } = props
         const config = useContext(ConfigContext)
         const ref = useRef(null)
-        const graphConfig = useMemo(
+        const curveConfig = useMemo(
           () => ({
             position: {
-              container: '.multi-line-chart',
+              my: 'top-left',
+              container: '.multi-line-chart-container'
+            },
+            show: {
+              delay: 105
+            },
+            hide: {
+              delay: 100
+            },
+            wrapper: Pinnable,
+            wrapperProps: { style: styles.lightStyle }
+          }),
+          []
+        )
+        const viewportClass = `viewport-${id}`
+        const pointConfig = useMemo(
+          () => ({
+            position: {
+              my: 'bottom-left',
+              container: '.multi-line-chart-container',
+              viewport: `.${viewportClass}`,
               adjust: {
+                method: {
+                  flip: [
+                    'bottom-left',
+                    'bottom-right',
+                    'top-left',
+                    'top-right'
+                  ]
+                },
                 mouse: position => {
                   const rect = ref.current
+                  const svg = rect.ownerSVGElement
+                  const container = svg.closest('.multi-line-chart-container')
                   // Compute the coordinates of the point
                   const ctm = rect.getScreenCTM()
-                  const pos = rect.ownerSVGElement.createSVGPoint()
+                  const pos = svg.createSVGPoint()
                   pos.x = position.x
                   pos.y = position.y
                   const pos2 = pos.matrixTransform(ctm.inverse())
@@ -568,9 +618,9 @@ storiesOf('Sticky-notes', module)
                   })
 
                   // Compte the x-coordinate of the rect
-                  const { left } = rect.ownerSVGElement.getBoundingClientRect()
+                  const svgRect = svg.getBoundingClientRect()
                   return {
-                    x: left + x + window.scrollX,
+                    x: svgRect.left + x + window.scrollX,
                     y: ctm.f + y + window.scrollY
                   }
                 }
@@ -585,67 +635,92 @@ storiesOf('Sticky-notes', module)
             wrapper: Pinnable,
             wrapperProps: { wrapper: config.wrapper }
           }),
-          []
+          [viewportClass]
         )
         return (
-          <MergingConfigProvider value={graphConfig}>
-            <svg
-              width='600px'
-              height='200px'
-              style={{ border: '1px dotted black' }}
-            >
-              <Source id={id} svg>
-                <rect
-                  x={0}
-                  y={0}
-                  width={600}
-                  height={200}
-                  style={{ fill: 'white', stroke: 'none' }}
-                  ref={ref}
-                />
-                <path
-                  style={{ stroke: color, fill: 'none' }}
-                  d={points
-                    .map(({ x, y }, index) => `${index ? 'L' : 'M'} ${x},${y}`)
-                    .join(' ')}
-                />
-              </Source>
-            </svg>
-          </MergingConfigProvider>
+          <div className='graph'>
+            <MergingConfigProvider value={curveConfig}>
+              <div className='graph-title'>
+                <Source id={`ti@${id}`}>
+                  <span style={{ color }}>{color}</span> graph
+                </Source>
+              </div>
+            </MergingConfigProvider>
+            <MergingConfigProvider value={pointConfig}>
+              <svg
+                className={viewportClass}
+                width='600px'
+                height='200px'
+                style={{ border: `2px solid ${color}` }}
+              >
+                <Source id={`cu@${id}`} svg>
+                  <rect
+                    x={0}
+                    y={0}
+                    width={600}
+                    height={200}
+                    style={{ fill: 'white', stroke: 'none' }}
+                    ref={ref}
+                  />
+                  <path
+                    style={{ stroke: color, fill: 'none' }}
+                    d={points
+                      .map(({ x, y }, index) => `${index ? 'L' : 'M'} ${x},${y}`)
+                      .join(' ')}
+                  />
+                </Source>
+              </svg>
+            </MergingConfigProvider>
+          </div>
         )
       }
 
       const MultiLineChart = props => {
         const [tips, setTips] = useState([])
         const [state, dispatch] = useReducer(modelReducer, props.model)
+        const renderTips = useCallback((tipid, pinned) => {
+          const [, kind, id] = /(ti|cu)@(.+)/.exec(tipid) || []
+          const index = toIndex(id)
+          if (kind === 'ti') {
+            const { extremum } = state[index]
+            return (
+              <div key={id} className='chart-tip'>
+                <div>Extremum:</div>
+                <div>min={extremum.ymin}</div>
+                <div>max={extremum.ymax}</div>
+              </div>
+            )
+          } else {
+            const { coordinates } = state[index]
+            return (
+              <div key={id} className='chart-tip'>
+                <div>Coordinates:</div>
+                <div>x={coordinates.x}</div>
+                <div>y={coordinates.y}</div>
+              </div>
+            )
+          }
+        }, [state])
         return (
           <Storage
             tips={tips}
-            tip={(id, pinned) => {
-              const index = toIndex(id)
-              const { coordinates } = state[index]
-              return (
-                <div key={id}>
-                  x={coordinates.x}
-                  <br />
-                  y={coordinates.y}
-                </div>
-              )
-            }}
+            tip={renderTips}
             onTipChange={tips => {
               setTips(tips)
             }}
           >
             <div className='multi-line-chart'>
-              {state.map(({ id, color, points }, index) => (
-                <Graph
-                  key={index}
-                  id={id}
-                  color={color}
-                  points={points}
-                  dispatch={dispatch}
-                />
-              ))}
+              <div className='multi-line-chart-container'>
+                {state.map(({ id, color, points }, index) => (
+                  <Graph
+                    key={index}
+                    id={id}
+                    color={color}
+                    points={points}
+                    dispatch={dispatch}
+                  />
+                ))}
+              </div>
             </div>
           </Storage>
         )
