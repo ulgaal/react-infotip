@@ -1,6 +1,6 @@
 {
   "name": "@ulgaal/react-infotip",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A library to provide tooltips and sticky-notes to React apps",
   "keywords": [
     "react",
@@ -73,8 +73,8 @@
   },
   "peerDependencies": {
     "prop-types": "^15.x",
-    "react": "^17.x",
-    "react-dom": "^17.x"
+    "react": "^16.x || ^17.x",
+    "react-dom": "16.x || ^17.x"
   },
   "standard": {
     "globals": [
