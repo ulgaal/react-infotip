@@ -38,9 +38,9 @@ import {
   MOUSE_OUT,
   PIN,
   RESET,
-  DISABLE
+  DISABLE,
+  UNMOUNT
 } from './reducers/sourceReducer'
-import { storageReducer } from './reducers/storageReducer'
 
 /**
  * The `Source` component acts as a wrapper for other components and enables them
@@ -91,6 +91,18 @@ const Source = props => {
       })
     }
   }, [pinned])
+
+  // When the source unmounts
+  useEffect(() => {
+    return () => {
+      if (useStorageReducer) {
+        dispatch({
+          type: UNMOUNT,
+          id
+        })
+      }
+    }
+  }, [])
 
   const disabledRef = useRef(disabled)
   useEffect(() => {

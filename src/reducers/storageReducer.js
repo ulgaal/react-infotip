@@ -10,7 +10,8 @@ import {
   GEOMETRY,
   VISIBILITY,
   PIN,
-  DISABLE
+  DISABLE,
+  UNMOUNT
 } from './sourceReducer'
 
 export const UPDATE_PINNED = 'UPDATE_PINNED'
@@ -165,6 +166,20 @@ export const storageReducer = (state, action) => {
           delete newSources[id]
         }
       }
+      return { ...state, sources: newSources }
+    }
+    case UNMOUNT: {
+      const { id } = action
+      const source = sources[id]
+      if (!source || source.pinned) {
+        return state
+      }
+      const newSources = updateSource(
+        sources,
+        id,
+        sourceReducer(source, action)
+      )
+      delete newSources[id]
       return { ...state, sources: newSources }
     }
     case GEOMETRY: {
