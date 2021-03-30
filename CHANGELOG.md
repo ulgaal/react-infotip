@@ -1,3 +1,7 @@
+## Version 1.3.1 (2021/03/30)
+- Added extra UNMOUNT action to delete pending tips when a Source in a Storage unmount
+- Added additional 'my' parameter to the 'tip' callback of the Storage component
+
 ## Version 1.3.0 (2021/03/18)
 - Upgraded all dependencies
 - Added support for position.viewport config property to fine-tune position adjustment for different kinds of sources
