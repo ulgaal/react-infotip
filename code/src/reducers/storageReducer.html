@@ -10,7 +10,8 @@
   GEOMETRY,
   VISIBILITY,
   PIN,
-  DISABLE
+  DISABLE,
+  UNMOUNT
 } <span class="hljs-keyword">from</span> <span class="hljs-string">'./sourceReducer'</span>
 
 export const UPDATE_PINNED = <span class="hljs-string">'UPDATE_PINNED'</span>
@@ -161,6 +162,20 @@ This will bring the tip being dragged to the foreground</p></div></div><div clas
           <span class="hljs-keyword">delete</span> newSources[id]
         }
       }
+      <span class="hljs-keyword">return</span> { ...state, sources: newSources }
+    }
+    <span class="hljs-keyword">case</span> UNMOUNT: {
+      <span class="hljs-keyword">const</span> { id } = action
+      <span class="hljs-keyword">const</span> source = sources[id]
+      <span class="hljs-keyword">if</span> (!source || source.pinned) {
+        <span class="hljs-keyword">return</span> state
+      }
+      <span class="hljs-keyword">const</span> newSources = updateSource(
+        sources,
+        id,
+        sourceReducer(source, action)
+      )
+      <span class="hljs-keyword">delete</span> newSources[id]
       <span class="hljs-keyword">return</span> { ...state, sources: newSources }
     }
     <span class="hljs-keyword">case</span> GEOMETRY: {

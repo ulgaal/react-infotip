@@ -47,6 +47,7 @@ export const VISIBILITY = <span class="hljs-string">'VISIBILITY'</span>
 export const PIN = <span class="hljs-string">'PIN'</span>
 export const RESET = <span class="hljs-string">'RESET'</span>
 export const DISABLE = <span class="hljs-string">'DISABLE'</span>
+export const UNMOUNT = <span class="hljs-string">'UNMOUNT'</span>
 
 export const sourceInit = params =&gt; {
   const state = {
@@ -131,6 +132,17 @@ an event to show it</p></div></div><div class="code"><div class="wrapper">      
         })
       }, delay)
       <span class="hljs-keyword">return</span> { ...state, hideTimeoutId, showTimeoutId: <span class="hljs-literal">undefined</span> }
+    }
+
+    <span class="hljs-keyword">case</span> UNMOUNT: {
+      <span class="hljs-keyword">const</span> { showTimeoutId, hideTimeoutId } = state
+      <span class="hljs-keyword">if</span> (showTimeoutId) {
+        clearInterval(showTimeoutId)
+      }
+      <span class="hljs-keyword">if</span> (hideTimeoutId) {
+        clearInterval(hideTimeoutId)
+      }
+      <span class="hljs-keyword">return</span> { ...state, hideTimeoutId: <span class="hljs-literal">undefined</span>, showTimeoutId: <span class="hljs-literal">undefined</span> }
     }
 
     <span class="hljs-keyword">case</span> MOUSE_MOVE: {

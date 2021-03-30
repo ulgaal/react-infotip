@@ -210,7 +210,7 @@ they have a <code>storage</code> property pointing to the <code>Storage</code>.<
           } = source
           if (pinned || (!props.disabled &amp;&amp; !disabled)) {
             const { wrapper, wrapperProps } = config
-</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Retrieve the tip for the specified id.</p></div></div><div class="code"><div class="wrapper">            <span class="hljs-keyword">const</span> tipContent = tip(id, pinned)
+</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Retrieve the tip for the specified id.</p></div></div><div class="code"><div class="wrapper">            <span class="hljs-keyword">const</span> tipContent = tip(id, pinned, my)
             <span class="hljs-keyword">if</span> (tipContent) {
               <span class="hljs-keyword">const</span> tip = React.createElement(
                 wrapper,
@@ -300,9 +300,10 @@ Storage.propTypes = {</div></div></div><div class="segment"><div class="comments
 <td>The y coordinate of the tip in the tip-container coordinate system.</td>
 </tr>
 </tbody>
-</table></div></div><div class="code"><div class="wrapper">  tips: PropTypes.arrayOf(StorageTip),</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A function which receives as input a <code>Source</code> <code>id</code> and outputs the corresponding React tip
-element. The returned component should have its <code>key</code> property set to uniquely identify
-it among the children of the <code>Storage</code>.</p></div></div><div class="code"><div class="wrapper">  tip: PropTypes.func,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A callback function invoked when the list of persistent tip changes.
+</table></div></div><div class="code"><div class="wrapper">  tips: PropTypes.arrayOf(StorageTip),</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A function with the following signature: (id, pinned, my). It should return a component
+corresponding to the React tip with the specified id. The returned component
+should have its <code>key</code> property set to uniquely identify it among the children of the <code>Storage</code>.
+The additional parameters (pinned and my) can be used to alter the returned component if needed.</p></div></div><div class="code"><div class="wrapper">  tip: PropTypes.func,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A callback function invoked when the list of persistent tip changes.
 The function receives an array of <code>&lt;StoredTipType&gt;</code></p></div></div><div class="code"><div class="wrapper">  onTipChange: PropTypes.func,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>True to make the storage ignore DOM events and stop showing
 or hiding new tips, false (default) otherwise</p></div></div><div class="code"><div class="wrapper">  disabled: PropTypes.bool
 }

@@ -31,9 +31,9 @@ global Node </p>
   MOUSE_OUT,
   PIN,
   RESET,
-  DISABLE
-} <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/sourceReducer'</span>
-<span class="hljs-keyword">import</span> { storageReducer } <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/storageReducer'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The <code>Source</code> component acts as a wrapper for other components and enables them
+  DISABLE,
+  UNMOUNT
+} <span class="hljs-keyword">from</span> <span class="hljs-string">'./reducers/sourceReducer'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The <code>Source</code> component acts as a wrapper for other components and enables them
 to provide tips.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Source = props =&gt; {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Merge the context and local configs and extract relevant
 properties from it</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> { id, config: localConfig, pinned, disabled } = props
   <span class="hljs-keyword">const</span> contextConfig = useContext(ConfigContext)
@@ -61,7 +61,16 @@ used for tip positionning when target === false</p></div></div><div class="code"
         ref: ref.current
       })
     }
-  }, [pinned])
+  }, [pinned])</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>When the source unmounts</p></div></div><div class="code"><div class="wrapper">  useEffect(() =&gt; {
+    <span class="hljs-keyword">return</span> () =&gt; {
+      <span class="hljs-keyword">if</span> (useStorageReducer) {
+        dispatch({
+          type: UNMOUNT,
+          id
+        })
+      }
+    }
+  }, [])
 
   <span class="hljs-keyword">const</span> disabledRef = useRef(disabled)
   useEffect(() =&gt; {
