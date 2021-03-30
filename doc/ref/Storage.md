@@ -36,9 +36,10 @@ type: `func`
 
 ### `tip`
 
-A function which receives as input a `Source` `id` and outputs the corresponding React tip
-element. The returned component should have its `key` property set to uniquely identify
-it among the children of the `Storage`.
+A function with the following signature: (id, pinned, my). It should return a component
+corresponding to the React tip with the specified id. The returned component
+should have its `key` property set to uniquely identify it among the children of the `Storage`.
+The additional parameters (pinned and my) can be used to alter the returned component if needed.
 
 type: `func`
 
