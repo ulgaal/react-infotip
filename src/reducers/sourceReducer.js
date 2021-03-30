@@ -54,6 +54,7 @@ export const VISIBILITY = 'VISIBILITY'
 export const PIN = 'PIN'
 export const RESET = 'RESET'
 export const DISABLE = 'DISABLE'
+export const UNMOUNT = 'UNMOUNT'
 
 export const sourceInit = params => {
   const state = {
@@ -145,6 +146,17 @@ export const sourceReducer = (state, action) => {
         })
       }, delay)
       return { ...state, hideTimeoutId, showTimeoutId: undefined }
+    }
+
+    case UNMOUNT: {
+      const { showTimeoutId, hideTimeoutId } = state
+      if (showTimeoutId) {
+        clearInterval(showTimeoutId)
+      }
+      if (hideTimeoutId) {
+        clearInterval(hideTimeoutId)
+      }
+      return { ...state, hideTimeoutId: undefined, showTimeoutId: undefined }
     }
 
     case MOUSE_MOVE: {
