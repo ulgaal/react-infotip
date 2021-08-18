@@ -49,6 +49,7 @@ const BOTTOM = new Set([
 export const MOUSE_OVER = 'MOUSE_OVER'
 export const MOUSE_MOVE = 'MOUSE_MOVE'
 export const MOUSE_OUT = 'MOUSE_OUT'
+export const LOCATION = 'LOCATION'
 export const GEOMETRY = 'GEOMETRY'
 export const VISIBILITY = 'VISIBILITY'
 export const PIN = 'PIN'
@@ -171,14 +172,26 @@ export const sourceReducer = (state, action) => {
         typeof mouse === 'function'
           ? mouse
           : event => ({
-              x: position.x,
-              y: position.y
-            })
+            x: position.x,
+            y: position.y
+          })
       const { x, y } = transform(position)
       const updates = layout(state, {
         mouse: {
           left: x,
           top: y,
+          width: 1,
+          height: 1
+        }
+      })
+      return updates ? { ...state, ...updates } : state
+    }
+
+    case LOCATION: {
+      const { location } = action
+      const updates = layout(state, {
+        mouse: {
+          ...location,
           width: 1,
           height: 1
         }
