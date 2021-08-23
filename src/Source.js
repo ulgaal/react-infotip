@@ -233,12 +233,15 @@ const Source = props => {
       // The tip itself consists of a wrapper component (`Balloon` by default)
       // which provides the user-supplied tip component with a tip appearance.
       const { wrapper, wrapperProps } = config
-      const wrappedTip = React.createElement(wrapper, {
-        ...wrapperProps,
-        my,
-        dispatch,
-        children: tip
-      })
+      const wrappedTip = React.createElement(
+        wrapper,
+        {
+          ...wrapperProps,
+          my,
+          dispatch
+        },
+        [tip]
+      )
       // A portal is used to attach the tip to another DOM parent (so that it
       // naturally floats above other DOM nodes it the DOM tree). The additional
       // benefit of the portal is that DOM events are still channeled through

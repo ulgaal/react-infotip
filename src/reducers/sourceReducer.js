@@ -171,9 +171,9 @@ export const sourceReducer = (state, action) => {
         typeof mouse === 'function'
           ? mouse
           : event => ({
-            x: position.x,
-            y: position.y
-          })
+              x: position.x,
+              y: position.y
+            })
       const { x, y } = transform(position)
       const updates = layout(state, {
         mouse: {
@@ -196,7 +196,10 @@ export const sourceReducer = (state, action) => {
       if (action.visible && !containerElt) {
         const { container, viewport } = state.config.position
         containerElt = getElement(container)
-        viewportElt = (viewport === container || !viewport) ? containerElt : getElement(viewport)
+        viewportElt =
+          viewport === container || !viewport
+            ? containerElt
+            : getElement(viewport)
       }
       return {
         ...rest,
@@ -208,15 +211,17 @@ export const sourceReducer = (state, action) => {
     }
 
     case PIN: {
-      const { pinned } = action
       const { visible, containerElt, config } = state
       const updates = {}
-      if (pinned && !visible) {
+      if (action.pinned && !visible) {
         updates.visible = true
         if (!containerElt) {
           const { container, viewport } = config.position
           updates.containerElt = getElement(container)
-          updates.viewportElt = (viewport === container || !viewport) ? containerElt : getElement(viewport)
+          updates.viewportElt =
+            viewport === container || !viewport
+              ? updates.containerElt
+              : getElement(viewport)
         }
       }
       return { ...state, ...params, ...updates }
@@ -233,7 +238,11 @@ export const sourceReducer = (state, action) => {
       }
       const { config } = action
       state = { ...rest, config }
-      const { position: { adjust: { location } } } = config
+      const {
+        position: {
+          adjust: { location }
+        }
+      } = config
       if (location) {
         const updates = layout(state, {})
         return updates ? { ...state, ...updates } : state
