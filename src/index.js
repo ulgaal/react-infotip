@@ -26,6 +26,7 @@ import Cloud from './Cloud'
 import { mergeObjects, seq, LOGS } from './utils'
 import { positions } from './prop-types'
 import { styles } from './styles'
+import Pin from './svg/Pin'
 
 // Define exported library constructs
 export {
@@ -39,6 +40,7 @@ export {
   Storage,
   Balloon,
   Pinnable,
+  Pin,
   Cloud,
   mergeObjects,
   seq,
