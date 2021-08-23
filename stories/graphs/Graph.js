@@ -44,6 +44,15 @@ const Graph = props => {
     },
     [inputRef, index, keyboard]
   )
+  const handleMouseEnter = useCallback(
+    () => {
+      const { current } = inputRef
+      if (current) {
+        current.focus()
+      }
+    },
+    [inputRef]
+  )
 
   const curveConfig = useMemo(
     () => ({
@@ -129,7 +138,7 @@ const Graph = props => {
     ? { config: { position: { adjust: { location } } } }
     : {}
   return (
-    <div className='graph'>
+    <div className='graph' onMouseEnter={handleMouseEnter}>
       <MergingConfigProvider value={curveConfig}>
         <div className='graph-title'>
           <Source id={`ti@${index}`}>
