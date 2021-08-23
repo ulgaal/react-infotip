@@ -4,7 +4,7 @@ const Keyboard = props => {
   const { on, onClick } = props
   return (
     <div
-      onClick={onClick}
+      onPointerDown={onClick}
       className={`keyboard-icon-${on ? 'on' : 'off'}`}
       title={on ? 'Keyboard off' : 'Keyboard on'}
     >

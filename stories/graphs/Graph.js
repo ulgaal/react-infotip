@@ -34,6 +34,8 @@ const Graph = props => {
   )
   const handleKeyboard = useCallback(
     event => {
+      event.preventDefault()
+      event.stopPropagation()
       const { current } = inputRef
       if (current) {
         current.focus()
