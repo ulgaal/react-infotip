@@ -1,0 +1,21 @@
+.curve-tip-icons {
+  display: flex;
+  align-items: center;
+}
+
+.curve-tip-icons > div:not(:first-child) {
+  margin-left: 5px;
+}
+
+.curve-tip-icons svg {
+  height: 16px;
+}
+
+.curve-tip-icons .curve-tip-pin {
+  stroke: none;
+  fill: black;
+}
+
+svg:hover .curve-tip-pin {
+  fill:grey;
+}

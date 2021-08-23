@@ -80,15 +80,6 @@
   flex-direction: column;
   border: 1px dotted black;
 }
-.chart-tip {
-  font-size: 10px;
-}
-
-.graph-input {
-  height:0;
-  border:none;
-  padding: 0 0;
-}
 
 .chart-tip div:first-child {
   font-weight: bold;

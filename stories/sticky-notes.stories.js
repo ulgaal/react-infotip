@@ -33,7 +33,8 @@ import {
   MergingConfigProvider,
   ConfigContext,
   seq,
-  styles
+  styles,
+  Pin
 } from '../src'
 
 import PersistentReadme from './md/storage/persistent.md'
@@ -61,6 +62,15 @@ import {
   VSCROLL
 } from 'react-reducer-table'
 import img from './ai-faces.jpg'
+import { model } from './graphs/model'
+import Graph from './graphs/Graph'
+import {
+  multiLineChartReducer,
+  TIP,
+  MultiLineChartContext
+} from './graphs/multiLineChartReducer'
+import ChartTip from './graphs/ChartTip'
+import CurveTip from './graphs/CurveTip'
 
 const LOAD_PRODUCT = 'LOAD_PRODUCT'
 
@@ -87,7 +97,7 @@ storiesOf('Sticky-notes', module)
           storedTips = JSON.parse(item)
         }
       } catch (err) {
-        console.log(err)
+        err
       }
       const PersistentContainer = () => {
         const config = useContext(ConfigContext)
@@ -105,7 +115,7 @@ storiesOf('Sticky-notes', module)
           try {
             window.localStorage.setItem('persistent-tips', JSON.stringify(tips))
           } catch (err) {
-            console.log(err)
+            err
           }
         }
         return (
@@ -271,7 +281,7 @@ storiesOf('Sticky-notes', module)
         )
       }
       const Product = props => {
-        // console.log('Product', props)
+        // ('Product', props)
         const {
           product: { id, color, product }
         } = props
@@ -350,7 +360,7 @@ storiesOf('Sticky-notes', module)
       }
 
       const ProductTip = props => {
-        // console.log('ProductTip', props)
+        // ('ProductTip', props)
         const {
           product: { department, price, product, productName, color, loaded }
         } = props
@@ -508,317 +518,59 @@ storiesOf('Sticky-notes', module)
   .add(
     'Multiline chart sticky notes',
     () => {
-      const W = 600
-      const H = 200
-      const count = 50
-      const step = W / count
-      const colors = ['red', 'black', 'blue', 'green']
-      const model = colors.map((color, index) => {
-        const points = [...seq(0, count)].map(x => ({
-          x: x * step,
-          y: Math.round(H * (0.1 + Math.random() * 0.8))
-        }))
-        return {
-          id: `line-${index}`,
-          color,
-          points,
-          extremum: points.reduce(
-            (acc, pt) => {
-              const { y } = pt
-              if (y < acc.ymin) {
-                acc.ymin = y
-              }
-              if (y > acc.ymax) {
-                acc.ymax = y
-              }
-              return acc
-            },
-            {
-              ymin: Number.POSITIVE_INFINITY,
-              ymax: Number.NEGATIVE_INFINITY
-            }
-          ),
-          coordinates: { x: 0, y: 0 },
-          pinned: false
-        }
-      })
-
-      const MOUSE_MOVE = 'MOUSE_MOVE'
-      const KEY_DOWN = 'KEY_DOWN'
-      const PIN = 'PIN'
-      const modelReducer = (state, action) => {
-        const update = (index, obj) => {
-          const newState = [...state]
-          newState[index] = {
-            ...state[index],
-            ...obj
-          }
-          return newState
-        }
-
-        const { type } = action
-        switch (type) {
-          case MOUSE_MOVE: {
-            const { index, ptIndex, location } = action
-            return update(index, { ptIndex, location })
-          }
-          case KEY_DOWN: {
-            const { index, key, rect } = action
-            const { points } = state[index]
-            let { ptIndex } = state[index]
-            if (key === 'ArrowLeft' && ptIndex > 0) {
-              ptIndex--
-            } else if (key === 'ArrowRight' && ptIndex < count - 1) {
-              ptIndex++
-            } else {
-              break
-            }
-            const { x, y } = toViewport(rect, points[ptIndex])
-            const location = {
-              left: x,
-              top: y
-            }
-            return update(index, { ptIndex, location })
-          }
-          case PIN: {
-            const { tips = [] } = action
-            const newState = [...state]
-            newState.forEach(graph => {
-              graph.pinned = false
-            })
-            tips.forEach(tip => {
-              const [, kind, index] = /(ti|cu)@(.+)/.exec(tip.id) || []
-              newState[index].pinned = true
-            })
-            return newState
-          }
-        }
-        return state
-      }
-
-      const toViewport = (rect, coordinates) => { 
-        const ctm = rect.getScreenCTM()
-        const svg = rect.ownerSVGElement
-        const svgRect = svg.getBoundingClientRect()
-        const { x, y } = coordinates
-        return {
-          x: svgRect.left + x + window.scrollX,
-          y: ctm.f + y + window.scrollY
-        }
-      }
-
-      const Graph = props => {
-        const { index, color, points, dispatch, pinned, location } = props
-        const config = useContext(ConfigContext)
-        const ref = useRef(null)
-
-        // Use to track arrow-key events on the chart
-        const inputRef = useRef(null)
-        const handleMouseEnter = useCallback(
-          event => {
-            const { current } = inputRef
-            if (current) {
-              current.focus()
-            }
-          },
-          [inputRef]
-        )
-        const handleKeyDown = useCallback(
-          event => {
-            const { key } = event
-            dispatch({ type: KEY_DOWN, index, key, rect: ref.current })
-          },
-          [index, ref]
-        )
-
-        const curveConfig = useMemo(
-          () => ({
-            position: {
-              my: 'top-left',
-              container: '.multi-line-chart-container'
-            },
-            show: {
-              delay: 105
-            },
-            hide: {
-              delay: 100
-            },
-            wrapper: Pinnable,
-            wrapperProps: { style: styles.lightStyle }
-          }),
-          []
-        )
-        const viewportClass = `viewport-${index}`
-        const pointConfig = useMemo(
-          () => ({
-            position: {
-              my: 'bottom-left',
-              container: '.multi-line-chart-container',
-              viewport: `.${viewportClass}`,
-              adjust: {
-                method: {
-                  flip: ['bottom-left', 'bottom-right', 'top-left', 'top-right']
-                },
-                mouse: position => {
-                  const rect = ref.current
-                  const svg = rect.ownerSVGElement
-
-                  // Retrieve the point point closest to the mouse point
-                  const ctm = rect.getScreenCTM()
-                  const pos = svg.createSVGPoint()
-                  pos.x = position.x
-                  pos.y = position.y
-                  const pos2 = pos.matrixTransform(ctm.inverse())
-                  const ptIndex = Math.max(
-                    0,
-                    Math.min(Math.floor((pos2.x * count) / W), count - 1)
-                  )
-
-                  // Compte the location of the tooltip
-                  const vpc = toViewport(rect, points[ptIndex])
-                  const { x, y } = vpc
-                  Promise.resolve().then(() => {
-                    // Update position asynchonously since one cannot
-                    // update Graph when rendering tooltip
-                    // https://fb.me/setstate-in-render
-                    dispatch({
-                      type: MOUSE_MOVE,
-                      index,
-                      ptIndex,
-                      location: {
-                        left: x,
-                        top: y
-                      }
-                    })
-                  })
-                  return vpc
-                }
-              }
-            },
-            show: {
-              delay: 105
-            },
-            hide: {
-              delay: 100
-            },
-            wrapper: Pinnable,
-            wrapperProps: { wrapper: config.wrapper }
-          }),
-          [viewportClass]
-        )
-        const kbdConfig = pinned
-          ? { config: { position: { adjust: { location } } } }
-          : {}
-        return (
-          <div className='graph' onMouseEnter={handleMouseEnter}>
-            <MergingConfigProvider value={curveConfig}>
-              <div className='graph-title'>
-                <Source id={`ti@${index}`}>
-                  <span style={{ color }}>{color}</span> graph
-                </Source>
-              </div>
-            </MergingConfigProvider>
-            <MergingConfigProvider value={pointConfig}>
-              <svg
-                className={viewportClass}
-                width='600px'
-                height='200px'
-                style={{ border: `2px solid ${color}` }}
-              >
-                <Source id={`cu@${index}`} svg {...kbdConfig}>
-                  <rect
-                    x={0}
-                    y={0}
-                    width={600}
-                    height={200}
-                    style={{ fill: 'white', stroke: 'none' }}
-                    ref={ref}
-                  />
-                  <path
-                    style={{ stroke: color, fill: 'none' }}
-                    d={points
-                      .map(
-                        ({ x, y }, index) => `${index ? 'L' : 'M'} ${x},${y}`
-                      )
-                      .join(' ')}
-                  />
-                </Source>
-              </svg>
-            </MergingConfigProvider>
-            <input
-              className='graph-input'
-              ref={inputRef}
-              type='text'
-              onKeyDown={handleKeyDown}
-            />
-          </div>
-        )
-      }
-
       const MultiLineChart = props => {
         const { model } = props
-        const [tips, setTips] = useState([])
-        const [state, dispatch] = useReducer(modelReducer, model)
+        const [state, dispatch] = useReducer(multiLineChartReducer, {
+          graphs: model,
+          tips: []
+        })
+        const { tips, graphs } = state
 
         const renderTips = useCallback(
           (tipid, pinned) => {
             const [, kind, index] = /(ti|cu)@(.+)/.exec(tipid) || []
             if (kind === 'ti') {
-              const { extremum } = state[index]
-              return (
-                <div key={index} className='chart-tip'>
-                  <div>Extremum:</div>
-                  <div>min={extremum.ymin}</div>
-                  <div>max={extremum.ymax}</div>
-                </div>
-              )
+              const { extremum } = graphs[index]
+              return <ChartTip key={index} extremum={extremum} />
             } else {
-              const { points, ptIndex } = state[index]
-              const { x, y } = points[ptIndex]
-              return (
-                <div key={index} className='chart-tip'>
-                  <div>Coordinates:</div>
-                  <div>x={x}</div>
-                  <div>y={y}</div>
-                </div>
-              )
+              const { points, ptIndex } = graphs[index]
+              const point = points[ptIndex]
+              return <CurveTip key={index} point={point} />
             }
           },
-          [state]
+          [graphs]
         )
 
-        const handleTipChange = useCallback(tips => {
-          dispatch({type: PIN, tips })
-          setTips(tips)
-        }, [])
+        const handleTips = useCallback(
+          tips => {
+            dispatch({ type: TIP, tips })
+          },
+          [dispatch]
+        )
 
         return (
-          <Storage
-            tips={tips}
-            tip={renderTips}
-            onTipChange={handleTipChange}
-          >
-            <div className='multi-line-chart'>
-              <div className='multi-line-chart-container'>
-                {
-                  state.map((graph, index) => {
-                    const { color, points, pinned, location } = graph
+          <MultiLineChartContext.Provider value={dispatch}>
+            <Storage tips={tips} tip={renderTips} onTipChange={handleTips}>
+              <div className='multi-line-chart'>
+                <div className='multi-line-chart-container'>
+                  {graphs.map((graph, index) => {
+                    const { color, points, pinned, location, keyboard } = graph
                     return (
                       <Graph
                         key={index}
                         index={index}
                         color={color}
                         points={points}
-                        dispatch={dispatch}
                         pinned={pinned}
+                        keyboard={keyboard}
                         location={location}
                       />
                     )
-                  })
-                }
+                  })}
+                </div>
               </div>
-            </div>
-          </Storage>
+            </Storage>
+          </MultiLineChartContext.Provider>
         )
       }
       return <MultiLineChart model={model} />
@@ -861,7 +613,7 @@ storiesOf('Sticky-notes', module)
         return <div>{label} tip</div>
       }
       const storageReducer = (state, action) => {
-        // console.log('storageReducer', state, action)
+        // ('storageReducer', state, action)
         const { type } = action
         switch (type) {
           case 'TIP': {
