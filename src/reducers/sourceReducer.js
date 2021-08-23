@@ -49,7 +49,6 @@ const BOTTOM = new Set([
 export const MOUSE_OVER = 'MOUSE_OVER'
 export const MOUSE_MOVE = 'MOUSE_MOVE'
 export const MOUSE_OUT = 'MOUSE_OUT'
-export const LOCATION = 'LOCATION'
 export const GEOMETRY = 'GEOMETRY'
 export const VISIBILITY = 'VISIBILITY'
 export const PIN = 'PIN'
@@ -187,18 +186,6 @@ export const sourceReducer = (state, action) => {
       return updates ? { ...state, ...updates } : state
     }
 
-    case LOCATION: {
-      const { location } = action
-      const updates = layout(state, {
-        mouse: {
-          ...location,
-          width: 1,
-          height: 1
-        }
-      })
-      return updates ? { ...state, ...updates } : state
-    }
-
     case GEOMETRY: {
       const updates = layout(state, { geometry: action.geometry })
       return updates ? { ...state, ...updates } : state
@@ -237,14 +224,21 @@ export const sourceReducer = (state, action) => {
 
     case RESET: {
       // Forget previous location
-      const { showTimeoutId, hideTimeoutId, location, ...rest } = state
+      const { showTimeoutId, hideTimeoutId, ...rest } = state
       if (showTimeoutId) {
         clearInterval(showTimeoutId)
       }
       if (hideTimeoutId) {
         clearInterval(hideTimeoutId)
       }
-      return { ...rest, config: action.config }
+      const { config } = action
+      state = { ...rest, config }
+      const { position: { adjust: { location } } } = config
+      if (location) {
+        const updates = layout(state, {})
+        return updates ? { ...state, ...updates } : state
+      }
+      return state
     }
   }
 }
@@ -252,7 +246,7 @@ export const sourceReducer = (state, action) => {
 // The layout function computes the actual tip placement, taking into account
 // the target, tip and viewport rects.
 const layout = (state, params) => {
-  log('sourceReducer', 1, { state, params })
+  log('sourceReducer', 1, 'layout', state, params)
   const { config, ref, viewportElt, containerElt } = state
   let { target, geometry, viewport, container } = state
   const updates = {}
@@ -261,10 +255,16 @@ const layout = (state, params) => {
       target: targetConf,
       at,
       my,
-      adjust: { method, x, y }
+      adjust: { method, x, y, location }
     }
   } = config
-
+  if (location) {
+    params.mouse = {
+      ...location,
+      width: 1,
+      height: 1
+    }
+  }
   if (params.mouse) {
     updates.target = target = params.mouse
   }

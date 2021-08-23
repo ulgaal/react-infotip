@@ -7,7 +7,7 @@ import {
   MOUSE_OVER,
   MOUSE_OUT,
   MOUSE_MOVE,
-  LOCATION,
+  RESET,
   GEOMETRY,
   VISIBILITY,
   PIN,
@@ -68,7 +68,10 @@ export const storageReducer = (state, action) => {
           if (!sources[id]) {
             const { container, viewport } = storedTip.config.position
             const containerElt = getElement(container)
-            const viewportElt = (viewport === container || !viewport) ? containerElt : getElement(viewport)
+            const viewportElt =
+              viewport === container || !viewport
+                ? containerElt
+                : getElement(viewport)
             newSources[id] = {
               ...sourceInit({
                 ...storedTip
@@ -222,15 +225,20 @@ export const storageReducer = (state, action) => {
       )
       return sources === newSources ? state : { ...state, sources: newSources }
     }
-    case LOCATION: {
+    case RESET: {
       const { id } = action
       const source = sources[id]
-      const newSources = updateSource(
-        sources,
-        id,
-        sourceReducer(source, action)
-      )
-      return sources === newSources ? state : { ...state, sources: newSources }
+      if (source) {
+        const newSources = updateSource(
+          sources,
+          id,
+          sourceReducer(source, action)
+        )
+        return sources === newSources
+          ? state
+          : { ...state, sources: newSources }
+      }
+      return state
     }
     case DISABLE: {
       const { id, disabled } = action

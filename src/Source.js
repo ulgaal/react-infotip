@@ -36,7 +36,6 @@ import {
   MOUSE_OVER,
   MOUSE_MOVE,
   MOUSE_OUT,
-  LOCATION,
   PIN,
   RESET,
   DISABLE,
@@ -76,9 +75,8 @@ const Source = props => {
 
   // Reinitialize the source if the config changes
   useEffect(() => {
-    if (useStorageReducer && Object.prototype.hasOwnProperty.call(config.position.adjust, 'location')) {
-      const { position: { adjust: { location } } } = config
-      dispatch({ type: LOCATION, id, location })
+    if (useStorageReducer) {
+      dispatch({ type: RESET, id, config })
     }
     if (config !== state.config) {
       dispatch({ type: RESET, config })
