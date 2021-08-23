@@ -97,7 +97,8 @@ export const storageReducer = (state, action) => {
           left: source.location.left + delta.x,
           top: source.location.top + delta.y
         },
-        moved: true
+        moved: true,
+        pinned: true
       }
       // Force source reordering
       // This will bring the tip being dragged to the foreground
