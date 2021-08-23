@@ -21,7 +21,7 @@ const CurveTipWrapper = props => {
       <div className='curve-tip-wrapper' onPointerDown={onPointerDown}>
         <div className='curve-tip-icons' onMouseMove={noEvent}>
           <div title={pinned ? 'Unpin tip' : 'Pin tip'}>
-            <Pin className='curve-tip' pinned={pinned} onClick={onPin} />
+            <Pin className='curve-tip' pinned={pinned} onPointerDown={onPin} />
           </div>
           <Keyboard onClick={onKeyboard} on={keyboard} />
           <div title='Copy contents to clipboard'>
