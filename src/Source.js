@@ -309,7 +309,7 @@ Source.propTypes = {
    * | mouse         | `<mouse-spec>`         | Describes how mouse movement affects the tip placement. Can be one of <dl><dt>false</dt><dd>do not adjust to mouse move (default)</dd><dt>true</dt><dd>adjust to mouse move</dd><dt><pre>function: event =&gt; ({ x, y })</pre></dt><dd>compute the position of the tip using a function which receives mouse move event as input</dd></dl>
    * | x             | `<number>`             | x-translation the tip (0 by default)
    * | y             | `<number>`             | y-translation the tip (0 by default)
-   * | location      | `<LocationType>`       | Behave as a controlled component and used supplied location for tip placement
+   * | location      | `<LocationType>`       | Behave as a controlled component and use supplied location for tip placement
    * | method        | `<method-spec>`        | Decribes the method to use to optimize tip placement inside its container. Can be one of <dl><dt>none</dt><dd>no placement adjustment (default)</dd><dt>{ flip: [&lt;CornerType&gt; (, &lt;CornerType&gt;)\* ] }</dt><dd>pick the corner which maximizes overlap between the tip and its container</dd><dt>{ shift: [&lt;AxisType&gt; (, &lt;AxisType&gt;)\*]}</dt><dd>keep the tip inside its container for the specified axis</dd></dl>
    *
    * `<LocationType>` is an object, which contains the following keys:
