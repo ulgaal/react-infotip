@@ -1,3 +1,12 @@
+## Version 1.4.0 (2021/08/24)
+- Fix reg for pinned Sources sample
+- Exported Pin component
+- Automatically pin a sticky note when it gets dragged
+- Added a new `position.adjust.location` configuration key to control tip placement programmatically
+- Externalized code for graph sticky-notes in separate folder
+- Revamped sticky-notes graph sample to demonstrate how to use `position.adjust.location` to control sticky-notes location with the keyboard
+- Migrated to storybook 6.2.9
+  
 ## Version 1.3.1 (2021/03/30)
 - Added extra UNMOUNT action to delete pending tips when a Source in a Storage unmount
 - Added additional 'my' parameter to the 'tip' callback of the Storage component
