@@ -14,6 +14,7 @@ const CurveTipWrapper = props => {
     index,
     keyboard,
     onKeyboard,
+    onCopy,
     ...rest
   } = props
   return (
@@ -24,7 +25,7 @@ const CurveTipWrapper = props => {
             <Pin className='curve-tip' pinned={pinned} onPointerDown={onPin} />
           </div>
           <Keyboard onClick={onKeyboard} on={keyboard} />
-          <div title='Copy contents to clipboard'>
+          <div title='Copy contents to clipboard' onPointerDown={onCopy}>
             <Copy />
           </div>
         </div>

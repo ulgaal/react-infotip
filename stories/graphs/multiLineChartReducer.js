@@ -1,11 +1,12 @@
 import { createContext } from 'react'
-import { toViewport } from './chartUtils'
+import { toViewport, copyTextToClipboard } from './chartUtils'
 import { COUNT } from './model'
 
 export const MOUSE_MOVE = 'MOUSE_MOVE'
 export const KEY_DOWN = 'KEY_DOWN'
 export const TIP = 'TIP'
 export const KEYBOARD = 'KEYBOARD'
+export const COPY = 'COPY'
 
 export const MultiLineChartContext = createContext(null)
 export const multiLineChartReducer = (state, action) => {
@@ -54,6 +55,19 @@ export const multiLineChartReducer = (state, action) => {
         return update(index, { ptIndex, location })
       }
       break
+    }
+    case COPY: {
+      const { index } = action
+      const { graphs } = state
+      const { points, ptIndex } = graphs[index]
+      const point = points[ptIndex]
+      const { x, y } = point
+      const text = `Coordinates:
+  x:${x}
+  y:${y}`
+      copyTextToClipboard(text)
+
+      return state
     }
   }
   return state

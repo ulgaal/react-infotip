@@ -554,16 +554,11 @@ storiesOf('Sticky-notes', module)
               <div className='multi-line-chart'>
                 <div className='multi-line-chart-container'>
                   {graphs.map((graph, index) => {
-                    const { color, points, pinned, location, keyboard } = graph
                     return (
                       <Graph
                         key={index}
                         index={index}
-                        color={color}
-                        points={points}
-                        pinned={pinned}
-                        keyboard={keyboard}
-                        location={location}
+                        graph={graph}
                       />
                     )
                   })}

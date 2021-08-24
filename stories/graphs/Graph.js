@@ -10,7 +10,8 @@ import {
   MultiLineChartContext,
   KEYBOARD,
   KEY_DOWN,
-  MOUSE_MOVE
+  MOUSE_MOVE,
+  COPY
 } from './multiLineChartReducer'
 import CurveTipWrapper from './CurveTipWrapper'
 import { toViewport } from './chartUtils'
@@ -18,7 +19,10 @@ import { COUNT, W } from './model'
 import './Graph.css'
 
 const Graph = props => {
-  const { index, color, points, keyboard, location } = props
+  const {
+    index,
+    graph: { color, points, keyboard, location }
+  } = props
   const config = useContext(ConfigContext)
   const dispatch = useContext(MultiLineChartContext)
   const ref = useRef(null)
@@ -52,6 +56,14 @@ const Graph = props => {
       }
     },
     [inputRef]
+  )
+  const handleCopy = useCallback(
+    event => {
+      event.preventDefault()
+      event.stopPropagation()
+      dispatch({ type: COPY, index })
+    },
+    [index]
   )
 
   const curveConfig = useMemo(
@@ -130,7 +142,8 @@ const Graph = props => {
       wrapperProps: {
         wrapper: config.wrapper,
         keyboard,
-        onKeyboard: handleKeyboard
+        onKeyboard: handleKeyboard,
+        onCopy: handleCopy
       }
     }
   }, [viewportClass, keyboard])
@@ -147,29 +160,36 @@ const Graph = props => {
         </div>
       </MergingConfigProvider>
       <MergingConfigProvider value={pointConfig}>
-        <svg
-          className={viewportClass}
-          width='600px'
-          height='200px'
-          style={{ border: `2px solid ${color}` }}
-        >
-          <Source id={`cu@${index}`} svg {...kbdConfig}>
-            <rect
-              x={0}
-              y={0}
-              width={600}
-              height={200}
-              style={{ fill: 'white', stroke: 'none' }}
-              ref={ref}
-            />
-            <path
-              style={{ stroke: color, fill: 'none' }}
-              d={points
-                .map(({ x, y }, index) => `${index ? 'L' : 'M'} ${x},${y}`)
-                .join(' ')}
-            />
-          </Source>
-        </svg>
+        <div className='graph-container'>
+          <svg
+            className={viewportClass}
+            width='600px'
+            height='200px'
+            style={{ border: `2px solid ${color}` }}
+          >
+            <Source id={`cu@${index}`} svg {...kbdConfig}>
+              <rect
+                x={0}
+                y={0}
+                width={600}
+                height={200}
+                style={{ fill: 'white', stroke: 'none' }}
+                ref={ref}
+              />
+              <path
+                style={{ stroke: color, fill: 'none' }}
+                d={points
+                  .map(({ x, y }, index) => `${index ? 'L' : 'M'} ${x},${y}`)
+                  .join(' ')}
+              />
+            </Source>
+          </svg>
+          {
+            keyboard
+              ? <div className='graph-hint'>Use ← and → keys to select next/previous point</div>
+              : null
+          }
+        </div>
       </MergingConfigProvider>
       <input
         className='graph-input'
