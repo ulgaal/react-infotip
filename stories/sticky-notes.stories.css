@@ -80,9 +80,6 @@
   flex-direction: column;
   border: 1px dotted black;
 }
-.chart-tip {
-  font-size: 10px;
-}
 
 .chart-tip div:first-child {
   font-weight: bold;
@@ -116,4 +113,16 @@
   margin-bottom: 5px;
 }
 .disabable-checkbox {
+}
+.copy-area {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
 }

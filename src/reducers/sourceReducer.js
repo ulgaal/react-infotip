@@ -196,7 +196,10 @@ export const sourceReducer = (state, action) => {
       if (action.visible && !containerElt) {
         const { container, viewport } = state.config.position
         containerElt = getElement(container)
-        viewportElt = (viewport === container || !viewport) ? containerElt : getElement(viewport)
+        viewportElt =
+          viewport === container || !viewport
+            ? containerElt
+            : getElement(viewport)
       }
       return {
         ...rest,
@@ -208,15 +211,17 @@ export const sourceReducer = (state, action) => {
     }
 
     case PIN: {
-      const { pinned } = action
       const { visible, containerElt, config } = state
       const updates = {}
-      if (pinned && !visible) {
+      if (action.pinned && !visible) {
         updates.visible = true
         if (!containerElt) {
           const { container, viewport } = config.position
           updates.containerElt = getElement(container)
-          updates.viewportElt = (viewport === container || !viewport) ? containerElt : getElement(viewport)
+          updates.viewportElt =
+            viewport === container || !viewport
+              ? updates.containerElt
+              : getElement(viewport)
         }
       }
       return { ...state, ...params, ...updates }
@@ -224,14 +229,25 @@ export const sourceReducer = (state, action) => {
 
     case RESET: {
       // Forget previous location
-      const { showTimeoutId, hideTimeoutId, location, ...rest } = state
+      const { showTimeoutId, hideTimeoutId, ...rest } = state
       if (showTimeoutId) {
         clearInterval(showTimeoutId)
       }
       if (hideTimeoutId) {
         clearInterval(hideTimeoutId)
       }
-      return { ...rest, config: action.config }
+      const { config } = action
+      state = { ...rest, config }
+      const {
+        position: {
+          adjust: { location }
+        }
+      } = config
+      if (location) {
+        const updates = layout(state, {})
+        return updates ? { ...state, ...updates } : state
+      }
+      return state
     }
   }
 }
@@ -239,7 +255,7 @@ export const sourceReducer = (state, action) => {
 // The layout function computes the actual tip placement, taking into account
 // the target, tip and viewport rects.
 const layout = (state, params) => {
-  log('sourceReducer', 1, { state, params })
+  log('sourceReducer', 1, 'layout', state, params)
   const { config, ref, viewportElt, containerElt } = state
   let { target, geometry, viewport, container } = state
   const updates = {}
@@ -248,10 +264,16 @@ const layout = (state, params) => {
       target: targetConf,
       at,
       my,
-      adjust: { method, x, y }
+      adjust: { method, x, y, location }
     }
   } = config
-
+  if (location) {
+    params.mouse = {
+      ...location,
+      width: 1,
+      height: 1
+    }
+  }
   if (params.mouse) {
     updates.target = target = params.mouse
   }

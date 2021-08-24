@@ -7,6 +7,7 @@ import {
   MOUSE_OVER,
   MOUSE_OUT,
   MOUSE_MOVE,
+  RESET,
   GEOMETRY,
   VISIBILITY,
   PIN,
@@ -67,7 +68,10 @@ export const storageReducer = (state, action) => {
           if (!sources[id]) {
             const { container, viewport } = storedTip.config.position
             const containerElt = getElement(container)
-            const viewportElt = (viewport === container || !viewport) ? containerElt : getElement(viewport)
+            const viewportElt =
+              viewport === container || !viewport
+                ? containerElt
+                : getElement(viewport)
             newSources[id] = {
               ...sourceInit({
                 ...storedTip
@@ -93,7 +97,8 @@ export const storageReducer = (state, action) => {
           left: source.location.left + delta.x,
           top: source.location.top + delta.y
         },
-        moved: true
+        moved: true,
+        pinned: true
       }
       // Force source reordering
       // This will bring the tip being dragged to the foreground
@@ -220,6 +225,21 @@ export const storageReducer = (state, action) => {
         sourceReducer(source, action)
       )
       return sources === newSources ? state : { ...state, sources: newSources }
+    }
+    case RESET: {
+      const { id } = action
+      const source = sources[id]
+      if (source) {
+        const newSources = updateSource(
+          sources,
+          id,
+          sourceReducer(source, action)
+        )
+        return sources === newSources
+          ? state
+          : { ...state, sources: newSources }
+      }
+      return state
     }
     case DISABLE: {
       const { id, disabled } = action

@@ -91,6 +91,8 @@ const Storage = props => {
   const handlePin = useCallback(event => {
     const target = event.target.closest('[data-rit-id]')
     if (target) {
+      event.preventDefault()
+      event.stopPropagation()
       const id = target.dataset.ritId
       event.stopPropagation()
       event.preventDefault()

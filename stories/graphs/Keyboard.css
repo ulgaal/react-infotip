@@ -1,0 +1,14 @@
+.keyboard-icon-off {
+  stroke:black;
+  fill: none;
+}
+.keyboard-icon-off:hover {
+  stroke:gray;
+}
+.keyboard-icon-on {
+  stroke:none;
+  fill: black;
+}
+.keyboard-icon-on:hover {
+  fill: gray;
+}
