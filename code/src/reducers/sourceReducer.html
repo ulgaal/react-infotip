@@ -182,7 +182,10 @@ an event to show it</p></div></div><div class="code"><div class="wrapper">      
       <span class="hljs-keyword">if</span> (action.visible &amp;&amp; !containerElt) {
         <span class="hljs-keyword">const</span> { container, viewport } = state.config.position
         containerElt = getElement(container)
-        viewportElt = (viewport === container || !viewport) ? containerElt : getElement(viewport)
+        viewportElt =
+          viewport === container || !viewport
+            ? containerElt
+            : getElement(viewport)
       }
       <span class="hljs-keyword">return</span> {
         ...rest,
@@ -194,33 +197,46 @@ an event to show it</p></div></div><div class="code"><div class="wrapper">      
     }
 
     <span class="hljs-keyword">case</span> PIN: {
-      <span class="hljs-keyword">const</span> { pinned } = action
       <span class="hljs-keyword">const</span> { visible, containerElt, config } = state
       <span class="hljs-keyword">const</span> updates = {}
-      <span class="hljs-keyword">if</span> (pinned &amp;&amp; !visible) {
+      <span class="hljs-keyword">if</span> (action.pinned &amp;&amp; !visible) {
         updates.visible = <span class="hljs-literal">true</span>
         <span class="hljs-keyword">if</span> (!containerElt) {
           <span class="hljs-keyword">const</span> { container, viewport } = config.position
           updates.containerElt = getElement(container)
-          updates.viewportElt = (viewport === container || !viewport) ? containerElt : getElement(viewport)
+          updates.viewportElt =
+            viewport === container || !viewport
+              ? updates.containerElt
+              : getElement(viewport)
         }
       }
       <span class="hljs-keyword">return</span> { ...state, ...params, ...updates }
     }
 
-    <span class="hljs-keyword">case</span> RESET: {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Forget previous location</p></div></div><div class="code"><div class="wrapper">      <span class="hljs-keyword">const</span> { showTimeoutId, hideTimeoutId, location, ...rest } = state
+    <span class="hljs-keyword">case</span> RESET: {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Forget previous location</p></div></div><div class="code"><div class="wrapper">      <span class="hljs-keyword">const</span> { showTimeoutId, hideTimeoutId, ...rest } = state
       <span class="hljs-keyword">if</span> (showTimeoutId) {
         clearInterval(showTimeoutId)
       }
       <span class="hljs-keyword">if</span> (hideTimeoutId) {
         clearInterval(hideTimeoutId)
       }
-      <span class="hljs-keyword">return</span> { ...rest, config: action.config }
+      <span class="hljs-keyword">const</span> { config } = action
+      state = { ...rest, config }
+      <span class="hljs-keyword">const</span> {
+        position: {
+          adjust: { location }
+        }
+      } = config
+      <span class="hljs-keyword">if</span> (location) {
+        <span class="hljs-keyword">const</span> updates = layout(state, {})
+        <span class="hljs-keyword">return</span> updates ? { ...state, ...updates } : state
+      }
+      <span class="hljs-keyword">return</span> state
     }
   }
 }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The layout function computes the actual tip placement, taking into account
 the target, tip and viewport rects.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> layout = (state, params) =&gt; {
-  log(<span class="hljs-string">'sourceReducer'</span>, <span class="hljs-number">1</span>, { state, params })
+  log(<span class="hljs-string">'sourceReducer'</span>, <span class="hljs-number">1</span>, <span class="hljs-string">'layout'</span>, state, params)
   <span class="hljs-keyword">const</span> { config, ref, viewportElt, containerElt } = state
   <span class="hljs-keyword">let</span> { target, geometry, viewport, container } = state
   <span class="hljs-keyword">const</span> updates = {}
@@ -229,10 +245,16 @@ the target, tip and viewport rects.</p></div></div><div class="code"><div class=
       target: targetConf,
       at,
       my,
-      adjust: { method, x, y }
+      adjust: { method, x, y, location }
     }
   } = config
-
+  <span class="hljs-keyword">if</span> (location) {
+    params.mouse = {
+      ...location,
+      width: <span class="hljs-number">1</span>,
+      height: <span class="hljs-number">1</span>
+    }
+  }
   <span class="hljs-keyword">if</span> (params.mouse) {
     updates.target = target = params.mouse
   }

@@ -69,6 +69,8 @@ actually come from sources and bubble to the storage):</p>
 </ul></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> handlePin = useCallback(event =&gt; {
     <span class="hljs-keyword">const</span> target = event.target.closest(<span class="hljs-string">'[data-rit-id]'</span>)
     <span class="hljs-keyword">if</span> (target) {
+      event.preventDefault()
+      event.stopPropagation()
       <span class="hljs-keyword">const</span> id = target.dataset.ritId
       event.stopPropagation()
       event.preventDefault()

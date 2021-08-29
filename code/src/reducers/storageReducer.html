@@ -7,6 +7,7 @@
   MOUSE_OVER,
   MOUSE_OUT,
   MOUSE_MOVE,
+  RESET,
   GEOMETRY,
   VISIBILITY,
   PIN,
@@ -65,7 +66,10 @@ export const storageReducer = (state, action) =&gt; {
           <span class="hljs-keyword">if</span> (!sources[id]) {
             <span class="hljs-keyword">const</span> { container, viewport } = storedTip.config.position
             <span class="hljs-keyword">const</span> containerElt = getElement(container)
-            <span class="hljs-keyword">const</span> viewportElt = (viewport === container || !viewport) ? containerElt : getElement(viewport)
+            <span class="hljs-keyword">const</span> viewportElt =
+              viewport === container || !viewport
+                ? containerElt
+                : getElement(viewport)
             newSources[id] = {
               ...sourceInit({
                 ...storedTip
@@ -91,7 +95,8 @@ export const storageReducer = (state, action) =&gt; {
           left: source.location.left + delta.x,
           top: source.location.top + delta.y
         },
-        moved: <span class="hljs-literal">true</span>
+        moved: <span class="hljs-literal">true</span>,
+        pinned: <span class="hljs-literal">true</span>
       }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Force source reordering
 This will bring the tip being dragged to the foreground</p></div></div><div class="code"><div class="wrapper">      <span class="hljs-keyword">const</span> { [id]: oldSource, ...oldSources } = sources
       <span class="hljs-keyword">const</span> newSources = { ...oldSources, [id]: newSource }
@@ -216,6 +221,21 @@ This will bring the tip being dragged to the foreground</p></div></div><div clas
         sourceReducer(source, action)
       )
       <span class="hljs-keyword">return</span> sources === newSources ? state : { ...state, sources: newSources }
+    }
+    <span class="hljs-keyword">case</span> RESET: {
+      <span class="hljs-keyword">const</span> { id } = action
+      <span class="hljs-keyword">const</span> source = sources[id]
+      <span class="hljs-keyword">if</span> (source) {
+        <span class="hljs-keyword">const</span> newSources = updateSource(
+          sources,
+          id,
+          sourceReducer(source, action)
+        )
+        <span class="hljs-keyword">return</span> sources === newSources
+          ? state
+          : { ...state, sources: newSources }
+      }
+      <span class="hljs-keyword">return</span> state
     }
     <span class="hljs-keyword">case</span> DISABLE: {
       <span class="hljs-keyword">const</span> { id, disabled } = action
