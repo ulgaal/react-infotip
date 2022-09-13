@@ -230,12 +230,6 @@ export const sourceReducer = (state, action) => {
     case RESET: {
       // Forget previous location
       const { showTimeoutId, hideTimeoutId, ...rest } = state
-      if (showTimeoutId) {
-        clearInterval(showTimeoutId)
-      }
-      if (hideTimeoutId) {
-        clearInterval(hideTimeoutId)
-      }
       const { config } = action
       state = { ...rest, config }
       const {
@@ -246,6 +240,13 @@ export const sourceReducer = (state, action) => {
       if (location) {
         const updates = layout(state, {})
         return updates ? { ...state, ...updates } : state
+      } else {
+        if (showTimeoutId) {
+          clearInterval(showTimeoutId)
+        }
+        if (hideTimeoutId) {
+          clearInterval(hideTimeoutId)
+        }  
       }
       return state
     }
