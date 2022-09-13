@@ -203,7 +203,7 @@ export const storageReducer = (state, action) => {
     case MOUSE_OUT: {
       const { id } = action
       const source = sources[id]
-      if (source.pinned) {
+      if (!source || source.pinned) {
         return state
       }
       const newSources = updateSource(
@@ -216,7 +216,7 @@ export const storageReducer = (state, action) => {
     case MOUSE_MOVE: {
       const { id } = action
       const source = sources[id]
-      if (!source.config.position.adjust.mouse || source.pinned) {
+      if (!source || !source.config.position.adjust.mouse || source.pinned) {
         return state
       }
       const newSources = updateSource(
