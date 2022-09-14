@@ -1,3 +1,8 @@
+## Version 1.4.1 (2022/09/14)
+- Do not disable hide/show timers when a RESET is caused by a change of location 
+- Made storageReducer more resilient to mouse events coming after a source has been unmounted 
+- Pinned storybook version pending migration to newer version 
+
 ## Version 1.4.0 (2021/08/24)
 - Fix reg for pinned Sources sample
 - Exported Pin component
