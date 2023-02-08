@@ -1,3 +1,6 @@
+## Version 1.5.0 (2023/02/08)
+- Upgraded dependencies to React@18.2.0
+
 ## Version 1.4.1 (2022/09/14)
 - Do not disable hide/show timers when a RESET is caused by a change of location 
 - Made storageReducer more resilient to mouse events coming after a source has been unmounted 
