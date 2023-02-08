@@ -199,7 +199,7 @@ This will bring the tip being dragged to the foreground</p></div></div><div clas
     <span class="hljs-keyword">case</span> MOUSE_OUT: {
       <span class="hljs-keyword">const</span> { id } = action
       <span class="hljs-keyword">const</span> source = sources[id]
-      <span class="hljs-keyword">if</span> (source.pinned) {
+      <span class="hljs-keyword">if</span> (!source || source.pinned) {
         <span class="hljs-keyword">return</span> state
       }
       <span class="hljs-keyword">const</span> newSources = updateSource(
@@ -212,7 +212,7 @@ This will bring the tip being dragged to the foreground</p></div></div><div clas
     <span class="hljs-keyword">case</span> MOUSE_MOVE: {
       <span class="hljs-keyword">const</span> { id } = action
       <span class="hljs-keyword">const</span> source = sources[id]
-      <span class="hljs-keyword">if</span> (!source.config.position.adjust.mouse || source.pinned) {
+      <span class="hljs-keyword">if</span> (!source || !source.config.position.adjust.mouse || source.pinned) {
         <span class="hljs-keyword">return</span> state
       }
       <span class="hljs-keyword">const</span> newSources = updateSource(
