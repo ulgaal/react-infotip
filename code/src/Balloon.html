@@ -27,9 +27,17 @@ the elements from which the balloon originates.</p>
   ... tip content
  <span class="hljs-tag">&lt;/<span class="hljs-title">span</span>&gt;</span>
  <span class="hljs-tag">&lt;<span class="hljs-title">SvgTail</span>/&gt;</span> // Tail (overlaps the border of the bubble)
-<span class="hljs-tag">&lt;/<span class="hljs-title">span</span>&gt;</span></code></pre></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Balloon = props =&gt; {
-  log(<span class="hljs-string">'Balloon'</span>, <span class="hljs-number">0</span>, props)
-  <span class="hljs-keyword">const</span> { children, my, tail, style, className, id, dispatch } = props</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A ResizeObserver is tied to the bubble <code>&lt;span&gt;</code> of the
+<span class="hljs-tag">&lt;/<span class="hljs-title">span</span>&gt;</span></code></pre></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">const</span> Balloon = ({
+  children,
+  my = <span class="hljs-string">'top-left'</span>,
+  tail = { width: <span class="hljs-number">8</span>, height: <span class="hljs-number">8</span> },
+  style = styles.defaultStyle,
+  className,
+  id,
+  dispatch
+}) =&gt; {
+  <span class="hljs-keyword">const</span> props = { children, my, tail, style, className, id, dispatch }
+  log(<span class="hljs-string">'Balloon'</span>, <span class="hljs-number">0</span>, props)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A ResizeObserver is tied to the bubble <code>&lt;span&gt;</code> of the
 <code>Balloon</code> to measure it precisely.</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> ref = useRef(<span class="hljs-literal">null</span>)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A <code>Balloon</code> keeps track of a <code>metrics</code> state variable
 which contains info extracted by processing the CSS style of
 the <code>Balloon</code> and info extracted by measuring its bubble <code>&lt;span&gt;</code>.</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> [metrics, setMetrics] = useState(<span class="hljs-literal">null</span>)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Extract relevant style props from the DOM</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">const</span> computedStyle = useComputedStyle(style, className)
@@ -207,12 +215,6 @@ The function receives a GEOMETRY action with the following keys:</p>
 </tbody>
 </table></div></div><div class="code"><div class="wrapper">  dispatch: PropTypes.func,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The CSS style to use to render the balloon</p></div></div><div class="code"><div class="wrapper">  style: PropTypes.object,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>A CSS class specification to use to render the ballon (if used, will replace <code>style</code>)</p></div></div><div class="code"><div class="wrapper">  className: PropTypes.string,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p><code>true</code> if the balloon is pinned to the screen</p></div></div><div class="code"><div class="wrapper">  pinned: PropTypes.bool,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>If the balloon is contained in a <code>Storage</code>, an id which uniquely identifies
 the <code>Source</code> to which this balloon belongs</p></div></div><div class="code"><div class="wrapper">  id: PropTypes.string
-}
-
-Balloon.defaultProps = {
-  my: <span class="hljs-string">'top-left'</span>,
-  tail: { width: <span class="hljs-number">8</span>, height: <span class="hljs-number">8</span> },
-  style: styles.defaultStyle
 }
 
 <span class="hljs-keyword">const</span> computeMetrics = (tail, style, size) =&gt; {
