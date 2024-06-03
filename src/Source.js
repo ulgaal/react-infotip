@@ -46,10 +46,18 @@ import {
  * The `Source` component acts as a wrapper for other components and enables them
  * to provide tips.
  */
-const Source = props => {
+const Source = ({
+  id,
+  config: localConfig,
+  pinned = false,
+  disabled = false,
+  svg = false,
+  tip,
+  children
+}) => {
   // Merge the context and local configs and extract relevant
   // properties from it
-  const { id, config: localConfig, pinned, disabled } = props
+  const props = { id, localConfig, pinned, disabled, svg, tip, children }
   const contextConfig = useContext(ConfigContext)
   const config = useMemo(() => {
     return mergeObjects(contextConfig, localConfig)
@@ -189,8 +197,6 @@ const Source = props => {
     },
     [dispatch, id]
   )
-
-  const { tip, children, svg } = props
 
   // Since a `Source` needs to handle pointer events (notably it needs to
   // know when the pointer enters or leaves your component so that it
@@ -350,12 +356,6 @@ Source.propTypes = {
    * or hiding new tips, false (default) otherwise
    */
   disabled: PropTypes.bool
-}
-
-Source.defaultProps = {
-  pinned: false,
-  svg: false,
-  disabled: false
 }
 
 export const areEqual = (prev, next) => {

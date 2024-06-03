@@ -43,9 +43,18 @@ import { log } from './utils'
  * </span>
  * ```
  */
-const Balloon = props => {
+
+const Balloon = ({
+  children,
+  my = 'top-left',
+  tail = { width: 8, height: 8 },
+  style = styles.defaultStyle,
+  className,
+  id,
+  dispatch
+}) => {
+  const props = { children, my, tail, style, className, id, dispatch }
   log('Balloon', 0, props)
-  const { children, my, tail, style, className, id, dispatch } = props
 
   // A ResizeObserver is tied to the bubble `<span>` of the
   // `Balloon` to measure it precisely.
@@ -191,12 +200,6 @@ Balloon.propTypes = {
    * the `Source` to which this balloon belongs
    */
   id: PropTypes.string
-}
-
-Balloon.defaultProps = {
-  my: 'top-left',
-  tail: { width: 8, height: 8 },
-  style: styles.defaultStyle
 }
 
 const computeMetrics = (tail, style, size) => {

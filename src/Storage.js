@@ -51,8 +51,14 @@ import {
  * input a `Source` `id` and outputs the corresponding tip.
  */
 
-const Storage = props => {
-  const { children, tip, tips: storedTips, onTipChange } = props
+const Storage = ({
+  children,
+  tip,
+  tips: storedTips,
+  onTipChange,
+  disabled = false
+}) => {
+  const props = { children, tip, tips: storedTips, onTipChange, disabled }
 
   // A `Storage` keeps track of one state variable:
   // a hash of `Source` `id` to refcounted source state.
@@ -325,10 +331,6 @@ Storage.propTypes = {
    * or hiding new tips, false (default) otherwise
    */
   disabled: PropTypes.bool
-}
-
-Storage.defaultProps = {
-  disabled: false
 }
 
 export default Storage

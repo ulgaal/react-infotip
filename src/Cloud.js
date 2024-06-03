@@ -43,9 +43,21 @@ import { log } from './utils'
  * </div>
  * ```
  */
-const Cloud = props => {
+const Cloud = ({
+  children,
+  my = 'top-left',
+  tail = {
+    width: 25,
+    height: 25
+  },
+  folds = 13,
+  style = styles.defaultStyle,
+  className,
+  id,
+  dispatch
+}) => {
+  const props = { children, my, tail, folds, style, className, id, dispatch }
   log('Cloud', 0, props)
-  const { children, my, tail, folds, style, className, id, dispatch } = props
 
   // A ResizeObserver is tied to the content `<span>` of the
   // `Cloud` to measure it precisely.
@@ -201,16 +213,6 @@ Cloud.propTypes = {
    * the `Source` to which this cloud belongs
    */
   id: PropTypes.string
-}
-
-Cloud.defaultProps = {
-  my: 'top-left',
-  tail: {
-    width: 25,
-    height: 25
-  },
-  folds: 13,
-  style: styles.defaultStyle
 }
 
 const computeMetrics = ({ tail, folds, innerSize, style, className }) => {
