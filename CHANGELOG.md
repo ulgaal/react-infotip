@@ -1,3 +1,7 @@
+## Version 1.5.1 (2024/06/03)
+- Replaced react defaultProps with ES6 default parameter values
+- Migrated to react@18.3.1, react-dom@18.3.1, standard@17.1.0, core-js@3.37.1
+
 ## Version 1.5.0 (2023/02/08)
 - Upgraded dependencies to React@18.2.0
 
