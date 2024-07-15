@@ -1,4 +1,4 @@
-import isEqual from 'lodash.isequal'
+import { isEqual } from 'lodash-es'
 import { getElement, eqSet, diffSet, log } from '../utils'
 
 import {

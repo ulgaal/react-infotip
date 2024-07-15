@@ -1,7 +1,7 @@
 import React, { useContext, useRef, useMemo, useEffect } from 'react'
 import { mergeObjects, log } from './utils'
 import { ConfigContext } from './Contexts'
-import isEqual from 'lodash.isequal'
+import { isEqual } from 'lodash-es'
 
 // To avoid redefining the value of the `config` property, use
 // this component instead of a `<ConfigContext.Provider>`. The
