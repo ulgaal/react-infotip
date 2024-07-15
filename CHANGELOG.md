@@ -1,3 +1,6 @@
+## Version 1.5.2 (2024/07/15)
+- Migrated from lodash.isequal@4.5.0 and lodash.pick@4.4.0 to regular lodash-es@4.17.21 to address npm audit security warning
+
 ## Version 1.5.1 (2024/06/03)
 - Replaced react defaultProps with ES6 default parameter values
 - Migrated to react@18.3.1, react-dom@18.3.1, standard@17.1.0, core-js@3.37.1

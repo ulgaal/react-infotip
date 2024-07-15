@@ -18,7 +18,7 @@ limitations under the License.
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { CornerType, TailType } from './prop-types'
-import isEqual from 'lodash.isequal'
+import { isEqual } from 'lodash-es'
 import { styles } from './styles'
 import BalloonTail from './svg/BalloonTail'
 import useResizeObserver from './hooks/useResizeObserver'
