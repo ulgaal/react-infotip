@@ -31,18 +31,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "pageTitle": "src/Balloon",
             "title": "Balloon"
           },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 1,
-                "title": "Balloon",
-                "slug": "balloon"
-              },
-              "depth": 1
-            }
-          ]
+          "depth": 2
         }, {
           "type": "file",
           "data": {
@@ -61,18 +50,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "pageTitle": "src/Cloud",
             "title": "Cloud"
           },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 1,
-                "title": "Cloud",
-                "slug": "cloud"
-              },
-              "depth": 1
-            }
-          ]
+          "depth": 2
         }, {
           "type": "file",
           "data": {
@@ -91,18 +69,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "pageTitle": "src/Contexts",
             "title": "Contexts"
           },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 1,
-                "title": "Contexts",
-                "slug": "contexts"
-              },
-              "depth": 1
-            }
-          ]
+          "depth": 2
         }, {
           "type": "file",
           "data": {
@@ -121,18 +88,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "pageTitle": "src/Location",
             "title": "Location"
           },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 1,
-                "title": "Location",
-                "slug": "location"
-              },
-              "depth": 1
-            }
-          ]
+          "depth": 2
         }, {
           "type": "file",
           "data": {
@@ -151,8 +107,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "pageTitle": "src/MergingConfigProvider",
             "title": "MergingConfigProvider"
           },
-          "depth": 2,
-          "outline": []
+          "depth": 2
         }, {
           "type": "file",
           "data": {
@@ -171,18 +126,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "pageTitle": "src/Pinnable",
             "title": "Pinnable"
           },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 1,
-                "title": "Pinnable",
-                "slug": "pinnable"
-              },
-              "depth": 1
-            }
-          ]
+          "depth": 2
         }, {
           "type": "file",
           "data": {
@@ -201,18 +145,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "pageTitle": "src/Source",
             "title": "Source"
           },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 1,
-                "title": "Source",
-                "slug": "source"
-              },
-              "depth": 1
-            }
-          ]
+          "depth": 2
         }, {
           "type": "file",
           "data": {
@@ -231,18 +164,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "pageTitle": "src/Storage",
             "title": "Storage"
           },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 1,
-                "title": "Storage",
-                "slug": "storage"
-              },
-              "depth": 1
-            }
-          ]
+          "depth": 2
         }, {
           "type": "file",
           "data": {
@@ -261,18 +183,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "pageTitle": "src/css",
             "title": "css"
           },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 1,
-                "title": "css.js",
-                "slug": "cssjs"
-              },
-              "depth": 1
-            }
-          ]
+          "depth": 2
         }, {
           "type": "folder",
           "data": {
@@ -299,8 +210,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "pageTitle": "src/hooks/useComputedStyle",
                 "title": "useComputedStyle"
               },
-              "depth": 3,
-              "outline": []
+              "depth": 3
             }, {
               "type": "file",
               "data": {
@@ -319,8 +229,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "pageTitle": "src/hooks/useResizeObserver",
                 "title": "useResizeObserver"
               },
-              "depth": 3,
-              "outline": []
+              "depth": 3
             }
           ]
         }, {
@@ -341,18 +250,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "pageTitle": "src/index",
             "title": "index"
           },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 1,
-                "title": "index.js",
-                "slug": "indexjs"
-              },
-              "depth": 1
-            }
-          ]
+          "depth": 2
         }, {
           "type": "file",
           "data": {
@@ -371,18 +269,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "pageTitle": "src/prop-types",
             "title": "prop-types"
           },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 1,
-                "title": "prop-types.js",
-                "slug": "prop-typesjs"
-              },
-              "depth": 1
-            }
-          ]
+          "depth": 2
         }, {
           "type": "folder",
           "data": {
@@ -409,18 +296,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "pageTitle": "src/reducers/sourceReducer",
                 "title": "sourceReducer"
               },
-              "depth": 3,
-              "outline": [
-                {
-                  "type": "heading",
-                  "data": {
-                    "level": 1,
-                    "title": "sourceReducer",
-                    "slug": "sourcereducer"
-                  },
-                  "depth": 1
-                }
-              ]
+              "depth": 3
             }, {
               "type": "file",
               "data": {
@@ -439,8 +315,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "pageTitle": "src/reducers/storageReducer",
                 "title": "storageReducer"
               },
-              "depth": 3,
-              "outline": []
+              "depth": 3
             }
           ]
         }, {
@@ -461,18 +336,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "pageTitle": "src/styles",
             "title": "styles"
           },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 1,
-                "title": "styles.js",
-                "slug": "stylesjs"
-              },
-              "depth": 1
-            }
-          ]
+          "depth": 2
         }, {
           "type": "folder",
           "data": {
@@ -499,8 +363,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "pageTitle": "src/svg/BalloonTail",
                 "title": "BalloonTail"
               },
-              "depth": 3,
-              "outline": []
+              "depth": 3
             }, {
               "type": "file",
               "data": {
@@ -519,8 +382,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "pageTitle": "src/svg/CloudShape",
                 "title": "CloudShape"
               },
-              "depth": 3,
-              "outline": []
+              "depth": 3
             }, {
               "type": "file",
               "data": {
@@ -539,8 +401,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "pageTitle": "src/svg/Pin",
                 "title": "Pin"
               },
-              "depth": 3,
-              "outline": []
+              "depth": 3
             }
           ]
         }, {
@@ -561,8 +422,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "pageTitle": "src/useId",
             "title": "useId"
           },
-          "depth": 2,
-          "outline": []
+          "depth": 2
         }, {
           "type": "file",
           "data": {
@@ -581,18 +441,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "pageTitle": "src/utils",
             "title": "utils"
           },
-          "depth": 2,
-          "outline": [
-            {
-              "type": "heading",
-              "data": {
-                "level": 1,
-                "title": "utils.js",
-                "slug": "utilsjs"
-              },
-              "depth": 1
-            }
-          ]
+          "depth": 2
         }
       ]
     }
