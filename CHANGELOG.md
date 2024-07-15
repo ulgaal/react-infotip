@@ -1,3 +1,6 @@
+## Version 1.5.3 (2024/07/15)
+- Changed babel transpilation options to generate es6 modules instead of commonjs modules
+
 ## Version 1.5.2 (2024/07/15)
 - Migrated from lodash.isequal@4.5.0 and lodash.pick@4.4.0 to regular lodash-es@4.17.21 to address npm audit security warning
 

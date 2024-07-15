@@ -1,6 +1,6 @@
 {
   "name": "@ulgaal/react-infotip",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "A library to provide tooltips and sticky-notes to React apps",
   "keywords": [
     "react",
@@ -87,7 +87,8 @@
       [
         "@babel/preset-env",
         {
-          "targets": "current node"
+          "targets": "current node",
+          "modules": false
         }
       ]
     ]
