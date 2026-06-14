@@ -1,5 +1,7 @@
 [![npm (scoped)](https://img.shields.io/npm/v/@ulgaal/react-infotip)](https://www.npmjs.com/package/@ulgaal/react-infotip) [![GitHub](https://img.shields.io/github/license/ulgaal/react-infotip)](https://github.com/ulgaal/react-infotip/blob/master/LICENSE)
 
+THIS REPOSITORY HAS BEEN TRANSFERRED TO [gitlab](https://gitlab.com/coder-tribe-group/react-infra)
+
 # React tooltip and sticky-note library
 
 - easy-to-use, one-line basic usage
